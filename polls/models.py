@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.contrib.auth.models import AbstractUser
 
 class Poll(models.Model):
     title = models.CharField(max_length=200)
@@ -32,3 +33,10 @@ class Response(models.Model):
 
     def __str__(self):
         return f"{self.user} - {self.question} - {self.choice}"
+
+class CustomUser(AbstractUser):
+    ROLE_CHOICES = [
+        ('student', 'Student'),
+        ('professor', 'Professor'),
+    ]
+    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='student')
