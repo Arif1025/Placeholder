@@ -3,22 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Homepage</title>
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <title>Home</title>
+    <link rel="stylesheet" href="{% static 'css/styles2.css' %}">
 </head> 
 <body> 
-    <header>
-        <nav>
-            <ul>
-                <li><a href="{% url 'home' %}">Home</a></li>
-                <li><a href="{% url 'logout' %}">Logout</a></li>
-            </ul>
-        </nav>
-    </header>
 
-    <main>
-        {% block content %}
-        {% endblock %}
+    <main class="main-content">
+        <section class="welcome-section">
+            <h1>Home</h1>
+            <p class="welcome-message">Welcome, {{ student_name }}!</p>
+        </section>
+
+        <section class="classes-section">
+            <h2>Classes</h2>
+            <ul class="classes-list">
+                {% for class in student_classes %}
+                    <li><a href="{% url 'class_detail' class.id %}">{{ class.name }} - {{ class.teacher }}</a></li>
+                {% endfor %}
+            </ul>
+        </section>
+
+        <section class="polls-section">
+            <h2>Recent Polls</h2>
+            <ul class="polls-list">
+                {% for poll in recent_polls %}
+                    <li><a href="{% url 'poll_detail' poll.id %}">{{ poll.title }}</a></li>
+                {% endfor %}
+            </ul>
+        </section>
+
+        <section class="logout-section">
+            <form action="{% url 'logout' %}" method="post">
+                {% csrf_token %}
+                <button type="submit" class="logout-button">Logout</button>
+            </form>
+        </section>
     </main>
 
     <footer>

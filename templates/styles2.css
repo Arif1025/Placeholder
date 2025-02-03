@@ -1,64 +1,122 @@
+/* Global Styles */
 body {
-    font-family: Arial, sans-serif;
+    font-family: 'Roboto', sans-serif;
+    background-color: #f0f4f8;
     margin: 0;
     padding: 0;
-    background-color: #f4f4f4;
-}
-
-header {
-    background-color: #333;
-    color: #fff;
-    padding: 10px 0;
-} 
-
-nav ul {
-    list-style-type: none;
-    text-align: center;
-}
-
-nav ul li {
-    display: inline;
-    margin: 0 15px; 
-}
-
-nav ul li a {
-    color: #fff;
-    text-decoration: none;
-}
-
-.container {
-    width: 80%;
-    margin: 20px auto;
-    padding: 20px;
-    background-color: #fff;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-
-h1, h2 {
     color: #333;
 }
 
-.quiz, .result {
-    background-color: #f9f9f9;
-    padding: 15px;
-    margin: 10px 0;
-    border-radius: 5px;
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
-}
-
-.quiz h3, .result h3 {
-    margin-top: 0;
-}
-
-.btn {
-    display: inline-block;
-    padding: 8px 15px;
-    background-color: #5cb85c;
-    color: white;
+a {
     text-decoration: none;
-    border-radius: 5px;
 }
 
-.btn:hover {
-    background-color: #4cae4c;
+main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 30px 20px;
+}
+
+/* Header */
+header {
+    background-color: #3498db;
+    color: white;
+    padding: 20px 0;
+    text-align: center;
+}
+
+h1 {
+    font-size: 80px;
+    font-weight: bold;
+    text-align: center;
+    color: #fff;
+}
+
+/* Welcome Section */
+.welcome-section {
+    text-align: center;
+    margin-bottom: 50px;
+}
+
+.welcome-message {
+    font-size: 22px;
+    color: #555;
+    margin-top: 10px;
+}
+
+/* Section Headings */
+h2 {
+    font-size: 32px;
+    color: #2c3e50;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    font-weight: bold;
+}
+
+/* Classes and Polls Lists */
+ul.classes-list, ul.polls-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+ul.classes-list li, ul.polls-list li {
+    background-color: white;
+    margin-bottom: 20px;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s ease;
+}
+
+ul.classes-list li a, ul.polls-list li a {
+    color: #3498db;
+    font-size: 20px;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+ul.classes-list li a:hover, ul.polls-list li a:hover {
+    color: #1abc9c;
+    text-decoration: underline;
+}
+
+ul.classes-list li:hover, ul.polls-list li:hover {
+    background-color: #ecf0f1;
+}
+
+/* Logout Section */
+.logout-section {
+    text-align: center;
+    margin-top: 40px;
+}
+
+.logout-button {
+    background-color: #e74c3c;
+    color: white;
+    font-size: 18px;
+    padding: 12px 30px;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.logout-button:hover {
+    background-color: #c0392b;
+}
+
+/* Footer */
+footer {
+    background-color: #2c3e50;
+    color: white;
+    text-align: center;
+    padding: 20px;
+    position: fixed;
+    width: 100%;
+    bottom: 0;
+}
+
+footer p {
+    font-size: 16px;
 }
