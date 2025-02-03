@@ -40,3 +40,16 @@ class CustomUser(AbstractUser):
         ('professor', 'Professor'),
     ]
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='student')
+
+class Question(models.Model):
+    QUESTION_TYPES = [
+        ('text', 'Written Answer'),
+        ('mcq', 'Multiple Choice'),
+    ]
+
+    text = models.TextField()
+    question_type = models.CharField(max_length=10, choices=QUESTION_TYPES)
+    options = models.TextField(blank=True, help_text="Comma-separated options for MCQ")
+
+    def get_options(self):
+        return self.options.split(',') if self.options else []

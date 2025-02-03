@@ -3,6 +3,9 @@ from django.contrib.auth import authenticate, login
 from django.http import HttpResponse
 from .forms import CustomLoginForm
 from django.contrib.auth.decorators import login_required
+from django.forms import modelformset_factory
+from .models import Question
+from .forms import QuestionForm
 
 def index(request):
     return HttpResponse("Hello, this is the index view.")
@@ -37,3 +40,17 @@ def student_dashboard(request):
 @login_required
 def professor_dashboard(request):
     return render(request, "polls/teacher_home_interface.html")
+
+def create_quiz(request):
+    QuestionFormSet = modelformset_factory(Question, form=QuestionForm, extra=0, can_delete=True)
+    formset = QuestionFormSet(request.POST or None, queryset=Question.objects.all())
+
+    if request.method == "POST":
+        if "add_question" in request.POST:
+            formset = QuestionFormSet(queryset=Question.objects.all())
+            formset.extra += 1  # Add an extra form to the set
+        elif formset.is_valid():
+            formset.save()
+            return redirect('create_quiz')  # Redirect after saving
+    
+    return render(request, "quiz_creation.html", {"formset": formset})
