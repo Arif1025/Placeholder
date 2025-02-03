@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Home</title>
+    <link rel="stylesheet" href="{% static 'css/styles2.css' %}">
+</head> 
+<body> 
+
+    <main class="main-content">
+        <section class="welcome-section">
+            <h1>Home</h1>
+            <p class="welcome-message">Welcome, {{ teacher_name }}!</p>
+        </section>
+
+        <!-- Teacher's Classes Section -->
+        <section class="classes-section">
+            <h2>Your Classes</h2>
+            <ul class="classes-list">
+                {% for class in teacher_classes %}
+                    <li><a href="{% url 'class_detail' class.id %}">{{ class.name }} - {{ class.teacher }}</a></li>
+                {% endfor %}
+            </ul>
+        </section>
+
+        <!-- Teacher's Polls Section -->
+        <section class="polls-section">
+            <h2>Your Polls</h2>
+            <ul class="polls-list">
+                {% for poll in teacher_polls %}
+                    <li><a href="{% url 'poll_detail' poll.id %}">{{ poll.title }}</a></li>
+                {% endfor %}
+            </ul>
+        </section>
+
+        <!-- Make New Poll Button -->
+        <section class="make-poll-section">
+            <a href="{% url 'create_poll' %}">
+                <button class="make-poll-button">Make New Poll</button>
+            </a>
+        </section>
+
+        <!-- Logout Section -->
+        <section class="logout-section">
+            <form action="{% url 'logout' %}" method="post">
+                {% csrf_token %}
+                <button type="submit" class="logout-button">Logout</button>
+            </form>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Polling System</p>
+    </footer>
+</body>
+</html>
