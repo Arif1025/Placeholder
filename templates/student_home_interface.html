@@ -130,6 +130,52 @@
             bottom: 0;
         }
 
+        /* Mobile Responsiveness */
+        @media screen and (max-width: 768px) {
+            h1 {
+                font-size: 60px; 
+            }
+            .welcome-message {
+                font-size: 18px; 
+            }
+            h2 {
+                font-size: 28px; 
+            }
+            .classes-list li, .polls-list li {
+                padding: 12px; 
+                font-size: 18px; 
+            }
+            .make-poll-button {
+                font-size: 16px; 
+                padding: 10px 25px; 
+            }
+            footer {
+                padding: 10px; 
+            }
+        }
+
+        @media screen and (max-width: 480px) {
+            h1 {
+                font-size: 50px; 
+            }
+            .welcome-message {
+                font-size: 16px; 
+            }
+            h2 {
+                font-size: 24px; 
+            }
+            .classes-list li, .polls-list li {
+                font-size: 16px; 
+            }
+            .make-poll-button {
+                font-size: 14px; 
+                padding: 8px 20px; 
+            }
+            .logout-button {
+                font-size: 16px; 
+                padding: 10px 20px; 
+            }
+        }
     </style>
 </head>
 <body>
