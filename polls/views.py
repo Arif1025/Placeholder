@@ -22,8 +22,8 @@ def login_view(request):
             if user is not None and user.role == role:
                 login(request, user)
                 if role == "professor":
-                    return redirect("professor_dashboard")
-                return redirect("student_dashboard")
+                    return redirect("teacher_home_interface")
+                return redirect("student_home_interface")
     
     else:
         form = CustomLoginForm()
@@ -32,8 +32,8 @@ def login_view(request):
 
 @login_required
 def student_dashboard(request):
-    return render(request, "polls/student_dashboard.html")
+    return render(request, "polls/student_home_interface.html")
 
 @login_required
 def professor_dashboard(request):
-    return render(request, "polls/professor_dashboard.html")
+    return render(request, "polls/teacher_home_interface.html")

@@ -5,6 +5,6 @@ from .views import login_view
 urlpatterns = [
     path('', views.index, name='index'),
     path("login/", login_view, name="login"),
-    path("student-dashboard/", student_dashboard, name="student_dashboard"),
-    path("professor-dashboard/", professor_dashboard, name="professor_dashboard"),
+    path("student_home_interface/", student_home_interface, name="student_home_interfaced"),
+    path("teacher_home_interface/", teacher_home_interface, name="teacher_home_interface"),
 ]
