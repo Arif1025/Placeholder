@@ -1,11 +1,10 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
 from django.http import HttpResponse
-from .forms import CustomLoginForm
 from django.contrib.auth.decorators import login_required
+from .forms import CustomLoginForm, QuestionForm
 from django.forms import modelformset_factory
 from .models import Question
-from .forms import QuestionForm
 
 def index(request):
     return HttpResponse("Hello, this is the index view.")
