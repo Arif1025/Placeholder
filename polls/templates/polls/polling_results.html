@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Polling Results - {{ poll.title }}</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>Polling Results: {{ poll.title }}</h1>
+    <p>{{ poll.description }}</p>
+
+    {% for result in results %}
+        <h2>{{ result.question_text }}</h2>
+        <div style="width: 75%; margin: auto;">
+            <canvas id="chart-{{ forloop.counter }}"></canvas>
+        </div>
+    {% endfor %}
+
+    <script>
+        // Convert Django template data to a JavaScript object
+        const results = JSON.parse('{{ results_json|escapejs }}');
+
+        // Loop through each question and render a chart
+        results.forEach((result, index) => {
+            const ctx = document.getElementById(`chart-${index + 1}`).getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',  // Use 'bar' for a bar chart
+                data: {
+                    labels: result.choices.map(choice => choice.choice_text),
+                    datasets: [{
+                        label: 'Response Count',
+                        data: result.choices.map(choice => choice.response_count),
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
