@@ -1,6 +1,6 @@
 from django.urls import re_path
-from polling_system.consumers import ChatConsumer
+from polling_system.consumers import PollConsumer
 
 websocket_urlpatterns = [
-    re_path(r'ws/chat/$', ChatConsumer.as_asgi()),
+    re_path(r'ws/chat/$', PollConsumer.as_asgi()),
 ]
