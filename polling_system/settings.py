@@ -37,7 +37,20 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'channels',
+    'polling_system',
 ]
+
+#configure
+ASGI_APPLICATION = 'polling_system.asgi.application'
+
+CHANNEL_LAYERS = {
+    'default':{
+        'BACKEND':'channels.layers.InMemoryChannelsLayer',
+        # 'BACKEND':'channels_redis.core.RedisChannelsLayer',
+        # 'CONFIG':{'hosts':[('127.0.0.1',6379)]}
+    }
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -67,7 +80,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'polling_system.wsgi.application'
+# WSGI_APPLICATION = 'polling_system.wsgi.application'
 
 
 # Database
