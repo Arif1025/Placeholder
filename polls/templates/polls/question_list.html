@@ -1,0 +1,16 @@
+<h1>Questions for {{ poll.title }}</h1>
+<a href="{% url 'question_create' poll.id %}">Add Question</a>
+
+<ul>
+  {% for question in questions %}
+    <li>
+      {{ question.question_text }}
+      (<a href="{% url 'question_edit' poll.id question.id %}">edit</a> | 
+       <a href="{% url 'question_delete' poll.id question.id %}">delete</a>)
+      <br>
+      <a href="{% url 'choice_list' poll.id question.id %}">View Choices</a>
+    </li>
+  {% endfor %}
+</ul>
+
+<a href="{% url 'poll_list' %}">Back to Polls</a>

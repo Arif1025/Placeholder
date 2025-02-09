@@ -1,0 +1,9 @@
+<h1>Create or Edit Choice for Question: {{ question.question_text }}</h1>
+
+<form method="POST">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit">Save</button>
+</form>
+
+<a href="{% url 'choice_list' question.poll.id question.id %}">Cancel</a>

@@ -1,0 +1,14 @@
+<h1>Choices for Question: {{ question.question_text }}</h1>
+<a href="{% url 'choice_create' question.poll.id question.id %}">Add Choice</a>
+
+<ul>
+  {% for choice in choices %}
+    <li>
+      {{ choice.choice_text }}
+      (<a href="{% url 'choice_edit' question.poll.id question.id choice.id %}">edit</a> | 
+       <a href="{% url 'choice_delete' question.poll.id question.id choice.id %}">delete</a>)
+    </li>
+  {% endfor %}
+</ul>
+
+<a href="{% url 'question_list' question.poll.id %}">Back to Questions</a>

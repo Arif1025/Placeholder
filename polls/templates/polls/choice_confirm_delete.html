@@ -1,0 +1,6 @@
+<h1>Delete Choice: "{{ choice.choice_text }}"?</h1>
+<form method="POST">
+  {% csrf_token %}
+  <button type="submit">Yes, delete</button>
+</form>
+<a href="{% url 'choice_list' choice.question.poll.id choice.question.id %}">Cancel</a>
