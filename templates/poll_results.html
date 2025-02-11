@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Results: {{ poll.title }}</title>
+    <style>
+        /* ... (keep all previous styles) ... */
+
+        /* Add this class */
+        [data-percentage] {
+            width: var(--percentage);
+        }
+    </style>
+</head>
+<body>
+    <div class="results-container">
+        {% for question_id, data in results.items %}
+        <div class="question-results" data-question-id="{{ question_id }}">
+            <div class="question-text">{{ data.question_text }}</div>
+            
+            {% for choice_id, choice_data in data.choices.items %}
+            <div class="choice-result" data-choice-id="{{ choice_id }}">
+                <div class="choice-bar">
+                    <!-- Change this line -->
+                    <div class="choice-fill" data-percentage style="--percentage: {{ choice_data.percentage }}%"></div>
+                    <div class="choice-text">
+                        <span>{{ choice_data.text }}</span>
+                        <span class="response-count">{{ choice_data.count }} responses</span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            
+            <div class="stats">
+                Total responses: {{ data.total_responses }}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+
+    <script>
+        function connectWebSocket() {
+            const pollId = "{{ poll.id }}";
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const host = window.location.host;
+            const ws = new WebSocket(`${protocol}//${host}/ws/poll/${pollId}/`);
+
+            ws.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                if (data.type === 'new_response') {
+                    updateResults(data.question_id, data.results);
+                }
+            };
+
+            ws.onerror = function(error) {
+                console.error('WebSocket error:', error);
+            };
+
+            ws.onclose = function() {
+                console.log('WebSocket connection closed. Attempting to reconnect...');
+                setTimeout(connectWebSocket, 3000);
+            };
+
+            return ws;
+        }
+
+        let ws = connectWebSocket();
+    </script>
+</body>
+</html>
