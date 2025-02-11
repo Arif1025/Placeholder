@@ -2,6 +2,12 @@ from django.urls import path
 from .views import *
 
 urlpatterns = [
+    path("", index, name="index"),
+    path("homepage/", homepage, name="homepage"),
+    path("register/", register_teacher, name="register_teacher"),
+    path("login/", login_teacher, name="login_teacher"),
+    path("logout/", logout_teacher, name="logout_teacher"),
+    path("teacher-dashboard/", teacher_dashboard, name="teacher_dashboard"),
     path("polls/", poll_list, name="poll_list"),
     path("polls/create/", create_poll, name="create_poll"),
     path("polls/<int:poll_id>/update/", update_poll, name="update_poll"),

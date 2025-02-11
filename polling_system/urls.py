@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.urls import path, include
 from polls import views
-from .views import register_teacher, login_teacher, logout_teacher
+from polls.views import register_teacher, login_teacher, logout_teacher
 
 urlpatterns = [
     path('admin/', admin.site.urls),

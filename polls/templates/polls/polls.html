@@ -1,0 +1,6 @@
+{% for poll in polls %}
+    <h2>{{ poll.title }}</h2>
+    <p>{{ poll.description }}</p>
+{% empty %}
+    <p>No polls available.</p>
+{% endfor %}

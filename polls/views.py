@@ -1,12 +1,9 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
 from django.contrib.auth import login, logout, authenticate
-from .forms import TeacherRegistrationForm, TeacherLoginForm
 from django.contrib.auth.decorators import login_required
 from .forms import TeacherRegistrationForm, TeacherLoginForm, PollForm, QuestionForm
 from .models import Poll, Question
-
-
 
 def index(request):
     return HttpResponse("Hello, this is the index view.")
@@ -26,10 +23,11 @@ def register_teacher(request):
         if form.is_valid():
             user = form.save()
             login(request, user)
-            return redirect("dashboard")  # Redirect to teacher dashboard
+            return redirect("login_teacher")  # Redirect to teacher dashboard
     else:
         form = TeacherRegistrationForm()
-    return render(request, "auth/register.html", {"form": form})
+    return render(request, "register.html", {"form": form})
+
 
 def login_teacher(request):
     if request.method == "POST":
@@ -37,15 +35,25 @@ def login_teacher(request):
         if form.is_valid():
             user = form.get_user()
             login(request, user)
-            return redirect("dashboard")
+            return redirect("teacher_dashboard")
     else:
         form = TeacherLoginForm()
-    return render(request, "auth/login.html", {"form": form})
+    return render(request, "login.html", {"form": form})
 
 @login_required
 def logout_teacher(request):
     logout(request)
     return redirect("login_teacher")  # Redirect to login page after logout
+
+@login_required
+def student_dashboard(request):
+    return render(request, "student_home_interface.html")
+
+@login_required
+def teacher_dashboard(request):
+    return render(request, "teacher_home_interface.html")
+
+
 
 
 # ======================= #
@@ -55,7 +63,7 @@ def poll_list(request):
     """List all polls"""
     polls = Poll.objects.all()
     form = PollForm()
-    return render(request, "polls.html", {"polls": polls, "form": form})
+    return render(request, "polls/polls.html", {"polls": polls, "form": form})
 
 @login_required
 def create_poll(request):
