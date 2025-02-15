@@ -135,6 +135,23 @@
             background-color: #9b4dca;
         }
 
+        /* Unlock/Hide Answer Buttons */
+        .answer-toggle-button {
+            background-color: #8e24aa;
+            color: white;
+            font-size: 18px;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin: 0 10px;
+        }
+
+        .answer-toggle-button:hover {
+            background-color: #9b4dca; /* Lighter purple when hovered */
+        }
+
         /* Navigation Buttons */
         .navigation-buttons {
             display: flex;
@@ -191,6 +208,8 @@
         <section class="control-buttons">
             <button class="control-button">Lock Answer</button>
             <button class="control-button">Show Answer</button>
+            <button class="answer-toggle-button">Unlock Answer</button>
+            <button class="answer-toggle-button">Hide Answer</button>
         </section>
 
         <!-- Navigation Buttons -->
