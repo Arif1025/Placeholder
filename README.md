@@ -8,7 +8,7 @@ The members of the team are:
  - Aman Hayer
  - Joshua Hodes
  - Arif Uddin
- - 	Chuhao (Akalay) Weng
+ - Chuhao (Akalay) Weng
  - Sanika Gadgil
 
 
