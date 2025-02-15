@@ -19,7 +19,7 @@ class QuestionPageViewTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'question_page.html')  
 
-        # Check for expected elements in the HTML (e.g. the question and options)
+        # Check for expected elements in the HTML (e.g., the question and options)
         self.assertContains(response, '<h1>Question 1</h1>')
         self.assertContains(response, 'What is the capital of France?')
         self.assertContains(response, 'Paris')
@@ -46,6 +46,15 @@ class QuestionPageViewTestCase(TestCase):
 
         self.assertContains(response, '<button class="control-button">Lock Answer</button>')
         self.assertContains(response, '<button class="control-button">Show Answer</button>')
+
+    def test_answer_toggle_buttons(self):
+        """Test that the Unlock Answer and Hide Answer buttons are present."""
+        response = self.client.get(self.url)
+
+        self.assertContains(response, '<button class="answer-toggle-button">Unlock Answer</button>')
+        self.assertContains(response, '<button class="answer-toggle-button">Hide Answer</button>')
+
+        self.assertContains(response, 'background-color: #8e24aa') 
 
     def test_mobile_responsiveness(self):
         """Test if the page is responsive on smaller screens."""
