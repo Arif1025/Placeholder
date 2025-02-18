@@ -3,7 +3,8 @@ from django.http import HttpResponse
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from .forms import TeacherRegistrationForm, TeacherLoginForm, PollForm, QuestionForm
-from .models import Poll, Question
+from .models import Response, Poll, Question
+import csv
 
 def index(request):
     return HttpResponse("Hello, this is the index view.")
@@ -140,3 +141,31 @@ def delete_question(request, question_id):
     poll_id = question.poll.id
     question.delete()
     return redirect("question_list", poll_id=poll_id)
+
+@login_required
+def export_poll_responses_csv(request, poll_id):
+    """
+    View to export poll responses as a CSV file.
+    """
+    poll = get_object_or_404(Poll, id=poll_id)
+    responses = Response.objects.filter(question__poll=poll)
+
+    # Create the HttpResponse object with CSV content type
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = f'attachment; filename="{poll.title}_responses.csv"'
+
+    writer = csv.writer(response)
+    
+    # Write header row
+    writer.writerow(["Student", "Question", "Selected Choice", "Submitted At"])
+
+    # Write data rows
+    for response_obj in responses:
+        writer.writerow([
+            response_obj.user.username if response_obj.user else "Anonymous",
+            response_obj.question.question_text,
+            response_obj.choice.choice_text,
+            response_obj.submitted_at.strftime('%Y-%m-%d %H:%M:%S')
+        ])
+
+    return response

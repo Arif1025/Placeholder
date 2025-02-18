@@ -1,5 +1,8 @@
 {% for poll in polls %}
     <h2>{{ poll.title }}</h2>
+    <a href="{% url 'export_poll_responses' poll.id %}" class="btn btn-primary">
+        Download Responses as CSV
+    </a>
     <p>{{ poll.description }}</p>
 {% empty %}
     <p>No polls available.</p>
