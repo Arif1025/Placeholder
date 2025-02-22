@@ -7,8 +7,8 @@ from .views import create_quiz
 
 urlpatterns = [
     path('', views.index, name='index'),
-    path("login/", login_view, name="login"),
-    path("student_home_interface/", student_home_interface, name="student_home_interfaced"),
+    path("login_interface/", login_view, name="login_interface"),
+    path("student_home_interface/", student_home_interface, name="student_home_interface"),
     path("teacher_home_interface/", teacher_home_interface, name="teacher_home_interface"),
     path("create-quiz/", create_quiz, name="create_quiz"),
 

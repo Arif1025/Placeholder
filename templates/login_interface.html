@@ -70,7 +70,12 @@
         <h2>Polling System Login</h2>
         <form method="post">
             {% csrf_token %}
-            {{ form.as_p }}
+            <label for="username">Username:</label>
+            <input type="text" name="username" required>
+            
+            <label for="password">Password:</label>
+            <input type="password" name="password" required>
+        
             <button type="submit">Login</button>
         </form>
     </div>
