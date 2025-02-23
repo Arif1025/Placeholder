@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Final Score</title>
+    <style>
+        /* Import Google Font */
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+        /* Final Score Page Styles */
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #e3f2fd; 
+            margin: 0;
+            padding: 0;
+            color: #4f4f4f; 
+            padding-top: 20px; 
+        }
+
+        main {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 23px;
+        }
+
+        /* Main Title Styling */
+        h1 {
+            font-size: 60px;
+            text-align: center;
+            color: #9b4dca; 
+            font-weight: 700;
+            background: linear-gradient(45deg, #9b4dca, #d500f9); 
+            background-clip: text;
+            color: transparent;
+            text-shadow: 3px 3px 5px rgba(0, 0, 0, 0.1); 
+            letter-spacing: 3px;
+            margin-bottom: 20px;
+        }
+
+        .score-section {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .score {
+            font-size: 22px;
+            color: #7f4a9d;
+            margin-top: 10px;
+        }
+
+        .question-section {
+            margin-bottom: 30px;
+        }
+
+        .question {
+            font-size: 20px;
+            color: #7f4a9d;
+            margin: 10px 0;
+        }
+
+        .result {
+            font-size: 18px;
+            color: #4caf50; /* Green for correct answers */
+            margin: 5px 0;
+        }
+
+        .wrong {
+            font-size: 18px;
+            color: #f44336; /* Red for wrong answers */
+            margin: 5px 0;
+        }
+
+        /* Buttons */
+        .navigation-buttons {
+            display: flex;
+            justify-content: space-between; 
+            margin-top: 20px; 
+        }
+
+        .navigation-button {
+            background-color: #8e24aa; 
+            color: white;
+            font-size: 18px;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            display: inline-block;
+            margin: 10px 20px 30px; 
+        }
+
+        .navigation-button:hover {
+            background-color: #9b4dca; 
+        }
+
+        .logout-button {
+            background-color: #d32f2f; 
+            color: white;
+            font-size: 18px;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s ease;
+        }
+
+        .logout-button:hover {
+            background-color: #c62828; 
+        }
+
+        footer {
+            background-color: #9b4dca; 
+            color: white;
+            text-align: center;
+            padding: px;
+            position: fixed;
+            width: 100%;
+            bottom: 0;
+        }
+
+        /* Mobile Responsiveness */
+        @media screen and (max-width: 768px) {
+            h1 {
+                font-size: 50px;
+            }
+            .score, .question, .result, .wrong {
+                font-size: 16px; 
+            }
+            footer {
+                padding: 10px;
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+    <form action="#" method="post">
+        <button type="submit" class="logout-button">Logout</button>
+    </form>
+
+    <main class="main-content">
+        <section class="score-section">
+            <h1>Final Score</h1>
+            <p class="score">Your Score: 80% (4/5 Correct)</p> 
+        </section>
+
+        <section class="question-section">
+            <p class="question">Question 1: What is the capital of France?</p>
+            <p class="result">Correct: Paris</p> 
+        </section>
+
+        <section class="question-section">
+            <p class="question">Question 2: What is the largest planet in the solar system?</p>
+            <p class="wrong">Wrong: Earth (Correct Answer: Jupiter)</p>
+        </section>
+
+        <!-- Add more questions in similar structure -->
+        <section class="question-section">
+            <p class="question">Question 3: What is 2 + 2?</p>
+            <p class="result">Correct: 4</p> 
+        </section>
+
+        <section class="question-section">
+            <p class="question">Question 4: Who wrote 'Romeo and Juliet'?</p>
+            <p class="wrong">Wrong: Mark Twain (Correct Answer: William Shakespeare)</p> 
+        </section>
+
+        <section class="question-section">
+            <p class="question">Question 5: What is the square root of 9?</p>
+            <p class="result">Correct: 3</p> 
+        </section>
+
+        <section class="navigation-buttons">
+            <button class="navigation-button">Back to Home</button>
+            <button class="navigation-button">Try Again</button>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Polling System</p>
+    </footer>
+
+</body>
+</html>

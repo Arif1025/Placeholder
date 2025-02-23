@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Question 1</title>
+    <style>
+        /* Import Google Font */
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+        /* Homepage Styles */
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #e3f2fd; 
+            margin: 0;
+            padding: 0;
+            color: #4f4f4f; 
+            padding-top: 20px; 
+        }
+
+        main {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 23px;
+        }
+
+        /* Main Title Styling */
+        h1 {
+            font-size: 60px;
+            text-align: center;
+            color: #9b4dca; 
+            font-weight: 700;
+            background: linear-gradient(45deg, #9b4dca, #d500f9); 
+            background-clip: text;
+            color: transparent;
+            text-shadow: 3px 3px 5px rgba(0, 0, 0, 0.1); 
+            letter-spacing: 3px;
+            margin-bottom: 20px;
+        }
+
+        .question-section {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .question {
+            font-size: 22px;
+            color: #7f4a9d;
+            margin-top: 10px;
+        }
+
+        .options-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .options-section label {
+            display: block;
+            margin: 10px 0;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .options-section input[type="radio"] {
+            margin-right: 10px;
+        }
+
+        /* Buttons */
+        .navigation-button {
+            background-color: #8e24aa; 
+            color: white;
+            font-size: 18px;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            display: inline-block;
+            margin: 20px;
+        }
+
+        .navigation-button:hover {
+            background-color: #9b4dca; 
+        }
+
+        .logout-button {
+            background-color: #d32f2f; 
+            color: white;
+            font-size: 18px;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s ease;
+        }
+
+        .logout-button:hover {
+            background-color: #c62828; 
+        }
+
+        footer {
+            background-color: #9b4dca; 
+            color: white;
+            text-align: center;
+            padding: px;
+            position: fixed;
+            width: 100%;
+            bottom: 0;
+        }
+
+        /* Control Buttons */
+        .control-buttons {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .control-button {
+            background-color: #8e24aa;
+            color: white;
+            font-size: 18px;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin: 0 10px;
+        }
+
+        .control-button:hover {
+            background-color: #9b4dca;
+        }
+
+        /* Unlock/Hide Answer Buttons */
+        .answer-toggle-button {
+            background-color: #8e24aa;
+            color: white;
+            font-size: 18px;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin: 0 10px;
+        }
+
+        .answer-toggle-button:hover {
+            background-color: #9b4dca; /* Lighter purple when hovered */
+        }
+
+        /* Navigation Buttons */
+        .navigation-buttons {
+            display: flex;
+            justify-content: space-between; 
+            margin-top: 20px;
+        }
+
+        .navigation-buttons .navigation-button {
+            width: 45%; 
+        }
+
+        /* Mobile Responsiveness */
+        @media screen and (max-width: 768px) {
+            h1 {
+                font-size: 50px;
+            }
+            .question, .navigation-button, .control-button {
+                font-size: 16px; 
+            }
+            .options-section label {
+                font-size: 18px; 
+            }
+            footer {
+                padding: 10px;
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Logout Button Positioned at Top Right -->
+    <form action="#" method="post">
+        <button type="submit" class="logout-button">Logout</button>
+    </form>
+
+    <main class="main-content">
+        <section class="question-section">
+            <h1>Question 1</h1>
+            <p class="question">What is the capital of France?</p>
+        </section>
+
+        <!-- Options Section -->
+        <section class="options-section">
+            <form>
+                <label><input type="radio" name="answer" value="a"> Paris</label>
+                <label><input type="radio" name="answer" value="b"> London</label>
+                <label><input type="radio" name="answer" value="c"> Berlin</label>
+                <label><input type="radio" name="answer" value="d"> Madrid</label>
+            </form>
+        </section>
+
+        <!-- Control Buttons -->
+        <section class="control-buttons">
+            <button class="control-button">Lock Answer</button>
+            <button class="control-button">Show Answer</button>
+            <button class="answer-toggle-button">Unlock Answer</button>
+            <button class="answer-toggle-button">Hide Answer</button>
+        </section>
+
+        <!-- Navigation Buttons -->
+        <section class="navigation-buttons">
+            <button class="navigation-button">Back</button>
+            <button class="navigation-button">Next</button>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Polling System</p>
+    </footer>
+
+</body>
+</html>
