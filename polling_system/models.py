@@ -7,6 +7,9 @@ class Poll(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     # update_at = models.DateTimeField(auto_now=True)
     created_by_id = models.ForeignKey(User, on_delete=models.CASCADE)
+    question
+    created_at
+    locked = models.BooleanField(default=False)
     def __str__(self):
         return self.title
 
