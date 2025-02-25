@@ -16,7 +16,10 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from .view import poll_results, download_poll_responses
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('polls/<int:poll_id>/results/', poll_results, name='poll_results'),
+    path('polls/<int:poll_id/download/', download_poll_responses, name='download_poll_responses')
 ]
