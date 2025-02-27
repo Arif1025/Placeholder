@@ -1,0 +1,16 @@
+<h1>Join a Poll</h1>
+
+
+{% if messages %}
+  {% for message in messages %}
+    <div style="color: red;">
+      {{ message }}
+    </div>
+  {% endfor %}
+{% endif %}
+
+<form method="POST" novalidate>
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit">Join</button>
+</form>

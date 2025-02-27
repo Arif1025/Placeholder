@@ -18,4 +18,8 @@ urlpatterns = [
     path("questions/<int:question_id>/update/", update_question, name="update_question"),
     path("questions/<int:question_id>/delete/", delete_question, name="delete_question"),
     path('polls/<int:poll_id>/export/', export_poll_responses_csv, name='export_poll_responses'),
+    path('', views.index, name='index'),
+    path('join/', views.join_poll_view, name='join_poll'),
+    path('<int:poll_id>/questions/', views.question_list, name='question_list'),
+
 ]
