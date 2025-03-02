@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Poll Results - Charts</title>
+    <style>
+        /* Import Google Font */
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+        /* General Page Styles */
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #e3f2fd; /* Same blue background as the Teacher Home page */
+            margin: 0;
+            padding: 0;
+            color: #4f4f4f;
+            padding-top: 20px;
+        }
+
+        main {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 23px;
+        }
+
+        /* Main Title Styling */
+        h1 {
+            font-size: 90px;
+            text-align: center;
+            color: #9b4dca;
+            font-weight: 700;
+            background: linear-gradient(45deg, #9b4dca, #d500f9); 
+            background-clip: text;
+            color: transparent;
+            text-shadow: 3px 3px 5px rgba(0, 0, 0, 0.1); 
+            letter-spacing: 3px;
+            margin-bottom: 20px;
+        }
+
+        /* Chart Section */
+        .chart-section {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .chart-section h2 {
+            font-size: 32px;
+            color: #9b4dca;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        canvas {
+            max-width: 100%;
+            height: 400px;
+        }
+
+        /* Logout Button */
+        .logout-button {
+            background-color: #d32f2f;
+            color: white;
+            font-size: 18px;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s ease;
+        }
+
+        .logout-button:hover {
+            background-color: #c62828;
+        }
+
+        /* Footer Section */
+        footer {
+            background-color: #9b4dca;
+            color: white;
+            text-align: center;
+            padding: 10px 0;
+            position: relative;
+            width: 100%;
+            bottom: 0;
+        }
+
+        /* Mobile Responsiveness */
+        @media screen and (max-width: 768px) {
+            h1 {
+                font-size: 60px;
+            }
+            .chart-section h2 {
+                font-size: 28px;
+            }
+            footer {
+                padding: 10px;
+            }
+        }
+
+        @media screen and (max-width: 480px) {
+            h1 {
+                font-size: 50px;
+            }
+            .chart-section h2 {
+                font-size: 24px;
+            }
+            .logout-button {
+                font-size: 16px;
+                padding: 10px 20px;
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+<!-- Logout Button -->
+<form action="#" method="post">
+    <button type="submit" class="logout-button">Logout</button>
+</form>
+
+<!-- Main content section for displaying charts -->
+<main class="main-content">
+    <!-- Section for the page title -->
+    <h1>Poll Results</h1>
+
+    <!-- Section displaying the charts -->
+    <section class="chart-section">
+        <h2>Poll 1: What's your favorite subject?</h2>
+        <canvas id="pollChart1"></canvas>
+    </section>
+
+    <!-- Section displaying another chart -->
+    <section class="chart-section">
+        <h2>Poll 2: How do you rate the current semester?</h2>
+        <canvas id="pollChart2"></canvas>
+    </section>
+</main>
+
+<!-- Footer Section -->
+<footer>
+    <p>&copy; 2025 Polling System</p>
+</footer>
+
+<!-- Chart.js Script -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Poll 1 Data 
+    const pollData1 = {
+        labels: ['Math', 'Science', 'History', 'Art'],
+        datasets: [{
+            label: 'Favorite Subject',
+            data: [10, 5, 3, 2], 
+            backgroundColor: 'rgba(128, 0, 128, 0.4)', 
+            borderColor: 'rgba(128, 0, 128, 1)',  
+            borderWidth: 1
+        }]
+    };
+
+    // Poll 2 Data
+    const pollData2 = {
+        labels: ['Excellent', 'Good', 'Average', 'Poor'],
+        datasets: [{
+            label: 'Semester Rating',
+            data: [8, 6, 2, 1], 
+            backgroundColor: 'rgba(153, 50, 204, 0.4)', 
+            borderColor: 'rgba(153, 50, 204, 1)', 
+            borderWidth: 1
+        }]
+    };
+
+    // Poll 1 Chart
+    const ctx1 = document.getElementById('pollChart1').getContext('2d');
+    new Chart(ctx1, {
+        type: 'bar',
+        data: pollData1,
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    // Poll 2 Chart
+    const ctx2 = document.getElementById('pollChart2').getContext('2d');
+    new Chart(ctx2, {
+        type: 'bar',
+        data: pollData2,
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+</script>
+
+</body>
+</html>
