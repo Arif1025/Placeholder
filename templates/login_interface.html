@@ -28,7 +28,7 @@
             margin: 0 auto;
         }
 
-        /* Title Styling (Same as the homepage) */
+        /* Title Styling */
         h2 {
             font-size: 32px;
             color: #9b4dca;
@@ -57,7 +57,7 @@
             font-size: 16px;
         }
 
-        /* Button Styling (Same as homepage) */
+        /* Button Styling */
         button {
             background-color: #8e24aa;
             color: white;
@@ -80,6 +80,31 @@
             bottom: 0;
         }
 
+        /* Mobile responsiveness */
+        @media (max-width: 480px) {
+            /* Adjust login container width for smaller screens */
+            .login-container {
+                width: 90%;
+                padding: 20px;
+            }
+
+            /* Adjust font size of the title */
+            h2 {
+                font-size: 24px;
+                letter-spacing: 2px;
+            }
+
+            /* Adjust input and button padding and font size */
+            input, button {
+                font-size: 14px;
+                padding: 10px;
+            }
+
+            .footer {
+                font-size: 12px;
+                padding: 8px;
+            }
+        }
     </style>
 </head>
 <body>
