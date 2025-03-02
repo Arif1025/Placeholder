@@ -11,5 +11,6 @@ urlpatterns = [
     path("student_home_interface/", student_home_interface, name="student_home_interface"),
     path("teacher_home_interface/", teacher_home_interface, name="teacher_home_interface"),
     path("create-quiz/", create_quiz, name="create_quiz"),
+    path('quiz/<int:quiz_id>/', views.view_quiz, name='view_quiz'),
 
 ]
