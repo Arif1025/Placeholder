@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login
 from django.contrib import messages
 from django.http import HttpResponse
@@ -6,6 +6,7 @@ from django.contrib.auth.decorators import login_required
 from .forms import CustomLoginForm, QuestionForm
 from django.forms import modelformset_factory
 from .models import Question
+from .models import Quiz
 
 def index(request):
     return HttpResponse("Hello, this is the index view.")
@@ -59,3 +60,7 @@ def create_quiz(request):
             return redirect('create_quiz')  # Redirect after saving
     
     return render(request, "quiz_creation.html", {"formset": formset})
+
+def view_quiz(request, quiz_id):
+    quiz = get_object_or_404(Quiz, id=quiz_id)
+    return render(request, "view_quiz.html", {"quiz": quiz})

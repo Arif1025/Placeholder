@@ -22,6 +22,7 @@ class Question(models.Model):
 class Choice(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='choices')
     choice_text = models.CharField(max_length=255)
+    is_correct = models.BooleanField(default=False)
 
     def __str__(self):
         return self.choice_text
@@ -51,7 +52,18 @@ class Question(models.Model):
 
     text = models.TextField()
     question_type = models.CharField(max_length=10, choices=QUESTION_TYPES)
-    options = models.TextField(blank=True, help_text="Comma-separated options for MCQ")
 
-    def get_options(self):
-        return self.options.split(',') if self.options else []
+    def __str__(self):
+        return self.text
+
+
+class MCQOption(models.Model):
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name="mcq_options")
+    option_text = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.option_text
+    
+class Quiz(models.Model):
+    title = models.CharField(max_length=255)
+    created_at = models.DateTimeField(auto_now_add=True)
