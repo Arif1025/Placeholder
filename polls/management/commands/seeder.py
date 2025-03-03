@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from faker import Faker
 
 class Command(BaseCommand):
@@ -12,10 +12,12 @@ class Command(BaseCommand):
 
         self.stdout.write(f"Seeding {num_users} users...")
 
+        User = get_user_model()
+
         for _ in range(num_users):
             username = fake.unique.user_name()
             email = fake.unique.email()
-            password = "password123" 
+            password = "Password123"
 
             user, created = User.objects.get_or_create(
                 username=username,
