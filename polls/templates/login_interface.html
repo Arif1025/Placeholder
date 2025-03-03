@@ -3,130 +3,226 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Polling System Login</title>
+    <title>Student Home</title>
     <style>
         /* Import Google Font */
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
 
-        /* General Styles */
+        /* Homepage Styles */
         body {
             font-family: 'Poppins', sans-serif;
-            background-color: #e3f2fd;
+            background-color: #e3f2fd; 
             margin: 0;
             padding: 0;
-            color: #4f4f4f;
-            padding-top: 20px;
+            color: #4f4f4f; 
+            padding-top: 20px; 
         }
 
-        .login-container {
-            background-color: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-            width: 350px;
-            text-align: center;
+        main {
+            max-width: 1200px;
             margin: 0 auto;
+            padding: 23px;
         }
 
-        /* Title Styling */
+        /* Main Title Styling */
+        h1 {
+            font-size: 90px;
+            text-align: center;
+            color: #9b4dca; 
+            font-weight: 700;
+            background: linear-gradient(45deg, #9b4dca, #d500f9); 
+            background-clip: text;
+            color: transparent;
+            text-shadow: 3px 3px 5px rgba(0, 0, 0, 0.1); 
+            letter-spacing: 3px;
+            margin-bottom: 20px;
+        }
+
+        .welcome-section {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .welcome-message {
+            font-size: 22px;
+            color: #7f4a9d; 
+            margin-top: 6px;
+        }
+
         h2 {
             font-size: 32px;
             color: #9b4dca;
-            font-weight: 600;
             margin-bottom: 20px;
-            letter-spacing: 3px;
-            background: linear-gradient(45deg, #9b4dca, #d500f9);
-            background-clip: text;
-            color: transparent;
-            text-shadow: 3px 3px 5px rgba(0, 0, 0, 0.1);
+            text-transform: uppercase;
+            font-weight: 600;
         }
 
-        label {
-            display: block;
-            margin: 10px 0 5px;
+        ul.classes-list, ul.polls-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        ul.classes-list li, ul.polls-list li {
+            background-color: #ffffff; 
+            margin-bottom: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        ul.classes-list li a, ul.polls-list li a {
+            color: #6a1b9a; 
+            font-size: 20px;
             font-weight: 500;
-            color: #7f4a9d;
+            transition: color 0.3s ease;
         }
 
-        input, button {
-            width: 100%;
-            padding: 12px;
-            margin: 5px 0 15px;
-            border: 1px solid #ccc;
-            border-radius: 50px;
-            font-size: 16px;
+        ul.classes-list li a:hover, ul.polls-list li a:hover {
+            color: #d500f9;
+            text-decoration: underline;
         }
 
-        /* Button Styling */
-        button {
-            background-color: #8e24aa;
+        /* Make New Poll Button */
+        .make-poll-button {
+            background-color: #8e24aa; 
             color: white;
+            font-size: 18px;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 50px;
             cursor: pointer;
-            font-weight: 500;
+            transition: background-color 0.3s ease;
+            display: block; 
+            margin: 30px auto; 
+        }
+
+        .make-poll-button:hover {
+            background-color: #9b4dca; 
+        }
+
+        /* Logout Button Positioned at Top Right */
+        .logout-button {
+            background-color: #d32f2f; 
+            color: white;
+            font-size: 18px;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
             transition: background-color 0.3s ease;
         }
 
-        button:hover {
-            background-color: #9b4dca;
+        .logout-button:hover {
+            background-color: #c62828; 
         }
 
-        .footer {
-            background-color: #9b4dca;
+        footer {
+            background-color: #9b4dca; 
             color: white;
             text-align: center;
-            padding: 10px;
+            padding: px;
+            position: fixed;
             width: 100%;
-            position: absolute;
             bottom: 0;
         }
 
-        /* Mobile responsiveness */
-        @media (max-width: 480px) {
-            /* Adjust login container width for smaller screens */
-            .login-container {
-                width: 90%;
-                padding: 20px;
+        /* Mobile Responsiveness */
+        @media screen and (max-width: 768px) {
+            h1 {
+                font-size: 60px; 
             }
-
-            /* Adjust font size of the title */
+            .welcome-message {
+                font-size: 18px; 
+            }
             h2 {
-                font-size: 24px;
-                letter-spacing: 2px;
+                font-size: 28px; 
             }
-
-            /* Adjust input and button padding and font size */
-            input, button {
-                font-size: 14px;
-                padding: 10px;
+            .classes-list li, .polls-list li {
+                padding: 12px; 
+                font-size: 18px; 
             }
+            .make-poll-button {
+                font-size: 16px; 
+                padding: 10px 25px; 
+            }
+            footer {
+                padding: 10px; 
+            }
+        }
 
-            .footer {
-                font-size: 12px;
-                padding: 8px;
+        @media screen and (max-width: 480px) {
+            h1 {
+                font-size: 50px; 
+            }
+            .welcome-message {
+                font-size: 16px; 
+            }
+            h2 {
+                font-size: 24px; 
+            }
+            .classes-list li, .polls-list li {
+                font-size: 16px; 
+            }
+            .make-poll-button {
+                font-size: 14px; 
+                padding: 8px 20px; 
+            }
+            .logout-button {
+                font-size: 16px; 
+                padding: 10px 20px; 
             }
         }
     </style>
 </head>
 <body>
-    <!-- Login Container with form -->
-    <div class="login-container">
-        <h2>Polling System Login</h2>
-        <form method="post">
-            {% csrf_token %}
-            
-            <label for="username">Username:</label>
-            <input type="text" name="username" required> <!-- Username input -->
-            
-            <label for="password">Password:</label>
-            <input type="password" name="password" required> <!-- Password input -->
-        
-            <button type="submit">Login</button> <!-- Login button -->
-        </form>
-    </div>
 
+    <main class="main-content">
+        <!-- Welcome Section -->
+        <section class="welcome-section">
+            <h1>Home</h1>
+            <p class="welcome-message">Welcome, John Doe!</p>
+        </section>
+    
+        <!-- Student's Classes Section -->
+        <section class="classes-section">
+            <h2>Your Classes</h2>
+            <ul class="classes-list">
+                <li><a href="#">Math 101 - Mr. Smith</a></li>
+                <li><a href="#">History 202 - Ms. Johnson</a></li>
+            </ul>
+        </section>
+    
+        <!-- Student's Polls Section -->
+        <section class="polls-section">
+            <h2>Recent Polls</h2>
+            <ul class="polls-list">
+                <li><a href="#">Poll 1: What's your favorite subject?</a></li>
+                <li><a href="#">Poll 2: How do you rate the current semester?</a></li>
+            </ul>
+        </section>
+    
+        <!-- Make New Poll Button -->
+        <section class="make-poll-section">
+            <a href="#">
+                <button class="make-poll-button">Make New Poll</button>
+            </a>
+        </section>
+    </main>
+    
+    <!-- Logout Button -->
+    <form action="#" method="post">
+        {% csrf_token %}
+        <button type="submit" class="logout-button">Logout</button>
+    </form>
+    
     <!-- Footer Section -->
-    <div class="footer">
-        <p>&copy; 2025 Polling System</p> <!-- Copyright text -->
-    </div>
+    <footer>
+        <p>&copy; 2025 Polling System</p>
+    </footer>
+    
 </body>
 </html>

@@ -129,16 +129,63 @@
             bottom: 0;
         }
 
+        /* Mobile Responsiveness */
+        @media screen and (max-width: 768px) {
+            h1 {
+                font-size: 60px; 
+            }
+            .welcome-message {
+                font-size: 18px; 
+            }
+            h2 {
+                font-size: 28px; 
+            }
+            .classes-list li, .polls-list li {
+                padding: 12px; 
+                font-size: 18px; 
+            }
+            .make-poll-button {
+                font-size: 16px; 
+                padding: 10px 25px; 
+            }
+            footer {
+                padding: 10px; 
+            }
+        }
+
+        @media screen and (max-width: 480px) {
+            h1 {
+                font-size: 50px; 
+            }
+            .welcome-message {
+                font-size: 16px; 
+            }
+            h2 {
+                font-size: 24px; 
+            }
+            .classes-list li, .polls-list li {
+                font-size: 16px; 
+            }
+            .make-poll-button {
+                font-size: 14px; 
+                padding: 8px 20px; 
+            }
+            .logout-button {
+                font-size: 16px; 
+                padding: 10px 20px; 
+            }
+        }
     </style>
 </head>
 <body> 
 
     <main class="main-content">
+        <!-- Welcome Section -->
         <section class="welcome-section">
             <h1>Home</h1>
             <p class="welcome-message">Welcome, Teacher!</p>
         </section>
-
+    
         <!-- Teacher's Classes Section -->
         <section class="classes-section">
             <h2>Your Classes</h2>
@@ -147,7 +194,7 @@
                 <li><a href="#">History 202 - Ms. Johnson</a></li>
             </ul>
         </section>
-
+    
         <!-- Teacher's Polls Section -->
         <section class="polls-section">
             <h2>Your Polls</h2>
@@ -156,7 +203,7 @@
                 <li><a href="#">Poll 2: Feedback on last lesson</a></li>
             </ul>
         </section>
-
+    
         <!-- Make New Poll Button -->
         <section class="make-poll-section">
             <a href="#">
@@ -164,13 +211,14 @@
             </a>
         </section>
     </main>
-
-    <!-- Logout Button Positioned at Top Right -->
+    
+    <!-- Logout Button -->
     <button class="logout-button">Logout</button>
-
+    
+    <!-- Footer Section -->
     <footer>
         <p>&copy; 2025 Polling System</p>
     </footer>
-
+    
 </body>
-</html>
+</html>    
