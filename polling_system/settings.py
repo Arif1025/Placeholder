@@ -40,6 +40,8 @@ INSTALLED_APPS = [
     'polls',
 ]
 
+AUTH_USER_MODEL = 'polls.CustomUser'
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',

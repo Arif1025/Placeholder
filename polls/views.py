@@ -36,15 +36,15 @@ def login_view(request):
     else:
         form = CustomLoginForm()
     
-    return render(request, "polls/login.html", {"form": form})
+    return render(request, "login_interface.html", {"form": form})
 
 @login_required
 def student_home_interface(request):
-    return render(request, "polls/student_home_interface.html")
+    return render(request, "student_home_interface.html")
 
 @login_required
 def teacher_home_interface(request):
-    return render(request, "polls/teacher_home_interface.html")
+    return render(request, "teacher_home_interface.html")
 
 def create_quiz(request):
     QuestionFormSet = modelformset_factory(Question, form=QuestionForm, extra=0, can_delete=True)
@@ -53,9 +53,9 @@ def create_quiz(request):
     if request.method == "POST":
         if "add_question" in request.POST:
             formset = QuestionFormSet(queryset=Question.objects.all())
-            formset.extra += 1  # Add an extra form to the set
+            formset.extra += 1  
         elif formset.is_valid():
             formset.save()
-            return redirect('create_quiz')  # Redirect after saving
+            return redirect('create_quiz') 
     
     return render(request, "quiz_creation.html", {"formset": formset})
