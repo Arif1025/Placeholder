@@ -9,7 +9,7 @@ class Command(BaseCommand):
         fake = Faker()
 
         num_users = 100
-        
+
         self.stdout.write(f"Seeding {num_users} users...")
 
         User = get_user_model()
@@ -17,7 +17,7 @@ class Command(BaseCommand):
         for _ in range(num_users):
             username = fake.unique.user_name()
             email = fake.unique.email()
-            password = "password123"
+            password = "Password123"
 
             user, created = User.objects.get_or_create(
                 username=username,
