@@ -112,6 +112,8 @@
     <div class="login-container">
         <h2>Polling System Login</h2>
         <form method="post">
+            {% csrf_token %}
+            
             <label for="username">Username:</label>
             <input type="text" name="username" required> <!-- Username input -->
             

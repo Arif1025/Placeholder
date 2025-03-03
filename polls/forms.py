@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm
 from .models import Question
+from .models import Poll
 
 class CustomLoginForm(AuthenticationForm):
     role = forms.ChoiceField(
@@ -8,7 +9,6 @@ class CustomLoginForm(AuthenticationForm):
         required=True,
         label="Login as"
     )
-from .models import Poll
 
 class PollForm(forms.ModelForm):
     class Meta:
