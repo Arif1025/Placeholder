@@ -120,7 +120,8 @@
 <body>
 
     <!-- Logout Button -->
-    <form action="#" method="post">
+    <form action="{% url 'logout' %}" method="post">
+        {% csrf_token %}
         <button type="submit" class="logout-button">Logout</button>
     </form>
 
@@ -134,8 +135,11 @@
 
         <!-- Navigation Button to show results -->
         <section class="navigation-buttons">
-            <button class="navigation-button" onclick="window.location.href='final_score_page.html'">Show My Results</button>
+            <a href="{% url 'final_score_page' %}">
+            <button class="navigation-button">Show My Results</button>
+            </a>
         </section>
+
     </main>
 
     <!-- Footer Section -->

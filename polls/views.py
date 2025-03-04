@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
@@ -59,3 +59,19 @@ def create_quiz(request):
             return redirect('create_quiz') 
     
     return render(request, "quiz_creation.html", {"formset": formset})
+
+def logout_view(request):
+    logout(request)  # Log out the user
+    return redirect('login_interface')  # Redirect to the login page
+
+def final_score_page(request):
+    # Any logic for final score
+    return render(request, "final_score_page.html")
+
+# View for the student home interface page
+def student_home_interface(request):
+    return render(request, 'student_home_interface.html')
+
+# View for the question template page
+def question_template(request):
+    return render(request, 'question_template.html')

@@ -225,16 +225,17 @@
 >>>>>>> login_with_database_seeder
         <!-- Make New Poll Button -->
         <section class="make-poll-section">
-            <a href="#">
-                <button class="make-poll-button">Make New Poll</button>
+            <a href="{% url 'create_quiz' %}">
+            <button class="make-poll-button">Make New Poll</button>
             </a>
         </section>
     </main>
 <<<<<<< HEAD
 
     <!-- Logout Button Positioned at Top Right -->
-    <form action="#" method="post">
-        <button type="submit" class="logout-button">Logout</button>
+    <form action="{% url 'logout' %}" method="post">
+    {% csrf_token %}
+    <button type="submit" class="logout-button">Logout</button>
     </form>
 
     <footer>
@@ -246,7 +247,8 @@
 =======
     
     <!-- Logout Button -->
-    <form action="#" method="post">
+    <form action="{% url 'logout' %}" method="post">
+        {% csrf_token %}
         <button type="submit" class="logout-button">Logout</button>
     </form>
     

@@ -184,7 +184,8 @@
 <body>
 
     <!-- Logout Button Positioned at Top Right -->
-    <form action="#" method="post">
+    <form action="{% url 'logout' %}" method="post">
+        {% csrf_token %}
         <button type="submit" class="logout-button">Logout</button>
     </form>
 

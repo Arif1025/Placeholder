@@ -206,14 +206,17 @@
     
         <!-- Make New Poll Button -->
         <section class="make-poll-section">
-            <a href="#">
+            <a href="{% url 'create_quiz' %}">
                 <button class="make-poll-button">Make New Poll</button>
             </a>
         </section>
     </main>
     
     <!-- Logout Button -->
-    <button class="logout-button">Logout</button>
+    <form action="{% url 'logout' %}" method="post">
+        {% csrf_token %}
+        <button type="submit" class="logout-button">Logout</button>
+    </form>
     
     <!-- Footer Section -->
     <footer>

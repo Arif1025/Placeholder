@@ -142,8 +142,8 @@
 <body>
 
 <!-- Form to handle the logout action -->
-<form action="#" method="post">
-    <!-- Logout button -->
+<form action="{% url 'logout' %}" method="post">
+    {% csrf_token %}
     <button type="submit" class="logout-button">Logout</button>
 </form>
 
@@ -194,9 +194,13 @@
         <!-- Section with navigation buttons -->
         <section class="navigation-buttons">
             <!-- Button to go back to the home page -->
-            <button class="navigation-button">Back to Home</button>
+            <a href="{% url 'student_home_interface' %}">
+                <button class="navigation-button">Back to Home</button>
+            </a>
             <!-- Button to allow the user to try the quiz again -->
-            <button class="navigation-button">Try Again</button>
+            <a href="{% url 'question_template' %}">
+                <button class="navigation-button">Try Again</button>
+            </a>
         </section>
     </main>
 
