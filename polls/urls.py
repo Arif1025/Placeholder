@@ -13,4 +13,7 @@ urlpatterns = [
     path("teacher_home_interface/", teacher_home_interface, name="teacher_home_interface"),
     path("create-quiz/", create_quiz, name="create_quiz"),
     path("logout/", logout_view, name="logout"), 
+    path("final-score/", views.final_score_page, name="final_score_page"),
+    path('student-home/', views.student_home_interface, name='student_home_interface'),
+    path('quiz/', views.question_template, name='question_template'),
 ]

@@ -63,3 +63,15 @@ def create_quiz(request):
 def logout_view(request):
     logout(request)  # Log out the user
     return redirect('login_interface')  # Redirect to the login page
+
+def final_score_page(request):
+    # Any logic for final score
+    return render(request, "final_score_page.html")
+
+# View for the student home interface page
+def student_home_interface(request):
+    return render(request, 'student_home_interface.html')
+
+# View for the question template page
+def question_template(request):
+    return render(request, 'question_template.html')
