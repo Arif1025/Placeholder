@@ -142,8 +142,8 @@
 <body>
 
 <!-- Form to handle the logout action -->
-<form action="#" method="post">
-    <!-- Logout button -->
+<form action="{% url 'logout' %}" method="post">
+    {% csrf_token %}
     <button type="submit" class="logout-button">Logout</button>
 </form>
 
