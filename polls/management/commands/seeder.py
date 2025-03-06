@@ -1,6 +1,8 @@
 from django.core.management.base import BaseCommand
+from polls.models import CustomUser
 from django.contrib.auth import get_user_model
 from faker import Faker
+import random
 
 class Command(BaseCommand):
     help = "Seed the database with 100 fake users"
@@ -18,10 +20,12 @@ class Command(BaseCommand):
             username = fake.unique.user_name()
             email = fake.unique.email()
             password = "Password123"
+            role = random.choice(['student', 'professor'])  # Assign role randomly
 
-            user, created = User.objects.get_or_create(
+
+            user, created = CustomUser.objects.get_or_create(
                 username=username,
-                defaults={"email": email}
+                defaults={"email": email, "role": role}
             )
             if created:
                 user.set_password(password)

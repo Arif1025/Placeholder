@@ -13,30 +13,26 @@ def index(request):
 def homepage(request):
     return HttpResponse("Hello! This is the homepage at the root URL.")
 
-def login_view(request):
-    if request.method == "POST":
-        form = CustomLoginForm(data=request.POST)
-        username = request.POST.get("username")
-        password = request.POST.get("password")
-        if form.is_valid():
-            username = form.cleaned_data.get("username")
-            password = form.cleaned_data.get("password")
-            role = form.cleaned_data.get("role")
 
-            user = authenticate(request, username=username, password=password)
-            
-            if user is not None and user.role == role:
-                login(request, user)
-                if role == "professor":
-                    return redirect("teacher_home_interface")
-                return redirect("student_home_interface")
-            else:
-                messages.error(request, "Invalid username or password.")
-    
-    else:
-        form = CustomLoginForm()
-    
-    return render(request, "login_interface.html", {"form": form})
+def login_view(request):
+    if request.method == 'POST':
+        username = request.POST['username']
+        password = request.POST['password']
+        
+        user = authenticate(request, username=username, password=password)
+        
+        if user is not None:
+            login(request, user)
+            # Redirect based on user role
+            if user.role == 'student':
+                return redirect('student_home_interface')
+            elif user.role == 'teacher':
+                return redirect('teacher_home_interface')
+        else:
+            # Handle invalid login
+            return render(request, 'login_interface.html', {'error': 'Invalid username or password'})
+    return render(request, 'login_interface.html')
+
 
 @login_required
 def student_home_interface(request):

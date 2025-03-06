@@ -115,6 +115,10 @@
         <!-- Title of the form -->
         <h2>Polling System Login</h2>
         
+        {% if error %}
+            <p style="color: red;">{{ error }}</p>
+        {% endif %}
+
         <!-- Form for username and password input -->
         <form method="post">
             <!-- CSRF Token for security (used in Django) -->
