@@ -43,7 +43,7 @@ def teacher_home_interface(request):
     polls = Poll.objects.filter(created_by=request.user)
     return render(request, "teacher_home_interface.html")
 
-@login_required
+
 def create_quiz(request):
     poll_form = PollForm()
     question_formset = QuestionForm(queryset=Question.objects.none())
