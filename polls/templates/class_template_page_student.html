@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Class View</title>
+    <style>
+        /* Import Google Font */
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+        /* Homepage Styles */
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #e3f2fd;
+            margin: 0;
+            padding: 0;
+            color: #4f4f4f;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            padding-top: 10px;
+        }
+
+        main {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 10px 15px;
+            flex-grow: 1;
+        }
+
+        /* Main Title Styling */
+        h1 {
+            font-size: 70px;
+            text-align: center;
+            color: #9b4dca;
+            font-weight: 700;
+            background: linear-gradient(45deg, #9b4dca, #d500f9);
+            background-clip: text;
+            color: transparent;
+            text-shadow: 3px 3px 5px rgba(0, 0, 0, 0.1);
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+        }
+
+        .welcome-section {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .welcome-message {
+            font-size: 20px;
+            color: #7f4a9d;
+            margin-top: 6px;
+        }
+
+        h2 {
+            font-size: 28px;
+            color: #9b4dca;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .class-details {
+            background-color: #ffffff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .class-title {
+            font-size: 22px;
+            font-weight: bold;
+            color: #6a1b9a;
+            margin-bottom: 10px;
+        }
+
+        .teacher-name {
+            font-size: 16px;
+            color: #4f4f4f;
+            margin-bottom: 15px;
+        }
+
+        .student-list, .poll-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .student-list li, .poll-list li {
+            background-color: #ffffff;
+            margin-bottom: 10px;
+            padding: 12px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .student-list li span, .poll-list li span {
+            color: #7f4a9d;
+            font-weight: 600;
+        }
+
+        .average-grade {
+            font-size: 18px;
+            font-weight: bold;
+            color: #9b4dca;
+            margin-top: 15px;
+        }
+
+        /* Logout Button Positioned at Top Right */
+        .logout-button {
+            background-color: #d32f2f;
+            color: white;
+            font-size: 16px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s ease;
+        }
+
+        .logout-button:hover {
+            background-color: #c62828;
+        }
+
+        footer {
+            background-color: #9b4dca;
+            color: white;
+            text-align: center;
+            padding: px;
+            margin-top: auto;
+        }
+
+        /* Mobile Responsiveness */
+        @media screen and (max-width: 1024px) {
+            h1 {
+                font-size: 60px;
+            }
+            .welcome-message {
+                font-size: 18px;
+            }
+            h2 {
+                font-size: 24px;
+            }
+            .student-list li, .poll-list li {
+                padding: 10px;
+                font-size: 16px;
+            }
+        }
+
+        @media screen and (max-width: 768px) {
+            h1 {
+                font-size: 50px;
+            }
+            .welcome-message {
+                font-size: 16px;
+            }
+            h2 {
+                font-size: 20px;
+            }
+            .student-list li, .poll-list li {
+                padding: 8px;
+                font-size: 14px;
+            }
+            .logout-button {
+                font-size: 14px;
+                padding: 8px 15px;
+            }
+        }
+
+        @media screen and (max-width: 480px) {
+            h1 {
+                font-size: 40px;
+            }
+            .welcome-message {
+                font-size: 14px;
+            }
+            h2 {
+                font-size: 18px;
+            }
+            .student-list li, .poll-list li {
+                font-size: 12px;
+            }
+            .logout-button {
+                font-size: 12px;
+                padding: 6px 10px;
+            }
+        }
+    </style>
+</head>
+<body> 
+
+    <main class="main-content">
+        <!-- Welcome Section -->
+        <section class="welcome-section">
+            <h1>Class View</h1>
+            <p class="welcome-message">Welcome, Student!</p>
+        </section>
+
+        <!-- Class Details Section -->
+        <section class="class-details">
+            <div class="class-title">Math 101</div>
+            <div class="teacher-name">Teacher: Mr. Smith</div>
+
+            <h2>Enrolled Students</h2>
+            <ul class="student-list">
+                <li>
+                    <span>John Doe</span>
+                </li>
+                <li>
+                    <span>Jane Smith</span>
+                </li>
+                <li>
+                    <span>Samuel Adams</span>
+                </li>
+            </ul>
+
+            <h2>Most Recent Poll</h2>
+            <ul class="poll-list">
+                <li>Poll 2: Feedback on last lesson</li>
+            </ul>
+
+            <!-- Average Grade for Most Recent Poll -->
+            <div class="average-grade">Average Grade for Recent Poll: 84.3</div>
+        </section>
+    </main>
+    
+    <!-- Logout Button -->
+    <form action="{% url 'logout' %}" method="post">
+        {% csrf_token %}
+        <button type="submit" class="logout-button">Logout</button>
+    </form>
+    
+    <!-- Footer Section -->
+    <footer>
+        <p>&copy; 2025 Polling System</p>
+    </footer>
+    
+</body>
+</html>
