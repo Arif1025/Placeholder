@@ -83,3 +83,13 @@ def class_view_student(request):
     if not class_name:
         return HttpResponse("Class not found.", status=404) 
     return render(request, 'class_template_page_student.html', {'class_name': class_name})
+
+def enter_poll_code(request):
+    """View for the 'Enter Poll Code' page."""
+    if request.method == 'POST':
+        poll_code = request.POST.get('pollCode')
+        if poll_code:
+            return redirect('question_template') 
+        else:
+            return render(request, 'enter_poll_code.html', {'error': 'Invalid poll code'})
+    return render(request, 'enter_poll_code.html')
