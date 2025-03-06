@@ -3,7 +3,6 @@ from django.contrib.auth.models import AbstractUser
 from django.conf import settings
 
 
-
 class Poll(models.Model):
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True)
@@ -26,7 +25,7 @@ class Question(models.Model):
     ]
 
     poll = models.ForeignKey(Poll, on_delete=models.CASCADE, related_name='questions')
-    text = models.TextField() 
+    text = models.CharField(max_length=255) 
     question_type = models.CharField(max_length=10, choices=QUESTION_TYPES, default='text')
     options = models.TextField(blank=True, help_text="Comma-separated options for MCQ")
 
