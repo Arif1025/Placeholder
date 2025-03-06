@@ -202,6 +202,13 @@
                 <li><a href="#">Poll 1: What's your favorite topic?</a></li>
                 <li><a href="#">Poll 2: Feedback on last lesson</a></li>
             </ul>
+            <ul class="polls-list">
+                {% for poll in polls %}
+                    <li><a href="#">{{ poll.title }}</a></li>
+                {% empty %}
+                    <li>No polls created yet.</li>
+                {% endfor %}
+            </ul>
         </section>
     
         <!-- Make New Poll Button -->

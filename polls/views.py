@@ -3,9 +3,9 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
-from .forms import CustomLoginForm, QuestionForm
+from .forms import CustomLoginForm, QuestionForm, PollForm
 from django.forms import modelformset_factory
-from .models import Question
+from .models import Poll, Question, CustomUser
 
 def index(request):
     return HttpResponse("Hello, this is the index view.")
@@ -40,21 +40,36 @@ def student_home_interface(request):
 
 @login_required
 def teacher_home_interface(request):
+    polls = Poll.objects.filter(created_by=request.user)
     return render(request, "teacher_home_interface.html")
 
+@login_required
 def create_quiz(request):
-    QuestionFormSet = modelformset_factory(Question, form=QuestionForm, extra=0, can_delete=True)
-    formset = QuestionFormSet(request.POST or None, queryset=Question.objects.all())
+    poll_form = PollForm()
+    question_formset = QuestionForm(queryset=Question.objects.none())
 
     if request.method == "POST":
-        if "add_question" in request.POST:
-            formset = QuestionFormSet(queryset=Question.objects.all())
-            formset.extra += 1  
-        elif formset.is_valid():
-            formset.save()
-            return redirect('create_quiz') 
+        poll_form = PollForm(request.POST)
+        question_formset = QuestionForm(request.POST)
+
+        if poll_form.is_valid() and question_formset.is_valid():
+            # Save the poll
+            poll = poll_form.save(commit=False)
+            poll.created_by = request.user
+            poll.save()
+
+            # Save the questions for the poll
+            for form in question_formset:
+                question = form.save(commit=False)
+                question.poll = poll
+                question.save()
+            
+            return redirect("teacher_home_interface") # Redirect to the teacher home interface
     
-    return render(request, "quiz_creation.html", {"formset": formset})
+    return render(request, "quiz_creation.html", {
+        'poll_form': poll_form,
+        'formset': question_formset
+    })
 
 def logout_view(request):
     logout(request)  # Log out the user
