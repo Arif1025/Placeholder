@@ -71,3 +71,15 @@ def student_home_interface(request):
 # View for the question template page
 def question_template(request):
     return render(request, 'question_template.html')
+
+def class_view_teacher(request):
+    class_name = request.GET.get('class_name')  
+    if not class_name:
+        return HttpResponse("Class not found.", status=404)
+    return render(request, 'class_template_page_teacher.html', {'class_name': class_name})
+
+def class_view_student(request):
+    class_name = request.GET.get('class_name')
+    if not class_name:
+        return HttpResponse("Class not found.", status=404) 
+    return render(request, 'class_template_page_student.html', {'class_name': class_name})
