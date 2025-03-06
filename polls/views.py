@@ -45,30 +45,37 @@ def teacher_home_interface(request):
 
 
 def create_quiz(request):
+    # Initialize the Poll form
     poll_form = PollForm()
-    question_formset = QuestionForm(queryset=Question.objects.none())
+    
+    # Create a modelformset for handling multiple Question forms
+    QuestionFormSet = modelformset_factory(Question, form=QuestionForm, extra=1)
+    # For the first request, show an empty formset
+    question_formset = QuestionFormSet(queryset=Question.objects.none())
 
     if request.method == "POST":
+        # Bind the Poll form and Question formset to the POST data
         poll_form = PollForm(request.POST)
-        question_formset = QuestionForm(request.POST)
+        question_formset = QuestionFormSet(request.POST)
 
         if poll_form.is_valid() and question_formset.is_valid():
-            # Save the poll
+            # Save the poll (but don't commit to DB yet to add the user)
             poll = poll_form.save(commit=False)
-            poll.created_by = request.user
-            poll.save()
+            poll.created_by = request.user  # Set the user who created the poll
+            poll.save()  # Now save the poll to the database
 
-            # Save the questions for the poll
+            # Save the questions, linking them to the created poll
             for form in question_formset:
                 question = form.save(commit=False)
-                question.poll = poll
-                question.save()
-            
-            return redirect("teacher_home_interface") # Redirect to the teacher home interface
-    
+                question.poll = poll  # Link each question to the poll
+                question.save()  # Save the question
+
+            return redirect("teacher_home_interface")  # Redirect to the teacher home interface
+
+    # If it's not a POST request, just render the formset and poll form
     return render(request, "quiz_creation.html", {
-        'poll_form': poll_form,
-        'formset': question_formset
+        "poll_form": poll_form,
+        "question_formset": question_formset
     })
 
 def logout_view(request):
