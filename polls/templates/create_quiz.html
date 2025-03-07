@@ -141,8 +141,9 @@
         <!-- Form for creating the quiz -->
         <form method="post">
             {% csrf_token %}
+            {{ form.as_p }}        
+            
             {{ formset.management_form }}
-
             <!-- Loop through each form in the formset (for each question) -->
             {% for form in formset %}
                 <div class="question">
