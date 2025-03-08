@@ -1,9 +1,9 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
-from .forms import CustomLoginForm, QuestionFormSet, PollForm
+from .forms import CustomLoginForm, QuestionForm, PollForm
 from django.forms import modelformset_factory
 from .models import Poll, Question, Choice, CustomUser
 
@@ -44,46 +44,6 @@ def teacher_home_interface(request):
     return render(request, "teacher_home_interface.html", {"polls": quizzes})
 
 """
-def create_quiz(request):
-    # Initialize the Poll form
-    poll_form = PollForm()
-    
-    # Create a modelformset for handling multiple Question forms
-    QuestionFormSet = modelformset_factory(Question, form=QuestionForm, extra=1)
-    # For the first request, show an empty formset
-    question_formset = QuestionFormSet(queryset=Question.objects.none())
-
-    if request.method == "POST":
-        # Bind the Poll form and Question formset to the POST data
-        poll_form = PollForm(request.POST)
-        question_formset = QuestionFormSet(request.POST)
-
-        if "add_question" in request.POST:
-            question_formset.extra += 1
-            return render(request, "quiz_creation.html", {
-                "poll_form": poll_form,
-                "question_formset": question_formset
-            })
-
-        if poll_form.is_valid() and question_formset.is_valid():
-            poll = poll_form.save(commit=False)
-            poll.created_by = request.user  # Set the user who created the poll
-            poll.save()  # Now save the poll to the database
-
-            # Save the questions, linking them to the created poll
-            for form in question_formset:
-                question = form.save(commit=False)
-                question.poll = poll  # Link each question to the poll
-                question.save()  # Save the question
-
-            return redirect("teacher_home_interface")
-
-    # If it's not a POST request, just render the formset and poll form
-    return render(request, "quiz_creation.html", {
-        "poll_form": poll_form,
-        "question_formset": question_formset
-    })
-"""
 @login_required
 def create_quiz(request):
     if request.method == "POST":
@@ -111,7 +71,44 @@ def create_quiz(request):
         #formset = QuestionFormSet()
 
     return render(request, 'create_quiz.html', {'form': form})#, 'formset': formset})
+"""
+@login_required
+def create_quiz(request):
+    poll_id = request.session.get("poll_id")
+    poll = Poll.objects.filter(id=poll_id).first() if poll_id else None
 
+    poll_form = PollForm()
+    question_form = QuestionForm()
+    
+    if request.method == "POST":
+        if "save_quiz" in request.POST:
+            poll_form = PollForm(request.POST)
+            if poll_form.is_valid():
+                poll = poll_form.save(commit=False)
+                poll.created_by = request.user
+                poll.save()
+                request.session["poll_id"] = poll.id  # ✅ Store poll ID in session
+
+                return redirect("create_quiz")  # Redirect so the question form appears
+
+        elif "add_question" in request.POST and poll:
+            question_form = QuestionForm(request.POST)
+            if question_form.is_valid():
+                question = question_form.save(commit=False)
+                question.poll = poll
+                question.save()
+                return redirect("create_quiz")  # Stay on page to add more questions
+
+    questions = Question.objects.filter(poll=poll) if poll else []
+
+
+    return render(request, "create_quiz.html", {
+        "poll_form": poll_form,
+        "question_form": question_form if poll else None,  # Only show if poll exists
+        "poll": poll,
+        "questions": questions
+    })
+    
 def logout_view(request):
     logout(request)  # Log out the user
     return redirect('login_interface')  # Redirect to the login page
