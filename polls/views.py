@@ -53,14 +53,16 @@ def create_quiz(request):
     
     if request.method == "POST":
         if "save_quiz" in request.POST:
+            print("✅ Save Quiz button clicked!")  # Debugging log
             poll_form = PollForm(request.POST)
             if poll_form.is_valid():
                 poll = poll_form.save(commit=False)
                 poll.created_by = request.user
                 poll.save()
                 request.session["poll_id"] = poll.id  # Store poll ID in session
+                print("✅ Redirecting to teacher_home_interface...")  # Debugging log
 
-                return redirect("create_quiz")  # Redirect so the question form appears
+                return redirect("teacher_home_interface")  # Redirect back to teacher home interface
 
         elif "add_question" in request.POST and poll:
             question_form = QuestionForm(request.POST)
@@ -108,10 +110,15 @@ def edit_quiz(request, poll_id):
 
     if request.method == "POST":
         if "save_quiz" in request.POST:
+            print("✅ Save Quiz button clicked in edit!")  # Debugging log
+            print("POST data:", request.POST)  # Log the entire POST data
             poll_form = PollForm(request.POST, instance=poll)
-            if poll_form.is_valid():
+            if poll_form.is_valid() and poll_form.has_changed():
                 poll_form.save()  # Save changes to the poll
-                return redirect("edit_quiz", poll_id=poll.id)  # Reload page to show updated poll details
+                print("✅ Redirecting to teacher_home_interface...")  # Debugging log
+                return redirect("teacher_home_interface")  # Redirect to the teacher home interface
+            else:
+                print("❌ Form is invalid. Errors:", poll_form.errors)  # Debugging log
 
         elif "add_question" in request.POST:
             question_form = QuestionForm(request.POST)
@@ -129,3 +136,25 @@ def edit_quiz(request, poll_id):
         "poll": poll,
         "questions": questions
     })
+
+@login_required
+def edit_question(request, question_id):
+    question = get_object_or_404(Question, id=question_id, poll__created_by=request.user)
+
+    if request.method == "POST":
+        form = QuestionForm(request.POST, instance=question)
+        if form.is_valid():
+            form.save()
+            return redirect("edit_quiz")
+
+    else:
+        form = QuestionForm(instance=question)
+
+    return render(request, "edit_question.html", {"form": form, "question": question})
+
+@login_required
+def delete_question(request, question_id, poll_id):
+    question = get_object_or_404(Question, id=question_id, poll__created_by=request.user)
+    poll_id = question.poll.id
+    question.delete()
+    return redirect("edit_quiz", poll_id=poll_id)

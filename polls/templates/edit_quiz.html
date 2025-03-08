@@ -83,6 +83,16 @@
         .delete-button:hover {
             background-color: #c62828;
         }
+        
+        .edit-button {
+            background-color: #f57c00;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+
+        .edit-button:hover {
+            background-color: #e65100;
+        }
 
         .quiz-container .button-section {
             margin-top: 30px;
@@ -149,20 +159,36 @@
         
                 <!-- Question Form (Only visible when a poll exists) -->
                 <h3>Edit Questions</h3>
-                {{ question_form.as_p }}
-                <button type="submit" name="add_question">Add Question</button>
-        
-                <h3>Questions Added:</h3>
                 <ul>
                     {% for question in questions %}
-                        <li>{{ question.text }}</li>
+                        <li class="question">
+                            {{ question.text }}
+                            <form method="post" action="{% url 'edit_question' question.id %}" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="edit-button">Edit</button>
+                            </form>
+                            <form method="post" action="{% url 'delete_question' question.id poll.id %}" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="delete-button">Delete</button>
+                            </form>
+                        </li>
                     {% endfor %}
                 </ul>
         
-                <button type="submit" name="save_quiz">Save Changes</button>
-            {% else %}
-                <p>No poll found to edit. Please create a new quiz.</p>
-            {% endif %}
+                <h3>Add a New Question</h3>
+                <form method="post">
+                    {% csrf_token %}
+                    {{ question_form.as_p }}
+                    <button type="submit" name="add_question">Add Question</button>
+                </form>
+
+                <form method="post">
+                    {% csrf_token %}
+                    <label for="{{ poll_form.title.id_for_label }}">Title:</label>
+                    {{ poll_form.title }}
+                    <button type="submit" name="save_quiz">Save Quiz</button>
+                </form>
+            {% endif %}  <!-- Closing if statement properly -->
         </form>
     </div>
 
