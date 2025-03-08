@@ -199,12 +199,11 @@
         <section class="polls-section">
             <h2>Your Polls</h2>
             <ul class="polls-list">
-                <li><a href="#">Poll 1: What's your favorite topic?</a></li>
-                <li><a href="#">Poll 2: Feedback on last lesson</a></li>
-            </ul>
-            <ul class="polls-list">
                 {% for poll in polls %}
-                    <li><a href="#">{{ poll.title }}</a></li>
+                    <li>
+                        <a href="#">{{ poll.title }}</a>
+                        <a href="{% url 'edit_quiz' poll.id %}" class="btn btn-primary" style="margin-left: 10px;">Edit</a>
+                    </li>
                 {% empty %}
                     <li>No polls created yet.</li>
                 {% endfor %}

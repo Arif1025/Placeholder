@@ -4,7 +4,8 @@ from .views import login_view
 from .views import student_home_interface
 from .views import teacher_home_interface
 from .views import create_quiz
-from .views import logout_view 
+from .views import logout_view
+from .views import edit_quiz
 
 urlpatterns = [
     path('', views.index, name='index'),
@@ -16,4 +17,5 @@ urlpatterns = [
     path("final-score/", views.final_score_page, name="final_score_page"),
     path('student-home/', views.student_home_interface, name='student_home_interface'),
     path('quiz/', views.question_template, name='question_template'),
+    path('polls/edit/<int:poll_id>/', edit_quiz, name='edit_quiz'),
 ]

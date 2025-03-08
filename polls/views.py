@@ -43,35 +43,6 @@ def teacher_home_interface(request):
     quizzes = Poll.objects.all()
     return render(request, "teacher_home_interface.html", {"polls": quizzes})
 
-"""
-@login_required
-def create_quiz(request):
-    if request.method == "POST":
-        form = PollForm(request.POST)
-        #formset = QuestionFormSet(request.POST)
-        
-        if form.is_valid(): #and formset.is_valid():
-            quiz = form.save(commit=False)
-            quiz.created_by = request.user
-            quiz.save()
-            #questions = formset.save(commit=False)
-
-            questions_data = request.POST.getlist("questions")  
-            for question_text in questions_data:
-                question = Question(poll=quiz, text=question_text)
-                question.save()
-                #formset.save_m2m()
-
-            return redirect('teacher_home_interface')  # Redirect to teacher home after saving
-        else:
-            print(form.errors)  #For debugging
-            #print(formset.errors)  #For debugging
-    else:
-        form = PollForm()
-        #formset = QuestionFormSet()
-
-    return render(request, 'create_quiz.html', {'form': form})#, 'formset': formset})
-"""
 @login_required
 def create_quiz(request):
     poll_id = request.session.get("poll_id")
@@ -87,7 +58,7 @@ def create_quiz(request):
                 poll = poll_form.save(commit=False)
                 poll.created_by = request.user
                 poll.save()
-                request.session["poll_id"] = poll.id  # ✅ Store poll ID in session
+                request.session["poll_id"] = poll.id  # Store poll ID in session
 
                 return redirect("create_quiz")  # Redirect so the question form appears
 
@@ -124,3 +95,37 @@ def student_home_interface(request):
 # View for the question template page
 def question_template(request):
     return render(request, 'question_template.html')
+
+@login_required
+def edit_quiz(request, poll_id):
+    poll = Poll.objects.filter(id=poll_id).first()
+
+    if not poll:
+        return redirect("create_quiz")  # Redirect to the create quiz page if poll does not exist
+
+    poll_form = PollForm(instance=poll)
+    question_form = QuestionForm()
+
+    if request.method == "POST":
+        if "save_quiz" in request.POST:
+            poll_form = PollForm(request.POST, instance=poll)
+            if poll_form.is_valid():
+                poll_form.save()  # Save changes to the poll
+                return redirect("edit_quiz", poll_id=poll.id)  # Reload page to show updated poll details
+
+        elif "add_question" in request.POST:
+            question_form = QuestionForm(request.POST)
+            if question_form.is_valid():
+                question = question_form.save(commit=False)
+                question.poll = poll
+                question.save()
+                return redirect("edit_quiz", poll_id=poll.id)  # Stay on page to add more questions
+
+    questions = Question.objects.filter(poll=poll)
+
+    return render(request, "edit_quiz.html", {
+        "poll_form": poll_form,
+        "question_form": question_form,
+        "poll": poll,
+        "questions": questions
+    })
