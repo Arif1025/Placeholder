@@ -191,17 +191,6 @@
                     </form>
                 {% endif %}  <!-- Closing if statement properly -->
         </div>
-        
-        {% if poll_form.errors %}
-            <div style="color: red;">
-                <strong>Errors:</strong>
-                <ul>
-                    {% for field, errors in poll_form.errors.items %}
-                        <li>{{ field }}: {{ errors|join:", " }}</li>
-                    {% endfor %}
-                </ul>
-            </div>
-        {% endif %}
 
     <!-- Footer Section -->
     <footer>

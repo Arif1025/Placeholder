@@ -126,6 +126,15 @@ def edit_quiz(request, poll_id):
                 question.poll = poll
                 question.save()
                 return redirect("edit_quiz", poll_id=poll.id)  # Stay on page to add more questions
+        
+        elif "delete_question" in request.POST:
+            question_id = request.POST.get("question_id")
+            if question_id:
+                question = Question.objects.get(id=question_id)
+                if questions.count() > 1:  # Prevent deleting last question
+                    question.delete()
+                else:
+                    messages.error(request, "A poll must have at least one question.")
 
     questions = Question.objects.filter(poll=poll)
 

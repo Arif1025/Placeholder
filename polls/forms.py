@@ -28,6 +28,14 @@ class PollForm(forms.ModelForm):
         if not code:
             raise forms.ValidationError("The code field is required.")
         return code
+        
+    def clean(self):
+        cleaned_data = super().clean()
+        if self.instance.pk:  # Only validate if poll exists (editing mode)
+            question_count = Question.objects.filter(poll=self.instance).count()
+            if question_count == 0:
+                raise forms.ValidationError("A poll must have at least one question.")
+
 
 class JoinPollForm(forms.Form):
     code = forms.CharField(max_length=20, label="Enter Poll Code")
