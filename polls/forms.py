@@ -14,7 +14,14 @@ class CustomLoginForm(AuthenticationForm):
 class PollForm(forms.ModelForm):
     class Meta:
         model = Poll
-        fields = ['title', 'description', 'code'] 
+        fields = ['title', 'description', 'code']
+    
+    def clean_title(self):
+        title = self.cleaned_data.get('title')
+        print("Cleaned title:", title)  # Log cleaned title
+        if not title:
+            raise forms.ValidationError("This field is required.")
+        return title
 
 
 class JoinPollForm(forms.Form):
