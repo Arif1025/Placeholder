@@ -113,12 +113,12 @@ def edit_quiz(request, poll_id):
             print("✅ Save Quiz button clicked in edit!")  # Debugging log
             print("POST data:", request.POST)  # Log the entire POST data
             poll_form = PollForm(request.POST, instance=poll)
-            if poll_form.is_valid() and poll_form.has_changed():
+            if poll_form.is_valid():
                 poll_form.save()  # Save changes to the poll
                 print("✅ Redirecting to teacher_home_interface...")  # Debugging log
                 return redirect("teacher_home_interface")  # Redirect to the teacher home interface
             else:
-                print("❌ Form is invalid. Errors:", poll_form.errors)  # Debugging log
+                print("❌ Form is invalid. Errors:", poll_form.errors.as_json())  # Debugging log
 
         elif "add_question" in request.POST:
             question_form = QuestionForm(request.POST)
