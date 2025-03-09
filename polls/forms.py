@@ -23,6 +23,11 @@ class PollForm(forms.ModelForm):
             raise forms.ValidationError("This field is required.")
         return title
 
+    def clean_code(self):
+        code = self.cleaned_data.get("code")
+        if not code:
+            raise forms.ValidationError("The code field is required.")
+        return code
 
 class JoinPollForm(forms.Form):
     code = forms.CharField(max_length=20, label="Enter Poll Code")

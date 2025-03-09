@@ -45,9 +45,8 @@ def teacher_home_interface(request):
 
 @login_required
 def create_quiz(request):
-    poll_id = request.session.get("poll_id")
-    poll = Poll.objects.filter(id=poll_id).first() if poll_id else None
-
+    poll_id = request.session.pop("poll_id", None)  # Get poll ID from session
+    poll = None
     poll_form = PollForm()
     question_form = QuestionForm()
     
