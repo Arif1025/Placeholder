@@ -166,3 +166,13 @@ def delete_question(request, question_id, poll_id):
     poll_id = question.poll.id
     question.delete()
     return redirect("edit_quiz", poll_id=poll_id)
+
+@login_required
+def delete_quiz(request, poll_id):
+    poll = get_object_or_404(Poll, id=poll_id, created_by=request.user)  # Ensure only creator can delete
+    
+    if request.method == "POST":
+        poll.delete()
+        messages.success(request, "Poll deleted successfully.")
+    
+    return redirect("teacher_home_interface")  # Redirect after deletion

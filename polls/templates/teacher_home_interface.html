@@ -119,6 +119,24 @@
             background-color: #c62828;
         }
 
+        .btn {
+            font-size: 16px;
+            padding: 10px 20px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            text-decoration: none;
+        }
+
+        .btn-danger {
+            background-color: #d32f2f;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #c62828;
+        }
+
         footer {
             background-color: #9b4dca; 
             color: white;
@@ -202,7 +220,13 @@
                 {% for poll in polls %}
                     <li>
                         <a href="#">{{ poll.title }}</a>
-                        <a href="{% url 'edit_quiz' poll.id %}" class="btn btn-primary" style="margin-left: 10px;">Edit</a>
+                        <a href="{% url 'edit_quiz' poll.id %}" style="margin-left: 10px;">Edit</a>
+
+                        <!-- Delete button -->
+                        <form action="{% url 'delete_quiz' poll.id %}" method="POST" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger" style="margin-left: 10px;" onclick="return confirm('Are you sure you want to delete this poll?')">Delete</button>
+                        </form>
                     </li>
                 {% empty %}
                     <li>No polls created yet.</li>
