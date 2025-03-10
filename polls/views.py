@@ -209,3 +209,19 @@ def enter_poll_code(request):
 # View for the student confirmation page
 def student_confirmation_page(request):
     return render(request, 'student_confirmation_page.html')
+
+@login_required
+def view_poll_results(request, poll_id):
+    # Fetch the poll based on the poll_id
+    poll = get_object_or_404(Poll, id=poll_id)
+
+    # Fetch related data
+    questions = Question.objects.filter(poll=poll)
+    choices = Choice.objects.filter(question__in=questions)
+
+    # Pass data to the chart template
+    return render(request, 'charts.html', {
+        'poll': poll,
+        'questions': questions,
+        'choices': choices,
+    })

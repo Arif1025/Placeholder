@@ -4,7 +4,7 @@ from tutorials.models import User
 
 
 class TeacherHomeViewTestCase(TestCase):
-    """Tests for the teacher home (dashboard) view with the updated page content."""
+    """Tests for the teacher home (dashboard) view with the page content."""
 
     fixtures = ['tutorials/tests/fixtures/default_user.json']
 
@@ -61,3 +61,14 @@ class TeacherHomeViewTestCase(TestCase):
         response = self.client.get(self.url)
 
         self.assertContains(response, '<button class="logout-button">Logout</button>')
+
+    def test_view_poll_results_button(self):
+        """Test that the 'View Poll Results' button is visible and functional."""
+        response = self.client.get(self.url)
+
+        # Check if the 'View Poll Results' button is present
+        self.assertContains(response, '<button class="btn btn-purple">View Poll Results</button>')
+
+        # Ensure the link for the 'View Poll Results' button works (replace `poll.id` with an actual poll ID)
+        poll_id = 1  # Replace with an actual poll ID you are testing for
+        self.assertContains(response, f'href="/polls/{poll_id}/results/"')  # Update with the correct URL structure
