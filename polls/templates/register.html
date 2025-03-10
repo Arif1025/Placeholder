@@ -135,12 +135,13 @@
 </head>
 <body>
     <!-- Back Button -->
-    <a href="index.html" class="back-button">Back</a>
+    <a href="{% url 'login_interface' %}" class="back-button">Back</a>
 
     <main>
         <h1>Create an Account</h1>
 
-        <form action="/submit_registration" method="POST">
+        <form action="{% url 'register' %}" method="POST">
+            {% csrf_token %}
             <!-- Username Field -->
             <label for="username">Username</label>
             <input type="text" id="username" name="username" required>
@@ -160,6 +161,7 @@
             <button type="submit">Register</button>
         </form>
     </main>
+
 
     <!-- Footer Section -->
     <footer>

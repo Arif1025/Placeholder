@@ -31,4 +31,5 @@ urlpatterns = [
     path('leave-quiz/', leave_quiz, name='leave_quiz'),
     path('student-confirmation/', views.student_confirmation_page, name='student_confirmation_page'),
     path('polls/results/<int:poll_id>/', views.view_poll_results, name='view_poll_results'),
+    path('register/', views.register_view, name='register'),
 ]

@@ -225,3 +225,32 @@ def view_poll_results(request, poll_id):
         'questions': questions,
         'choices': choices,
     })
+
+def register_view(request):
+    if request.method == 'POST':
+        username = request.POST['username']
+        password = request.POST['password']
+        role = request.POST['role']
+        
+        # Create user
+        user = user.objects.create_user(username=username, password=password)
+        
+        # Set user role if using a custom user model
+        if hasattr(user, 'customuser'):  
+            user.customuser.role = role
+            user.customuser.save()
+
+        # Authenticate and login the user
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+
+            # Redirect to the appropriate home interface
+            if role == 'student':
+                return redirect('student_home_interface')
+            elif role == 'teacher':
+                return redirect('teacher_home_interface')
+        else:
+            messages.error(request, "Authentication failed, please try again.")
+
+    return render(request, 'register.html')
