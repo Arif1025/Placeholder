@@ -26,4 +26,5 @@ urlpatterns = [
     path('class-view-teacher/', views.class_view_teacher, name='class_view_teacher'), 
     path('class-view-student/', views.class_view_student, name='class_view_student'),
     path('enter-poll-code/', views.enter_poll_code, name='enter_poll_code'),
+    path('leave-quiz/', leave_quiz, name='leave_quiz'),
 ]

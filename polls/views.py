@@ -97,6 +97,10 @@ def student_home_interface(request):
 def question_template(request):
     return render(request, 'question_template.html')
 
+# View for leave_quiz view
+def leave_quiz(request):
+    return redirect('enter_poll_code')
+
 @login_required
 def edit_quiz(request, poll_id):
     poll = Poll.objects.filter(id=poll_id).first()
