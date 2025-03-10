@@ -93,8 +93,8 @@
             background-color: #9b4dca;
             color: white;
             text-align: center;
-            padding: px;
-            position: fixed;
+            padding: 10px;
+            position: sticky;
             width: 100%;
             bottom: 0;
         }
@@ -136,31 +136,35 @@
 <body>
     <!-- Main quiz container -->
     <div class="quiz-container">
-        <!-- Title of the page -->
         <h2>Create a Quiz</h2>
         
-        <!-- Form for creating the quiz -->
         <form method="post">
-            {% csrf_token %} <!-- CSRF token for security -->
-            {{ formset.management_form }} <!-- Formset management form -->
-
-            <!-- Loop through each form in the formset (for each question) -->
-            {% for form in formset %}
-                <div class="question">
-                    <!-- Display the form fields for each question -->
-                    {{ form.as_p }} 
-                    <!-- Delete button for each question -->
-                    <button type="submit" name="delete" value="{{ forloop.counter0 }}" class="delete-button">Delete</button>
-                </div>
-            {% endfor %}
-
-            <!-- Section for Add Question and Save Quiz buttons -->
-            <div class="button-section">
-                <!-- Add Question button -->
-                <button type="submit" name="add_question">+ Add Question</button>
-                <!-- Save Quiz button -->
-                <button type="submit">Save Quiz</button>
-            </div>
+            {% csrf_token %}
+        
+            <!-- Poll Form -->
+            {% if not poll %}
+                <h2>Create a Poll</h2>
+                {{ poll_form.as_p }}
+                <button type="submit" name="save_quiz">Create Poll</button>
+            {% else %}
+                <h2>Poll: {{ poll.title }}</h2>
+                <p>{{ poll.description }}</p>
+                <p>Code: {{ poll.code }}</p>
+        
+                <!-- Question Form (Only visible when a poll exists) -->
+                <h3>Add Questions</h3>
+                {{ question_form.as_p }}
+                <button type="submit" name="add_question">Add Question</button>
+        
+                <h3>Questions Added:</h3>
+                <ul>
+                    {% for question in questions %}
+                        <li>{{ question.text }}</li>
+                    {% endfor %}
+                </ul>
+        
+                <button type="submit" name="save_quiz">Save Quiz</button>
+            {% endif %}
         </form>
     </div>
 
