@@ -27,4 +27,5 @@ urlpatterns = [
     path('class-view-student/', views.class_view_student, name='class_view_student'),
     path('enter-poll-code/', views.enter_poll_code, name='enter_poll_code'),
     path('leave-quiz/', leave_quiz, name='leave_quiz'),
+    path('student-confirmation/', views.student_confirmation_page, name='student_confirmation_page'),
 ]

@@ -202,3 +202,7 @@ def enter_poll_code(request):
         else:
             return render(request, 'enter_poll_code.html', {'error': 'Invalid poll code'})
     return render(request, 'enter_poll_code.html')
+
+# View for the student confirmation page
+def student_confirmation_page(request):
+    return render(request, 'student_confirmation_page.html')

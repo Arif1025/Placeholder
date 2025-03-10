@@ -162,7 +162,7 @@
 <body>
 
 <!-- Back Button -->
-<a href="javascript:history.back()" class="back-button">Back</a>
+<a href="{% url 'student_confirmation_page' %}" class="back-button">Back</a>
 
 <!-- Form to handle the logout action -->
 <form action="{% url 'logout' %}" method="post">
