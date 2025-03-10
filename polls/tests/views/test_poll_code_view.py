@@ -28,6 +28,9 @@ class EnterPollCodeViewTestCase(TestCase):
         self.assertContains(response, '<input type="text" id="pollCode" name="pollCode" placeholder="Poll Code" required>')
         self.assertContains(response, '<button type="submit" class="join-button">Join</button>')
 
+        # Check for the back button's presence
+        self.assertContains(response, '<a href="javascript:history.back()" class="back-button">Back</a>')
+
     def test_get_enter_poll_code_logged_in(self):
         """Test that logged-in users can access the Enter Poll Code page."""
         self.client.login(username=self.user.username, password="Password123")
