@@ -4,7 +4,7 @@ from tutorials.models import User
 
 
 class StudentHomeViewTestCase(TestCase):
-    """Tests for the student home (dashboard) view with the updated page content."""
+    """Tests for the student home (dashboard) view with the page content."""
 
     fixtures = ['tutorials/tests/fixtures/default_user.json']
 
@@ -56,8 +56,21 @@ class StudentHomeViewTestCase(TestCase):
 
         self.assertContains(response, '<button class="make-poll-button">Make New Poll</button>')
 
+    def test_join_poll_button(self):
+        """Test that the 'Join Poll' button is on the homepage."""
+        response = self.client.get(self.url)
+
+        self.assertContains(response, '<button class="join-poll-button" type="submit">Join Poll</button>')
+
     def test_logout_button(self):
         """Test that the 'Logout' button is visible on the homepage."""
         response = self.client.get(self.url)
 
         self.assertContains(response, '<button type="submit" class="logout-button">Logout</button>')
+
+    def test_footer(self):
+        """Test that the footer is visible on the homepage."""
+        response = self.client.get(self.url)
+
+        self.assertContains(response, '<footer><p>&copy; 2025 Polling System</p></footer>')
+
