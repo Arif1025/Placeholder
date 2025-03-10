@@ -18,6 +18,26 @@
             padding-top: 20px;
         }
 
+        /* Back Button Positioned at Top Left */
+        .back-button {
+            background-color: #9b4dca;
+            color: white;
+            font-size: 16px;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s ease;
+        }
+
+        .back-button:hover {
+            background-color: #7b1fa2;
+        }
+
         .quiz-container {
             background: white;
             padding: 30px;
@@ -170,56 +190,57 @@
         }
     </style>
 </head>
-<body>        
-            
-        <!-- Main quiz container -->
-        <div class="quiz-container">
-            
-            <form method="post">
-                {% csrf_token %}
-            
+<body>
 
-                <!-- Poll Form -->
-                {% if poll %}
-                    <h2>Edit Poll: {{ poll.title }}</h2>
-                    <p>{{ poll.description }}</p>
-                    <p>Code: {{ poll.code }}</p>
+    <!-- Back Button -->
+    <a href="{% url 'teacher_home_interface' %}" class="back-button">Back</a>
+
+    <!-- Main quiz container -->
+    <div class="quiz-container">
+        <form method="post">
+            {% csrf_token %}
+            
+            <!-- Poll Form -->
+            {% if poll %}
+                <h2>Edit Poll: {{ poll.title }}</h2>
+                <p>{{ poll.description }}</p>
+                <p>Code: {{ poll.code }}</p>
         
-                    <!-- Question Form (Only visible when a poll exists) -->
-                    <h3>Edit Questions</h3>
-                    <ul>
-                        {% for question in questions %}
-                            <li class="question">
-                                {{ question.text }}
-                                <form method="post" action="{% url 'edit_question' question.id %}" style="display:inline;">
-                                    {% csrf_token %}
-                                    <button type="submit" class="edit-button">Edit</button>
-                                </form>
-                                <form method="post" action="{% url 'delete_question' question.id poll.id %}" style="display:inline;">
-                                    {% csrf_token %}
-                                    <button type="submit" class="delete-button">Delete</button>
-                                </form>
-                            </li>
-                        {% endfor %}
-                    </ul>
+                <!-- Question Form (Only visible when a poll exists) -->
+                <h3>Edit Questions</h3>
+                <ul>
+                    {% for question in questions %}
+                        <li class="question">
+                            {{ question.text }}
+                            <form method="post" action="{% url 'edit_question' question.id %}" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="edit-button">Edit</button>
+                            </form>
+                            <form method="post" action="{% url 'delete_question' question.id poll.id %}" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="delete-button">Delete</button>
+                            </form>
+                        </li>
+                    {% endfor %}
+                </ul>
             
-                    <h3>Add a New Question</h3>
-                    <form method="post">
-                        {% csrf_token %}
-                        {{ question_form.as_p }}
-                        <button type="submit" name="add_question">Add Question</button>
-                    </form>
+                <h3>Add a New Question</h3>
+                <form method="post">
+                    {% csrf_token %}
+                    {{ question_form.as_p }}
+                    <button type="submit" name="add_question">Add Question</button>
+                </form>
 
-                    <h3>Edit Poll Title</h3>
-                    <form method="post">
-                        {% csrf_token %}
-                        {{ poll_form.as_p }}
-                        <button type="submit" name="save_quiz">Save Quiz</button>
-                    </form>
-                {% endif %}  <!-- Closing if statement properly -->
-        </div>
+                <h3>Edit Poll Title</h3>
+                <form method="post">
+                    {% csrf_token %}
+                    {{ poll_form.as_p }}
+                    <button type="submit" name="save_quiz">Save Quiz</button>
+                </form>
+            {% endif %}
+        </form>
+    </div>
 
-    
     <!-- Logout Button -->
     <form action="{% url 'logout' %}" method="post" style="display: inline;">
         {% csrf_token %}
@@ -228,7 +249,6 @@
 
     <!-- Footer Section -->
     <footer>
-        <!-- Footer content with copyright notice -->
         <p>&copy; 2025 Polling System</p>
     </footer>
 </body>

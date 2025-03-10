@@ -97,6 +97,13 @@ def student_home_interface(request):
 def question_template(request):
     return render(request, 'question_template.html')
 
+# View for leave_quiz view
+def leave_quiz(request):
+    if request.method == "POST":  # Handle the POST request when the form is submitted
+        return redirect('enter_poll_code')  # Redirect to the enter_poll_code page
+    return redirect('enter_poll_code')
+
+
 @login_required
 def edit_quiz(request, poll_id):
     poll = Poll.objects.filter(id=poll_id).first()
@@ -198,3 +205,7 @@ def enter_poll_code(request):
         else:
             return render(request, 'enter_poll_code.html', {'error': 'Invalid poll code'})
     return render(request, 'enter_poll_code.html')
+
+# View for the student confirmation page
+def student_confirmation_page(request):
+    return render(request, 'student_confirmation_page.html')

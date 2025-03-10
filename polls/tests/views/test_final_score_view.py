@@ -47,3 +47,11 @@ class FinalScoreViewTestCase(TestCase):
         response = self.client.get(self.url)
         self.assertContains(response, "Back to Home")  # 'Back to Home' button exists
         self.assertContains(response, "Try Again")  # 'Try Again' button exists
+
+    def test_back_button_exists(self):
+        """Test that the back button exists on the page."""
+        self.client.login(username="testuser", password="Password123")
+        response = self.client.get(self.url)
+        # Check if the back button is present in the HTML
+        self.assertContains(response, '<a href="javascript:history.back()" class="back-button">Back</a>')
+

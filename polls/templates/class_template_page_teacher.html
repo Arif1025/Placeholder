@@ -128,6 +128,26 @@
             background-color: #c62828;
         }
 
+        /* Back Button Positioned at Top Left */
+        .back-button {
+            background-color: #9b4dca;
+            color: white;
+            font-size: 16px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s ease;
+        }
+
+        .back-button:hover {
+            background-color: #7b1fa2;
+        }
+
         footer {
             background-color: #9b4dca;
             color: white;
@@ -235,6 +255,9 @@
         </section>
     </main>
     
+    <!-- Back Button -->
+    <a href="{% url 'teacher_home_interface' %}" class="back-button">Back</a>
+
     <!-- Logout Button -->
     <form action="{% url 'logout' %}" method="post">
         {% csrf_token %}

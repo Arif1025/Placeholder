@@ -71,7 +71,7 @@ class TeacherPageViewTestCase(TestCase):
         self.assertContains(response, '@media screen and (max-width: 768px)')
 
     def test_student_elements_visibility(self):
-        """Test that the teacher-specific elements are visible and rendered correctly."""
+        """Test that the teacher-specific elements (grades, polls answered) are visible and rendered correctly."""
         response = self.client.get(self.url)
 
         # Ensure that grades and poll answers are visible to the teacher
@@ -87,3 +87,16 @@ class TeacherPageViewTestCase(TestCase):
         response = self.client.get(self.url)
         
         self.assertContains(response, '<li>Poll 2: Feedback on last lesson</li>')
+
+    def test_logout_button_position(self):
+        """Test that the logout button is correctly positioned at the top-right corner."""
+        response = self.client.get(self.url)
+
+        self.assertContains(response, 'position: fixed; top: 20px; right: 20px;')
+
+    def test_back_button_position(self):
+        """Test that the back button is correctly positioned at the top-left corner."""
+        response = self.client.get(self.url)
+
+        self.assertContains(response, 'position: fixed; top: 20px; left: 20px;')
+

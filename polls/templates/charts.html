@@ -11,7 +11,7 @@
         /* General Page Styles */
         body {
             font-family: 'Poppins', sans-serif;
-            background-color: #e3f2fd; /* Same blue background as the Teacher Home page */
+            background-color: #e3f2fd; 
             margin: 0;
             padding: 0;
             color: #4f4f4f;
@@ -77,6 +77,26 @@
             background-color: #c62828;
         }
 
+        /* Back Button Positioned at Top Left */
+        .back-button {
+            background-color: #9b4dca;
+            color: white;
+            font-size: 16px;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s ease;
+        }
+
+        .back-button:hover {
+            background-color: #7b1fa2;
+        }
+
         /* Footer Section */
         footer {
             background-color: #9b4dca;
@@ -117,6 +137,9 @@
     </style>
 </head>
 <body>
+
+<!-- Back Button -->
+<a href="{% url 'teacher_home_interface' %}" class="back-button">Back</a>
 
 <!-- Logout Button -->
 <form action="{% url 'logout' %}" method="post">

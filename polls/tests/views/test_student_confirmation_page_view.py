@@ -78,3 +78,29 @@ class StudentConfirmationPageViewTestCase(TestCase):
 
         self.assertContains(response, '@media screen and (max-width: 768px)')
         self.assertContains(response, 'padding: 10px;')
+
+    # New tests for the "Back to Home" button
+    def test_back_to_home_button(self):
+        """Test that the 'Back to Home' button is visible on the page."""
+        response = self.client.get(self.url)
+
+        self.assertContains(response, '<button class="back-to-home-button">Back to Home</button>')
+
+    def test_back_to_home_button_link(self):
+        """Test that the 'Back to Home' button links to the correct home page."""
+        response = self.client.get(self.url)
+
+        self.assertContains(response, 'href="{% url \'student_home_interface\' %}"')
+
+    def test_back_to_home_button_position(self):
+        """Test that the 'Back to Home' button is positioned at the top left of the page."""
+        response = self.client.get(self.url)
+
+        self.assertContains(response, 'position: fixed; top: 20px; left: 20px;')
+
+    def test_back_to_home_button_style(self):
+        """Test that the 'Back to Home' button has the correct background color."""
+        response = self.client.get(self.url)
+
+        self.assertContains(response, 'background-color: #8e24aa')
+

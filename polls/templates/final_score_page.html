@@ -95,6 +95,26 @@
             background-color: #9b4dca; 
         }
 
+        /* Back Button Styling */
+        .back-button {
+            background-color: #9b4dca;
+            color: white;
+            font-size: 16px;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s ease;
+        }
+
+        .back-button:hover {
+            background-color: #7b1fa2;
+        }
+
         .logout-button {
             background-color: #d32f2f; 
             color: white;
@@ -140,6 +160,9 @@
     </style>
 </head>
 <body>
+
+<!-- Back Button -->
+<a href="{% url 'student_confirmation_page' %}" class="back-button">Back</a>
 
 <!-- Form to handle the logout action -->
 <form action="{% url 'logout' %}" method="post">

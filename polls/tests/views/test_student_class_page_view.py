@@ -9,7 +9,7 @@ class StudentPageViewTestCase(TestCase):
 
     def test_student_page_url(self):
         """Test that the URL is correct."""
-        self.assertEqual(self.url, '/class_view_student/')  
+        self.assertEqual(self.url, '/class_view_student/')
 
     def test_get_student_page(self):
         """Test that the student page loads properly."""
@@ -52,6 +52,13 @@ class StudentPageViewTestCase(TestCase):
 
         self.assertContains(response, '<button type="submit" class="logout-button">Logout</button>')
 
+    def test_back_button(self):
+        """Test that the 'Back' button is visible and correctly renders a back action."""
+        response = self.client.get(self.url)
+
+        # Check for the back button's presence
+        self.assertContains(response, '<a href="javascript:history.back()" class="back-button">Back</a>')
+
     def test_footer(self):
         """Test that the footer is displayed properly with the correct text."""
         response = self.client.get(self.url)
@@ -61,7 +68,7 @@ class StudentPageViewTestCase(TestCase):
     def test_mobile_responsiveness(self):
         """Test if the page is responsive on smaller screens."""
         response = self.client.get(self.url)
-        
+
         self.assertContains(response, '@media screen and (max-width: 768px)')
 
     def test_student_elements_visibility(self):
@@ -71,14 +78,14 @@ class StudentPageViewTestCase(TestCase):
         # Ensure no grade information is displayed (grades should not be visible to students)
         self.assertNotContains(response, 'Grade:')
         self.assertNotContains(response, 'Polls Answered:')
-        
+
         # Ensure students can only see their name and not others' information
         self.assertContains(response, 'John Doe')
         self.assertNotContains(response, 'Jane Smith')
         self.assertNotContains(response, 'Samuel Adams')
-    
+
     def test_poll_list_items(self):
         """Test that the poll list items are displayed correctly."""
         response = self.client.get(self.url)
-        
+
         self.assertContains(response, '<li>Poll 2: Feedback on last lesson</li>')

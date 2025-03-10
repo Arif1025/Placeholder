@@ -33,6 +33,12 @@ class QuestionPageViewTestCase(TestCase):
 
         self.assertContains(response, '<button type="submit" class="logout-button">Logout</button>')
 
+    def test_leave_quiz_button(self):
+        """Test that the 'Leave Quiz' button is visible on the page."""
+        response = self.client.get(self.url)
+
+        self.assertContains(response, '<button class="leave-quiz-button" onclick="window.location.href=\'{% url \'leave_quiz\' %}\'">Leave Quiz</button>')
+
     def test_navigation_buttons(self):
         """Test that the navigation buttons (Back and Next) are present."""
         response = self.client.get(self.url)
