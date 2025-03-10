@@ -18,6 +18,28 @@
             padding-top: 20px;
         }
 
+        /* Logout Button Positioned at Top Right */
+        .logout-button {
+            background-color: #d32f2f; 
+            color: white;
+            font-size: 18px;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s ease;
+            width: auto;
+            display: inline-block;
+        }
+
+        .logout-button:hover {
+            background-color: #c62828;
+        }        
+
         .quiz-container {
             background: white;
             padding: 30px;
@@ -88,26 +110,6 @@
             margin-top: 30px;
         }
 
-        /* Logout Button Positioned at Top Right */
-        .logout-button {
-            background-color: #d32f2f; 
-            color: white;
-            font-size: 18px;
-            padding: 12px 30px;
-            border: none;
-            border-radius: 50px;
-            cursor: pointer;
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-            transition: background-color 0.3s ease;
-        }
-
-        .logout-button:hover {
-            background-color: #c62828;
-        }
-
         /* Footer Styling */
         footer {
             background-color: #9b4dca;
@@ -148,7 +150,7 @@
 
             .logout-button {
                 font-size: 16px; 
-                padding: 10px 20px; 
+                padding: 10px 20px;
             }
 
             footer {
@@ -161,7 +163,6 @@
 <body>
     <!-- Main quiz container -->
     <div class="quiz-container">
-        <h2>Create a Quiz</h2>
         
         <form method="post">
             {% csrf_token %}
@@ -194,7 +195,7 @@
     </div>
 
     <!-- Logout Button -->
-    <form action="{% url 'logout' %}" method="post">
+    <form action="{% url 'logout' %}" method="post" style="display: inline;">
         {% csrf_token %}
         <button type="submit" class="logout-button">Logout</button>
     </form>

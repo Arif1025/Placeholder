@@ -112,6 +112,8 @@
             right: 20px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
             transition: background-color 0.3s ease;
+            width: auto;
+            display: inline-block;
         }
 
         .logout-button:hover {
@@ -219,7 +221,7 @@
 
     
     <!-- Logout Button -->
-    <form action="{% url 'logout' %}" method="post">
+    <form action="{% url 'logout' %}" method="post" style="display: inline;">
         {% csrf_token %}
         <button type="submit" class="logout-button">Logout</button>
     </form>    
