@@ -222,7 +222,9 @@
                 <li><a href="#">Poll 2: How do you rate the current semester?</a></li>
             </ul>
             <!-- Join Poll Button -->
-            <button class="join-poll-button">Join Poll</button>
+            <form action="{% url 'enter_poll_code' %}" method="get">
+                <button class="join-poll-button" type="submit">Join Poll</button>
+            </form>
         </section>
     
     </main>
