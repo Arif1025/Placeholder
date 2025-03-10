@@ -137,6 +137,22 @@
             background-color: #c62828;
         }
 
+        /* Class for Purple Button */
+        .btn-purple {
+            background-color: #9b4dca;  /* Purple color */
+            color: white;
+            font-size: 16px;
+            padding: 10px 20px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            text-decoration: none;
+        }
+
+        .btn-purple:hover {
+            background-color: #7b1fa2; /* Darker purple on hover */
+        }
+
         footer {
             background-color: #9b4dca; 
             color: white;
@@ -227,6 +243,11 @@
                             {% csrf_token %}
                             <button type="submit" class="btn btn-danger" style="margin-left: 10px;" onclick="return confirm('Are you sure you want to delete this poll?')">Delete</button>
                         </form>
+
+                        <!-- View Poll Results Button -->
+                        <a href="{% url 'view_poll_results' poll.id %}" style="margin-left: 10px;">
+                            <button class="btn btn-purple">View Poll Results</button>
+                        </a>
                     </li>
                 {% empty %}
                     <li>No polls created yet.</li>
@@ -254,4 +275,4 @@
     </footer>
     
 </body>
-</html>  
+</html>
