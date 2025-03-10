@@ -102,11 +102,31 @@
             background-color: #c62828; 
         }
 
+        /* Leave Quiz Button */
+        .leave-quiz-button {
+            background-color: #f44336; 
+            color: white;
+            font-size: 16px;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s ease;
+        }
+
+        .leave-quiz-button:hover {
+            background-color: #e53935;
+        }
+
         footer {
             background-color: #9b4dca; 
             color: white;
             text-align: center;
-            padding: px;
+            padding: 10px;
             position: fixed;
             width: 100%;
             bottom: 0;
@@ -188,6 +208,9 @@
         {% csrf_token %}
         <button type="submit" class="logout-button">Logout</button>
     </form>
+
+    <!-- Leave Quiz Button Positioned at Top Left -->
+    <button class="leave-quiz-button" onclick="window.location.href='{% url 'leave_quiz' %}'">Leave Quiz</button>
 
     <main class="main-content">
         <!-- Question Section -->
