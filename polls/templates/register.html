@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+    <style>
+        /* Import Google Font */
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+        /* General Styles */
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #e3f2fd;
+            margin: 0;
+            padding: 0;
+            color: #4f4f4f;
+            padding-top: 20px;
+        }
+
+        main {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            padding-bottom: 40px; 
+        }
+
+        h1 {
+            font-size: 40px;
+            text-align: center;
+            color: #9b4dca;
+            font-weight: 700;
+            background: linear-gradient(45deg, #9b4dca, #d500f9);
+            background-clip: text;
+            color: transparent;
+            text-shadow: 3px 3px 5px rgba(0, 0, 0, 0.1);
+            letter-spacing: 3px;
+            margin-bottom: 20px;
+        }
+
+        /* Form Styling */
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        label {
+            font-size: 18px;
+            color: #7f4a9d;
+        }
+
+        input[type="text"], input[type="password"], select {
+            padding: 12px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            outline: none;
+            margin-bottom: 10px;
+        }
+
+        input[type="text"]:focus, input[type="password"]:focus, select:focus {
+            border-color: #9b4dca;
+        }
+
+        button {
+            background-color: #9b4dca;
+            color: white;
+            font-size: 18px;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            align-self: center;
+            margin-top: -10px; 
+        }
+
+        button:hover {
+            background-color: #7b1fa2;
+        }
+
+        /* Back Button */
+        .back-button {
+            background-color: #9b4dca; 
+            color: white;
+            font-size: 16px;
+            padding: 10px 20px;
+            text-decoration: none;
+            border: 2px solid #9b4dca;
+            border-radius: 50px;
+            cursor: pointer;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+
+        .back-button:hover {
+            background-color: #7b1fa2;
+            color: white;
+        }
+
+        footer {
+            background-color: #9b4dca;
+            color: white;
+            text-align: center;
+            padding: px;
+            position: fixed;
+            width: 100%;
+            bottom: 0;
+        }
+
+        /* Mobile Responsiveness */
+        @media screen and (max-width: 768px) {
+            h1 {
+                font-size: 32px;
+            }
+
+            label {
+                font-size: 16px;
+            }
+
+            input[type="text"], input[type="password"], select {
+                font-size: 14px;
+            }
+
+            button {
+                font-size: 16px;
+                padding: 10px 25px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Back Button -->
+    <a href="index.html" class="back-button">Back</a>
+
+    <main>
+        <h1>Create an Account</h1>
+
+        <form action="/submit_registration" method="POST">
+            <!-- Username Field -->
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" required>
+
+            <!-- Password Field -->
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" required>
+
+            <!-- Role Selector -->
+            <label for="role">I am a</label>
+            <select id="role" name="role" required>
+                <option value="student">Student</option>
+                <option value="teacher">Teacher</option>
+            </select>
+
+            <!-- Submit Button -->
+            <button type="submit">Register</button>
+        </form>
+    </main>
+
+    <!-- Footer Section -->
+    <footer>
+        <p>&copy; 2025 Registration System</p>
+    </footer>
+</body>
+</html>
