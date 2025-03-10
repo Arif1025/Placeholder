@@ -36,3 +36,25 @@
 
 </body>
 </html>
+
+{%if user.is_teacher%}
+<button id="lockPollButton" onclick="togglePollLock()">Lock/Unlock Poll</button>
+{%endif%}
+
+<script>
+    function togglePollLock(){
+    fetch("{%url 'toggle_poll_lock'poll.id%}"),{
+        method:'POST',
+        headers:{
+            'Context-Type':'application/json',
+            'x-CSRFToken':'{{csrf_token}}'
+        },
+    })
+    .then(response=>response.json())
+    .then(data=>{
+        alert(data.status);
+        document.getElementById('lockPollButton').textContext=data.locked?' Unlock Poll':'Lock Poll';
+    })
+    .catch(error=>console.error=>console.error('Error.',error));
+}
+</script>
