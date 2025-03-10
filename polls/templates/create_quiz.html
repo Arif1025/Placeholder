@@ -40,6 +40,26 @@
             background-color: #c62828;
         }        
 
+        /* Back Button Positioned at Top Left */
+        .back-button {
+            background-color: #9b4dca;
+            color: white;
+            font-size: 16px;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s ease;
+        }
+
+        .back-button:hover {
+            background-color: #7b1fa2;
+        }
+
         .quiz-container {
             background: white;
             padding: 30px;
@@ -161,9 +181,11 @@
     </style>
 </head>
 <body>
+    <!-- Back Button -->
+    <a href="javascript:history.back()" class="back-button">Back</a>
+
     <!-- Main quiz container -->
     <div class="quiz-container">
-        
         <form method="post">
             {% csrf_token %}
         
@@ -202,7 +224,6 @@
 
     <!-- Footer Section -->
     <footer>
-        <!-- Footer content with copyright notice -->
         <p>&copy; 2025 Polling System</p>
     </footer>
 </body>
