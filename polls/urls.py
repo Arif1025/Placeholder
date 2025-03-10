@@ -8,6 +8,8 @@ from .views import logout_view
 from .views import edit_quiz, edit_question, delete_question, delete_quiz
 from .views import logout_view 
 from .views import class_view_teacher  
+from .views import leave_quiz
+
 
 urlpatterns = [
     path('', views.index, name='index'),
