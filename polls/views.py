@@ -1,10 +1,11 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.contrib import messages
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
 from .forms import CustomLoginForm, QuestionForm, PollForm
 from django.forms import modelformset_factory
+
 from .models import Poll, Question, Choice, CustomUser
 
 def index(request):
@@ -50,18 +51,14 @@ def create_quiz(request):
     poll_form = PollForm()
     question_form = QuestionForm()
     
-    if request.method == "POST":
-        if "save_quiz" in request.POST:
-            print("✅ Save Quiz button clicked!")  # Debugging log
-            poll_form = PollForm(request.POST)
-            if poll_form.is_valid():
-                poll = poll_form.save(commit=False)
-                poll.created_by = request.user
-                poll.save()
-                request.session["poll_id"] = poll.id  # Store poll ID in session
-                print("✅ Redirecting to teacher_home_interface...")  # Debugging log
-
-                return redirect("teacher_home_interface")  # Redirect back to teacher home interface
+    if request.method == "POST" and "save_quiz" in request.POST:
+        poll_form = PollForm(request.POST)
+        if poll_form.is_valid():
+            poll = poll_form.save(commit=False)
+            poll.created_by = request.user
+            poll.save()
+            request.session["poll_id"] = poll.id
+            return redirect("teacher_home_interface")
 
         elif "add_question" in request.POST and poll:
             question_form = QuestionForm(request.POST)
@@ -197,18 +194,32 @@ def class_view_student(request):
     return render(request, 'class_template_page_student.html', {'class_name': class_name})
 
 def enter_poll_code(request):
-    """View for the 'Enter Poll Code' page."""
     if request.method == 'POST':
         poll_code = request.POST.get('pollCode')
         if poll_code:
-            return redirect('question_template') 
-        else:
-            return render(request, 'enter_poll_code.html', {'error': 'Invalid poll code'})
+            try:
+                poll = Poll.objects.get(code=poll_code, is_done=False)
+                return redirect('question_template', poll_id=poll.id)
+            except Poll.DoesNotExist:
+                return render(request, 'enter_poll_code.html', {'error': 'Invalid or inactive poll code'})
     return render(request, 'enter_poll_code.html')
+
+
+@login_required
+def end_poll(request, poll_id):
+    poll = get_object_or_404(Poll, id=poll_id, created_by=request.user)
+    if request.method == 'POST':
+        poll.is_done = True
+        poll.code = None  
+        poll.save()
+        messages.success(request, f"Poll '{poll.title}' has been ended. Code cleared.")
+        return redirect("teacher_home_interface")
+    return redirect("teacher_home_interface")  
 
 # View for the student confirmation page
 def student_confirmation_page(request):
     return render(request, 'student_confirmation_page.html')
+
 
 @login_required
 def view_poll_results(request, poll_id):
@@ -232,8 +243,11 @@ def register_view(request):
         password = request.POST['password']
         role = request.POST['role']
         
-        # Create user
-        user = user.objects.create_user(username=username, password=password)
+        User = get_user_model()
+        user = User.objects.create_user(username=username, password=password)
+        
+        user.role = role
+        user.save()
         
         # Set user role if using a custom user model
         if hasattr(user, 'customuser'):  

@@ -14,11 +14,10 @@ class CustomLoginForm(AuthenticationForm):
 class PollForm(forms.ModelForm):
     class Meta:
         model = Poll
-        fields = ['title', 'description', 'code']
-    
+        fields = ['title', 'description', 'code', 'is_done'] 
+
     def clean_title(self):
         title = self.cleaned_data.get('title')
-        print("Cleaned title:", title)  # Log cleaned title
         if not title:
             raise forms.ValidationError("This field is required.")
         return title
@@ -28,13 +27,14 @@ class PollForm(forms.ModelForm):
         if not code:
             raise forms.ValidationError("The code field is required.")
         return code
-        
+
     def clean(self):
         cleaned_data = super().clean()
-        if self.instance.pk:  # Only validate if poll exists (editing mode)
+        if self.instance.pk:
             question_count = Question.objects.filter(poll=self.instance).count()
             if question_count == 0:
                 raise forms.ValidationError("A poll must have at least one question.")
+        return cleaned_data
 
 
 class JoinPollForm(forms.Form):
