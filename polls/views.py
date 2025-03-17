@@ -5,7 +5,7 @@ from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
 from .forms import CustomLoginForm, QuestionForm, PollForm
 from django.forms import modelformset_factory
-from .models import Poll, Question, Choice, CustomUser
+from .models import Poll, Question, Choice, CustomUser, Response
 from django.http import JsonResponse, HttpResponse, HttpRequest
 from django.core.exceptions import ViewDoesNotExist
 from django.utils import timezone
@@ -263,7 +263,7 @@ def submit_response(request, poll_id):
     if poll.locked:
         return JsonResponse({'error': 'This poll is locked and no further responses are allowed.'}, status=400)
     responses=[]
-    for key, value in resuest.POST.items():
+    for key, value in request.POST.items():
         question_id = key.split('_')[1]
         choice_id = value
 
@@ -280,7 +280,7 @@ def submit_response(request, poll_id):
                 choice=choice,
                 submitted_at=timezone.now()
             ))
-        except (Question.DoesNotExist, Choice, DoesNotExist):
+        except (Question.DoesNotExist, Choice.DoesNotExist):
             return JsonResponse({'error': 'Invalid question or choice selection.'}, status=400)
 
     Response.objects.bulk_create(responses)
