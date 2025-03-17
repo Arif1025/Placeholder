@@ -208,13 +208,13 @@
             <h2>Poll Code</h2>
             <form method="post">
                 {% csrf_token %}
-                <input type="text" id="pollCode" name="pollCode" placeholder="Poll Code" required>
+                <input type="text" id="pollCode" name="poll_code" placeholder="Poll Code" required>
                 <br>
                 <button type="submit" class="join-button">Join</button>
             </form>
 
-            {% if error %}
-                <p style="color: red;">{{ error }}</p>
+            {% if form.errors %}
+                <p style="color: red;">Please correct the errors in the form.</p>
             {% endif %}
         </section>
     </main>
