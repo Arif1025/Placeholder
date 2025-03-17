@@ -3,7 +3,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
-from .forms import CustomLoginForm, QuestionForm, PollForm, JoinPollForm
+from .forms import CustomLoginForm, QuestionForm, PollForm, JoinPollForm, CustomUserCreationForm
 from django.forms import modelformset_factory
 from .models import Poll, Question, Choice, CustomUser
 
@@ -262,33 +262,19 @@ def view_poll_results(request, poll_id):
     })
 
 def register_view(request):
-    if request.method == 'POST':
-        username = request.POST['username']
-        password = request.POST['password']
-        role = request.POST['role']
-        
-        # Create user
-        user = user.objects.create_user(username=username, password=password)
-        
-        # Set user role if using a custom user model
-        if hasattr(user, 'customuser'):  
-            user.customuser.role = role
-            user.customuser.save()
-
-        # Authenticate and login the user
-        user = authenticate(request, username=username, password=password)
-        if user is not None:
-            login(request, user)
-
-            # Redirect to the appropriate home interface
-            if role == 'student':
-                return redirect('student_home_interface')
-            elif role == 'teacher':
-                return redirect('teacher_home_interface')
+    if request.method == "POST":
+        form = CustomUserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)  # Automatically log in the user
+            messages.success(request, "Registration successful!")
+            return redirect("dashboard")  # Change to your desired redirect page
         else:
-            messages.error(request, "Authentication failed, please try again.")
+            messages.error(request, "Please correct the errors below.")
+    else:
+        form = CustomUserCreationForm()
 
-    return render(request, 'register.html')
+    return render(request, "register.html", {"form": form})
 
 def forgot_password_view(request):
     return render(request, 'forgot_password.html')

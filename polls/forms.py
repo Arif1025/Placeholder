@@ -1,8 +1,8 @@
 from django import forms
 from django.forms import inlineformset_factory
-from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from .models import Question
-from .models import Poll, Question, Choice
+from .models import Poll, Question, Choice, CustomUser
 
 class CustomLoginForm(AuthenticationForm):
     role = forms.ChoiceField(
@@ -10,7 +10,33 @@ class CustomLoginForm(AuthenticationForm):
         required=True,
         label="Login as"
     )
+class CustomUserCreationForm(UserCreationForm):
+    email = forms.EmailField(widget=forms.EmailInput(attrs={"id": "email"}))
+    username = forms.CharField(widget=forms.TextInput(attrs={"id": "username"}))
+    password1 = forms.CharField(widget=forms.PasswordInput(attrs={"id": "password"}))
+    password2 = forms.CharField(widget=forms.PasswordInput(attrs={"id": "password"}))
+    role = forms.ChoiceField(
+        choices=CustomUser.ROLE_CHOICES,
+        widget=forms.Select(attrs={"id": "role"}),
+    )
 
+    class Meta:
+        model = CustomUser
+        fields = ["username", "email", "role", "password1", "password2"]
+
+    def clean_email(self):
+        email = self.cleaned_data.get("email")
+        if CustomUser.objects.filter(email=email).exists():
+            raise forms.ValidationError("This email is already in use.")
+        return email
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.role = self.cleaned_data["role"]
+        if commit:
+            user.save()
+        return user
+    
 class PollForm(forms.ModelForm):
     class Meta:
         model = Poll
