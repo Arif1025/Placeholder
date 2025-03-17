@@ -206,6 +206,12 @@ def enter_poll_code(request):
             return render(request, 'enter_poll_code.html', {'error': 'Invalid poll code'})
     return render(request, 'enter_poll_code.html')
 
+def teacher_view_quiz(request, poll_id):
+    poll = get_object_or_404(Poll, id=poll_id)
+    questions = Question.objects.filter(poll=poll)
+
+    return render(request, 'teacher_view_quiz.html', {'poll': poll, 'questions': questions})
+
 # View for the student confirmation page
 def student_confirmation_page(request):
     return render(request, 'student_confirmation_page.html')
