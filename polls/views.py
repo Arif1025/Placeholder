@@ -254,3 +254,6 @@ def register_view(request):
             messages.error(request, "Authentication failed, please try again.")
 
     return render(request, 'register.html')
+
+def forgot_password_view(request):
+    return render(request, 'forgot_password.html')
