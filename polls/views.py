@@ -198,3 +198,9 @@ def enter_poll_code(request):
         else:
             return render(request, 'enter_poll_code.html', {'error': 'Invalid poll code'})
     return render(request, 'enter_poll_code.html')
+
+def teacher_view_quiz(request, poll_id):
+    poll = get_object_or_404(Poll, id=poll_id)
+    questions = Question.objects.filter(poll=poll)
+
+    return render(request, 'teacher_view_quiz.html', {'poll': poll, 'questions': questions})
