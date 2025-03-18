@@ -244,7 +244,7 @@ def student_view_quiz(request, poll_code):
         return redirect('student_home_interface')
 
     # Render the poll's questions
-    return render(request, 'view_poll.html', {'poll': poll})
+    return render(request, 'student_view_quiz.html', {'poll': poll})
 
 # View for the student confirmation page
 def student_confirmation_page(request):

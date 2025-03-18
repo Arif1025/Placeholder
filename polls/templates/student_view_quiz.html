@@ -1,12 +1,168 @@
-<h2>{{ poll.title }}</h2>
-<p>{{ poll.description }}</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Quiz</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #e3f2fd; 
+            margin: 0;
+            padding: 0;
+            color: #4f4f4f;
+            padding-top: 20px; 
+        }
+        main {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 23px;
+        }
+        h1 {
+            font-size: 90px;
+            text-align: center;
+            color: #9b4dca;
+            font-weight: 700;
+            background: linear-gradient(45deg, #9b4dca, #d500f9); 
+            background-clip: text;
+            color: transparent;
+            text-shadow: 3px 3px 5px rgba(0, 0, 0, 0.1);
+            letter-spacing: 3px;
+            margin-bottom: 20px;
+        }
+        h2 {
+            font-size: 32px;
+            color: #9b4dca;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+        .quiz-container {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        .quiz-question {
+            margin-bottom: 20px;
+        }
+        .quiz-question p {
+            font-size: 20px;
+            font-weight: 600;
+        }
+        .quiz-options {
+            list-style: none;
+            padding: 0;
+        }
+        .quiz-options li {
+            background-color: #f7f7f7;
+            margin-bottom: 10px;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .quiz-options li:hover {
+            background-color: #9b4dca;
+            color: white;
+        }
+        .submit-button {
+            background-color: #8e24aa;
+            color: white;
+            font-size: 18px;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            display: block;
+            margin: 30px auto;
+        }
+        .submit-button:hover {
+            background-color: #9b4dca;
+        }
 
-<!-- Render poll questions -->
-{% for question in poll.questions.all %}
-    <div class="question">
-        <h3>{{ question.text }}</h3>
-        {% for option in question.options.all %}
-            <p>{{ option.text }}</p>
+        /* Back Button Styling */
+        .back-button {
+            background-color: #9b4dca;
+            color: white;
+            font-size: 16px;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s ease;
+        }
+
+        .back-button:hover {
+            background-color: #7b1fa2;
+        }
+
+        /* Logout Button Positioned at Top Right */
+        .logout-button {
+            background-color: #d32f2f; 
+            color: white;
+            font-size: 18px;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s ease;
+        }
+
+        .logout-button:hover {
+            background-color: #c62828;
+        }
+
+        footer {
+            background-color: #9b4dca; 
+            color: white;
+            text-align: center;
+            padding: 10px;
+            position: fixed;
+            width: 100%;
+            bottom: 0;
+        }
+
+    </style>
+</head>
+<body>
+    <main>
+        <h2>{{ poll.title }}</h2>
+        <p>{{ poll.description }}</p>
+
+        <!-- Render poll questions -->
+        {% for question in poll.questions.all %}
+            <div class="question">
+                <h3>{{ question.text }}</h3>
+                {% for option in question.options.all %}
+                    <p>{{ option.text }}</p>
+                {% endfor %}
+            </div>
         {% endfor %}
-    </div>
-{% endfor %}
+    </main>
+
+    <!-- Logout Button -->
+    <form action="{% url 'logout' %}" method="post">
+        {% csrf_token %}
+        <button type="submit" class="logout-button">Logout</button>
+    </form>
+    
+    <!-- Back Button -->
+    <a href="{% url 'student_home_interface' %}" class="back-button">Back</a>
+
+    <!-- Footer Section -->
+    <footer>
+        <p>&copy; 2025 Polling System</p>
+    </footer>
+
+</body>
+</html>
