@@ -1,0 +1,12 @@
+<h2>{{ poll.title }}</h2>
+<p>{{ poll.description }}</p>
+
+<!-- Render poll questions -->
+{% for question in poll.questions.all %}
+    <div class="question">
+        <h3>{{ question.text }}</h3>
+        {% for option in question.options.all %}
+            <p>{{ option.text }}</p>
+        {% endfor %}
+    </div>
+{% endfor %}

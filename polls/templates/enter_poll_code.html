@@ -92,6 +92,26 @@
             background-color: #9b4dca; 
         }
 
+        /* Back Button Styling */
+        .back-button {
+            background-color: #9b4dca;
+            color: white;
+            font-size: 16px;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s ease;
+        }
+
+        .back-button:hover {
+            background-color: #7b1fa2;
+        }
+
         /* Logout Button Positioned at Top Right */
         .logout-button {
             background-color: #d32f2f; 
@@ -116,7 +136,7 @@
             background-color: #9b4dca; 
             color: white;
             text-align: center;
-            padding: px;
+            padding: 10px;
             position: fixed;
             width: 100%;
             bottom: 0;
@@ -173,6 +193,9 @@
 </head>
 <body> 
 
+    <!-- Back Button -->
+    <a href="{% url 'student_home_interface' %}" class="back-button">Back</a>
+
     <main class="main-content">
         <!-- Welcome Section -->
         <section class="welcome-section">
@@ -185,13 +208,13 @@
             <h2>Poll Code</h2>
             <form method="post">
                 {% csrf_token %}
-                <input type="text" id="pollCode" name="pollCode" placeholder="Poll Code" required>
+                <input type="text" id="pollCode" name="poll_code" placeholder="Poll Code" required>
                 <br>
                 <button type="submit" class="join-button">Join</button>
             </form>
 
-            {% if error %}
-                <p style="color: red;">{{ error }}</p>
+            {% if form.errors %}
+                <p style="color: red;">Please correct the errors in the form.</p>
             {% endif %}
         </section>
     </main>

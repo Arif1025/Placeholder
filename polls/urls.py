@@ -7,7 +7,8 @@ from .views import create_quiz
 from .views import logout_view
 from .views import edit_quiz, edit_question, delete_question, delete_quiz
 from .views import logout_view 
-from .views import class_view_teacher  
+from .views import leave_quiz
+
 
 urlpatterns = [
     path('', views.index, name='index'),
@@ -26,4 +27,11 @@ urlpatterns = [
     path('class-view-teacher/', views.class_view_teacher, name='class_view_teacher'), 
     path('class-view-student/', views.class_view_student, name='class_view_student'),
     path('enter-poll-code/', views.enter_poll_code, name='enter_poll_code'),
+    path('quiz/<int:poll_id>/', views.teacher_view_quiz, name='teacher_view_quiz'),
+    path('quiz/<int:poll_id>/', views.student_view_quiz, name='student_view_quiz'),
+    path('leave-quiz/', leave_quiz, name='leave_quiz'),
+    path('student-confirmation/', views.student_confirmation_page, name='student_confirmation_page'),
+    path('polls/results/<int:poll_id>/', views.view_poll_results, name='view_poll_results'),
+    path('register/', views.register_view, name='register'),
+    path('forgot-password/', views.forgot_password_view, name='forgot_password'),
 ]

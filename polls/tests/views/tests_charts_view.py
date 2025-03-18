@@ -5,18 +5,18 @@ class PollResultsPageViewTestCase(TestCase):
     """Tests for the Poll Results page view and its elements."""
 
     def setUp(self):
-        self.url = reverse('charts')  
+        self.url = reverse('charts')  # URL for the poll results page
 
     def test_poll_results_page_url(self):
         """Test that the URL is correct."""
-        self.assertEqual(self.url, '/charts/') 
+        self.assertEqual(self.url, '/charts/')
 
     def test_get_poll_results_page(self):
         """Test that the Poll Results page loads properly."""
         response = self.client.get(self.url)
 
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'charts.html')  
+        self.assertTemplateUsed(response, 'charts.html')
 
         # Check for expected elements in the HTML (chart canvas and page title)
         self.assertContains(response, '<h1>Poll Results</h1>')
@@ -43,6 +43,13 @@ class PollResultsPageViewTestCase(TestCase):
 
         self.assertContains(response, '<button type="submit" class="logout-button">Logout</button>')
 
+    def test_back_button(self):
+        """Test that the 'Back' button is present and has the correct link."""
+        response = self.client.get(self.url)
+
+        # Check if the back button exists
+        self.assertContains(response, '<a href="javascript:history.back()" class="back-button">Back</a>')
+
     def test_footer(self):
         """Test that the footer is displayed properly with the correct text."""
         response = self.client.get(self.url)
@@ -52,7 +59,7 @@ class PollResultsPageViewTestCase(TestCase):
     def test_mobile_responsiveness(self):
         """Test if the page is responsive on smaller screens."""
         response = self.client.get(self.url)
-        
+
         self.assertContains(response, '@media screen and (max-width: 768px)')
 
     def test_page_elements_styles(self):

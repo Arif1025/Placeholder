@@ -1,3 +1,4 @@
+"""
 from django.contib.auth.decrators import login_required
 
 
@@ -39,3 +40,4 @@ def toggle_poll_lock(request, poll_id):
     poll.save()
 
     return  JsonResponse({'status': 'success', 'locked': 'poll.locked'})
+"""
