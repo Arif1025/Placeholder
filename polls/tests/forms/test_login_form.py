@@ -1,6 +1,8 @@
 from django.test import TestCase
-from django.contrib.auth.models import User
-from polls.forms import CustomLoginForm  # Adjust import if your form is in a different location
+from django.contrib.auth import get_user_model
+from polls.forms import CustomLoginForm  
+
+User = get_user_model()
 
 class CustomLoginFormTest(TestCase):
     def setUp(self):
