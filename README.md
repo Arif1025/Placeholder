@@ -53,23 +53,23 @@ pip install -r requirements.txt
 ```
 
 Migrate the database:
-'''bash
+```bash
 python3 manage.py makemmigrations
 python3 manage.py migrate
-'''
+```
 
 Seed the development database with:
-'''bash
+```bash
 python3 manage.py seed
-'''
+```
 
 Create 2 superusers (one as a teacher, one as a student) to access the django admin interface:
-'''bash
+```bash
 python3 manage.py createsuperuser
 python3 manage.py shell
-'''
+```
 In the python shell, assign the 2 superusers as student or teacher
-'''python
+```python
 from polls.models import CustomUser
 
 # Get the superuser you just created
@@ -88,11 +88,11 @@ teacher_superuser.role = "teacher"
 teacher_superuser.save()
 
 print(f"Superuser {teacher_superuser.username} updated with role: {teacher_superuser.role}")
-'''
+```
 
 Run all tests with:
-'''bash
+```bash
 python3 manage.py test
-'''
+```
 
 Open your browser and navigate to 'http://127.0.0.1:8000' to view the project
