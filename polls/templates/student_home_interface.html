@@ -226,6 +226,8 @@
             </ul>
             <!-- Join Poll Button -->
             <form action="{% url 'enter_poll_code' %}" method="get">
+                {% csrf_token %}
+                {{ form.as_p }}
                 <button class="join-poll-button" type="submit">Join Poll</button>
             </form>
         </section>

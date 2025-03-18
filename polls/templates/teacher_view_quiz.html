@@ -9,8 +9,9 @@
             font-family: 'Poppins', sans-serif;
             background-color: #e3f2fd;
             margin: 0;
-            padding: 20px;
+            padding: 0;
             color: #4f4f4f;
+            box-sizing: border-box;
         }
 
         h1 {
@@ -45,6 +46,39 @@
         .back-button:hover {
             background: #7b1fa2;
         }
+
+        /* Logout Button Positioned at Top Right */
+        .logout-button {
+            background-color: #d32f2f; 
+            color: white;
+            font-size: 18px;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s ease;
+        }
+
+        .logout-button:hover {
+            background-color: #c62828;
+        }
+
+        footer {
+            background-color: #9b4dca; 
+            color: white;
+            text-align: center;
+            padding: 10px;
+            position: fixed;
+            width: 100%;
+            bottom: 0;
+            left: 0;
+            box-sizing: border-box;
+        }
+
     </style>
 </head>
 <body>
@@ -57,5 +91,17 @@
         {% endfor %}
     </ul>
     <a href="{% url 'teacher_home_interface' %}" class="back-button">Back to Home</a>
+
+    <!-- Logout Button -->
+    <form action="{% url 'logout' %}" method="post">
+        {% csrf_token %}
+        <button type="submit" class="logout-button">Logout</button>
+    </form>
+
+    <!-- Footer Section -->
+    <footer>
+        <p>&copy; 2025 Polling System</p>
+    </footer>
+
 </body>
 </html>
