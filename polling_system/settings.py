@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-*piyjbk6*#u9rxeqv&k=tt(jq#yxzd)muilro3w0%0d@y4%p=!
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
 
 # Application definition
@@ -37,20 +37,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'channels',
-    'polling_system',
+    'polls',
 ]
 
-#configure
-ASGI_APPLICATION = 'polling_system.asgi.application'
-
-CHANNEL_LAYERS = {
-    'default':{
-        'BACKEND':'channels.layers.InMemoryChannelsLayer',
-        # 'BACKEND':'channels_redis.core.RedisChannelsLayer',
-        # 'CONFIG':{'hosts':[('127.0.0.1',6379)]}
-    }
-}
+AUTH_USER_MODEL = 'polls.CustomUser'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -80,7 +70,7 @@ TEMPLATES = [
     },
 ]
 
-# WSGI_APPLICATION = 'polling_system.wsgi.application'
+WSGI_APPLICATION = 'polling_system.wsgi.application'
 
 
 # Database
