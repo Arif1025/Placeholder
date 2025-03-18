@@ -201,7 +201,9 @@ def class_view_student(request):
 
 @login_required
 def enter_poll_code(request):
+    print("Enter poll code view is being called")  # Debug log
     if request.method == 'POST':
+        print("POST data recieved:", request.POST)  # Debug log
         form = JoinPollForm(request.POST)
         if form.is_valid():
             poll_code = form.cleaned_data['poll_code']
@@ -218,7 +220,10 @@ def enter_poll_code(request):
             except Poll.DoesNotExist:
                 print("Poll not found")  # Debug log
                 form.add_error('poll_code', 'Invalid poll code. Please try again.')
+        else:
+            print(form.errors)
     else:
+        print("GET request recieved")  # Debug log
         form = JoinPollForm()
 
     return render(request, 'enter_poll_code.html', {'form': form})
