@@ -12,6 +12,7 @@ class LoginViewTest(TestCase):
         self.password = "testpassword"
         self.user = User.objects.create_user(username=self.username, password=self.password)
         self.login_url = reverse("login")  # Ensure your URL name is correct in urls.py
+        self.forgot_password_url = reverse("forgot-password")  # Ensure your URL name for forgot-password page is correct
 
     def test_login_page_loads(self):
         """Test if the login page loads successfully."""
@@ -46,3 +47,16 @@ class LoginViewTest(TestCase):
         self.assertEqual(response.status_code, 302)  # Should redirect on logout
         response = self.client.get(reverse("teacher_home_interface"))  # Test protected page after logout
         self.assertEqual(response.status_code, 302)  # Should redirect to login
+
+    def test_forgot_password_link(self):
+        """Test if the 'Forgot Password?' link exists on the login page and works."""
+        response = self.client.get(self.login_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Forgot Password?')  # Check if "Forgot Password?" link is present in the HTML
+        self.assertContains(response, f'href="{self.forgot_password_url}"')  # Check if the link points to the correct URL
+
+    def test_forgot_password_page(self):
+        """Test if the forgot password page loads successfully."""
+        response = self.client.get(self.forgot_password_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Reset Password")  

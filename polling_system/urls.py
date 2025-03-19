@@ -23,8 +23,8 @@ from polls import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('ws/', include('polling_system.routing')),
-    path('poll/<int:poll_id>/toggle_lock/', views.toggle_poll_lock, name='toggle_poll_lock'),
+    #path('ws/', include('polling_system.routing')),
+    #path('poll/<int:poll_id>/toggle_lock/', views.toggle_poll_lock, name='toggle_poll_lock'),
     path('polls/', include('polls.urls')),
     path('', views.login_view, name='homepage'),
 ]

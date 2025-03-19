@@ -8,7 +8,7 @@ class RegisterViewTest(TestCase):
     def setUp(self):
         """Set up for registration page tests."""
         self.client = Client()
-        self.register_url = reverse("register")  
+        self.register_url = reverse("register")
 
     def test_register_page_loads(self):
         """Test if the registration page loads successfully."""
@@ -17,14 +17,17 @@ class RegisterViewTest(TestCase):
         self.assertContains(response, "Create an Account")  # Check if the text "Create an Account" exists in the HTML
 
     def test_register_user_success(self):
-        """Test if a user can register successfully."""
+        """Test if a user can register successfully with email."""
         response = self.client.post(self.register_url, {
             "username": "newuser",
+            "email": "newuser@example.com",  
             "password": "newpassword123",
             "role": "student",  # Assuming 'student' is the default option for role
         })
         self.assertEqual(response.status_code, 302)  # Should redirect to a new page after successful registration
         self.assertTrue(User.objects.filter(username="newuser").exists())  # Check if the user was created in the database
+        user = User.objects.get(username="newuser")
+        self.assertEqual(user.email, "newuser@example.com")  # Verify the email was correctly saved
 
     def test_register_user_with_missing_field(self):
         """Test if the registration fails when a required field is missing."""
@@ -41,18 +44,31 @@ class RegisterViewTest(TestCase):
             "username": "newuser",
             "password": "short",  # Password is too short
             "role": "student",
+            "email": "newuser@example.com",  
         })
         self.assertEqual(response.status_code, 200)  # Stay on the registration page
         self.assertContains(response, "This password is too short.")  # Check if the password validation error is shown
 
+    def test_register_user_with_invalid_email(self):
+        """Test if the registration fails with an invalid email."""
+        response = self.client.post(self.register_url, {
+            "username": "newuser",
+            "password": "newpassword123",
+            "role": "student",
+            "email": "invalid-email",  # Invalid email format
+        })
+        self.assertEqual(response.status_code, 200)  # Stay on the registration page
+        self.assertContains(response, "Enter a valid email address.")  # Check if the email validation error is shown
+
     def test_register_user_duplicate_username(self):
         """Test if the registration fails when the username already exists."""
         # Create a user first
-        User.objects.create_user(username="existinguser", password="password123")
+        User.objects.create_user(username="existinguser", password="password123", email="existinguser@example.com")
         response = self.client.post(self.register_url, {
             "username": "existinguser",  # Username is already taken
             "password": "newpassword123",
             "role": "teacher",
+            "email": "newuser@example.com",  # New email for the new user
         })
         self.assertEqual(response.status_code, 200)  # Stay on the registration page
         self.assertContains(response, "A user with that username already exists.")  # Duplicate username error message
@@ -72,7 +88,8 @@ class RegisterViewTest(TestCase):
         """Test if the user is redirected after a successful registration."""
         response = self.client.post(self.register_url, {
             "username": "newuser",
+            "email": "newuser@example.com",  
             "password": "newpassword123",
             "role": "student",
         })
-        self.assertRedirects(response, reverse("login"))  
+        self.assertRedirects(response, reverse("login"))

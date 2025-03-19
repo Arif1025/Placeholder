@@ -235,7 +235,7 @@
             <ul class="polls-list">
                 {% for poll in polls %}
                     <li>
-                        <a href="#">{{ poll.title }}</a>
+                        <a href="{% url 'teacher_view_quiz' poll.id %}">{{ poll.title }}</a>
                         <a href="{% url 'edit_quiz' poll.id %}" style="margin-left: 10px;">Edit</a>
 
                         <!-- Delete button -->

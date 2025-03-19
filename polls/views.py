@@ -3,7 +3,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
-from .forms import CustomLoginForm, QuestionForm, PollForm
+from .forms import CustomLoginForm, QuestionForm, PollForm, JoinPollForm
 from django.forms import modelformset_factory
 from .models import Poll, Question, Choice, CustomUser
 
@@ -36,7 +36,10 @@ def login_view(request):
 
 @login_required
 def student_home_interface(request):
-    return render(request, "student_home_interface.html")
+    # Get the polls the student has joined
+    joined_polls = request.user.joined_polls.all()    
+    
+    return render(request, "student_home_interface.html",  {'joined_polls': joined_polls})
 
 @login_required
 def teacher_home_interface(request):
@@ -196,15 +199,52 @@ def class_view_student(request):
         return HttpResponse("Class not found.", status=404) 
     return render(request, 'class_template_page_student.html', {'class_name': class_name})
 
+@login_required
 def enter_poll_code(request):
-    """View for the 'Enter Poll Code' page."""
+    print("Enter poll code view is being called")  # Debug log
     if request.method == 'POST':
-        poll_code = request.POST.get('pollCode')
-        if poll_code:
-            return redirect('question_template') 
+        print("POST data recieved:", request.POST)  # Debug log
+        form = JoinPollForm(request.POST)
+        if form.is_valid():
+            poll_code = form.cleaned_data['poll_code']
+            try:
+                print(f"Looking for poll with code: {poll_code}")  # Debug log                
+                poll = Poll.objects.get(code=poll_code)
+                print(f"Poll found: {poll.title}")  # Debug log                
+
+                poll.participants.add(request.user)
+                print(f"User {request.user.username} added to poll {poll.title}")  # Debug log
+
+                # Redirect back to student home interface with success message
+                return redirect('student_home_interface')
+            except Poll.DoesNotExist:
+                print("Poll not found")  # Debug log
+                form.add_error('poll_code', 'Invalid poll code. Please try again.')
         else:
-            return render(request, 'enter_poll_code.html', {'error': 'Invalid poll code'})
-    return render(request, 'enter_poll_code.html')
+            print(form.errors)
+    else:
+        print("GET request recieved")  # Debug log
+        form = JoinPollForm()
+
+    return render(request, 'enter_poll_code.html', {'form': form})
+
+@login_required
+def teacher_view_quiz(request, poll_id):
+    poll = get_object_or_404(Poll, id=poll_id)
+    questions = Question.objects.filter(poll=poll)
+
+    return render(request, 'teacher_view_quiz.html', {'poll': poll, 'questions': questions})
+
+@login_required
+def student_view_quiz(request, poll_code):
+    poll = get_object_or_404(Poll, code=poll_code)
+    
+    # Check if the student is a participant in this poll
+    if request.user not in poll.participants.all():
+        return redirect('student_home_interface')
+
+    # Render the poll's questions
+    return render(request, 'student_view_quiz.html', {'poll': poll})
 
 # View for the student confirmation page
 def student_confirmation_page(request):
@@ -254,3 +294,6 @@ def register_view(request):
             messages.error(request, "Authentication failed, please try again.")
 
     return render(request, 'register.html')
+
+def forgot_password_view(request):
+    return render(request, 'forgot_password.html')

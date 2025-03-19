@@ -14,6 +14,8 @@ class Poll(models.Model):
 
     code = models.CharField(max_length=20, unique=True, blank=True, null=True)
 
+    participants = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='joined_polls')
+
     def __str__(self):
         return self.title
 

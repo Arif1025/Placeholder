@@ -218,11 +218,16 @@
         <section class="polls-section">
             <h2>Recent Polls</h2>
             <ul class="polls-list">
-                <li><a href="#">Poll 1: What's your favorite subject?</a></li>
-                <li><a href="#">Poll 2: How do you rate the current semester?</a></li>
+                {% for poll in user.joined_polls.all %}
+                    <li><a href="{% url 'student_view_quiz' poll.code %}">{{ poll.title }}</a></li>
+                {% empty %}
+                    <li>No polls joined yet.</li>
+                {% endfor %}
             </ul>
             <!-- Join Poll Button -->
             <form action="{% url 'enter_poll_code' %}" method="get">
+                {% csrf_token %}
+                {{ form.as_p }}
                 <button class="join-poll-button" type="submit">Join Poll</button>
             </form>
         </section>
