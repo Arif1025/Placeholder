@@ -60,7 +60,7 @@ python3 manage.py migrate
 
 Seed the development database with:
 ```bash
-python3 manage.py seed
+python3 manage.py seeder
 ```
 
 Create 2 superusers (one as a teacher, one as a student) to access the django admin interface:
