@@ -91,3 +91,22 @@ class ChoiceForm(forms.ModelForm):
 
 QuestionFormSet = inlineformset_factory(Poll, Question, form=QuestionForm, extra=1, can_delete=True)
 ChoiceFormSet = inlineformset_factory(Question, Choice, form=ChoiceForm, extra=3, can_delete=True)
+
+class AnswerForm(forms.Form):
+    def __init__(self, *args, **kwargs):
+        question = kwargs.pop('question', None)
+        super().__init__(*args, **kwargs)
+
+        if question.question_type == 'mcq':
+            choices = [(choice.id, choice.choice_text) for choice in question.choices.all()]
+            self.fields['answer'] = forms.ChoiceField(
+                choices=choices,
+                widget=forms.RadioSelect,
+                label=question.text
+            )
+        else:
+            self.fields['answer'] = forms.CharField(
+                widget=forms.Textarea,
+                label=question.text,
+                required=True
+            )
