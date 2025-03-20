@@ -38,7 +38,7 @@
 
         .logout-button:hover {
             background-color: #c62828;
-        }        
+        }
 
         /* Back Button Positioned at Top Left */
         .back-button {
@@ -202,6 +202,14 @@
                 <!-- Question Form (Only visible when a poll exists) -->
                 <h3>Add Questions</h3>
                 {{ question_form.as_p }}
+
+                <!-- Option Inputs -->
+                <div id="options-container">
+                    <label for="option1">Option 1:</label>
+                    <input type="text" id="option1" name="options[]" placeholder="Enter first option">
+                </div>
+                <button type="button" id="add-option-btn">Add Option</button>
+
                 <button type="submit" name="add_question">Add Question</button>
         
                 <h3>Questions Added:</h3>
@@ -226,5 +234,30 @@
     <footer>
         <p>&copy; 2025 Polling System</p>
     </footer>
+
+    <!-- JavaScript, so we can add new option fields -->
+    <script>
+        let optionCount = 1; // The first option
+
+        document.getElementById("add-option-btn").addEventListener("click", function() {
+            optionCount++;
+            
+            // Create new label and input
+            const newOptionLabel = document.createElement("label");
+            newOptionLabel.setAttribute("for", "option" + optionCount);
+            newOptionLabel.textContent = "Option " + optionCount + ":";
+            
+            const newOptionInput = document.createElement("input");
+            newOptionInput.setAttribute("type", "text");
+            newOptionInput.setAttribute("id", "option" + optionCount);
+            newOptionInput.setAttribute("name", "options[]");
+            newOptionInput.setAttribute("placeholder", "Enter option " + optionCount);
+            
+            // Append the new option to the options container
+            const optionsContainer = document.getElementById("options-container");
+            optionsContainer.appendChild(newOptionLabel);
+            optionsContainer.appendChild(newOptionInput);
+        });
+    </script>
 </body>
 </html>
