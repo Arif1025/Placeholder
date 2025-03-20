@@ -243,9 +243,12 @@ def student_view_quiz(request, poll_code):
     if request.user not in poll.participants.all():
         return redirect('student_home_interface')
 
-    # Render the poll's questions
-    return render(request, 'student_view_quiz.html', {'poll': poll})
+    # Prepare options for MCQ questions
+    for question in poll.questions.all():
+        if question.question_type == 'mcq' and question.options:
+            question.options_list = [opt.strip() for opt in question.options.split(',')]
 
+    return render(request, 'student_view_quiz.html', {'poll': poll})
 # View for the student confirmation page
 def student_confirmation_page(request):
     return render(request, 'student_confirmation_page.html')

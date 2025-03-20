@@ -137,17 +137,32 @@
 <body>
     <main>
         <h2>{{ poll.title }}</h2>
-        <p>{{ poll.description }}</p>
+    <p>{{ poll.description }}</p>
 
-        <!-- Render poll questions -->
-        {% for question in poll.questions.all %}
-            <div class="question">
-                <h3>{{ question.text }}</h3>
-                {% for option in question.options.all %}
-                    <p>{{ option.text }}</p>
+    <!-- Render poll questions -->
+    {% for question in poll.questions.all %}
+    <div class="quiz-container">
+        <h3>{{ question.text }}</h3>
+        
+        {% if question.question_type == 'mcq' %}
+            <ul class="quiz-options">
+                {% for option in question.options_list %}
+                    <li>
+                        <label>
+                            <input type="radio" name="question_{{ question.id }}" value="{{ option }}">
+                            {{ option }}
+                        </label>
+                    </li>
                 {% endfor %}
-            </div>
-        {% endfor %}
+            </ul>
+        {% elif question.question_type == 'text' %}
+            <p>Your Answer:</p>
+            <textarea name="question_{{ question.id }}" rows="4" cols="50"></textarea>
+        {% endif %}
+        </div>
+    {% endfor %}    
+
+    <button type="submit" class="submit-button">Submit Answers</button>
     </main>
 
     <!-- Logout Button -->
