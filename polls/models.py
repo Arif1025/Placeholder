@@ -1,6 +1,8 @@
+import uuid
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.conf import settings
+
 
 
 class Poll(models.Model):
@@ -13,11 +15,17 @@ class Poll(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     code = models.CharField(max_length=20, unique=True, blank=True, null=True)
+    is_done = models.BooleanField(default=False)
 
     participants = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='joined_polls')
 
     def __str__(self):
         return self.title
+
+    def save(self, *args, **kwargs):
+        if not self.code:
+            self.code = str(uuid.uuid4())[:8].upper()
+        super().save(*args, **kwargs)
 
 
 class Question(models.Model):

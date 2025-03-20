@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html>
+<body>
+  <h1>End Poll: {{ poll.title }}</h1>
+  <p>Are you sure you want to end this poll? Its code will be cleared.</p>
+  <form method="POST">
+    {% csrf_token %}
+    <button type="submit">Yes, End This Poll</button>
+  </form>
+  <a href="{% url 'teacher_home_interface' %}">Cancel</a>
+</body>
+</html>

@@ -235,8 +235,33 @@
             <ul class="polls-list">
                 {% for poll in polls %}
                     <li>
+<<<<<<< HEAD
                         <a href="{% url 'teacher_view_quiz' poll.id %}">{{ poll.title }}</a>
+=======
+                        <!-- Poll title link or text -->
+                        <a href="#">{{ poll.title }}</a>
+
+                        <!-- Show poll code if poll.is_done == False -->
+                        {% if not poll.is_done %}
+                            <p>Code: {{ poll.code }}</p>
+                        {% else %}
+                            <p style="color: gray;">Poll ended</p>
+                        {% endif %}
+                        
+                        <!-- Edit link -->
+>>>>>>> poll_code
                         <a href="{% url 'edit_quiz' poll.id %}" style="margin-left: 10px;">Edit</a>
+
+                        <!-- End poll button (only if poll not done) -->
+                        {% if not poll.is_done %}
+                            <form action="{% url 'end_poll' poll.id %}" method="POST" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-purple" 
+                                        onclick="return confirm('Are you sure you want to end this poll? This will remove its code.')">
+                                    End Poll
+                                </button>
+                            </form>
+                        {% endif %}
 
                         <!-- Delete button -->
                         <form action="{% url 'delete_quiz' poll.id %}" method="POST" style="display:inline;">
