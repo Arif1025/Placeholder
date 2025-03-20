@@ -66,7 +66,7 @@ python3 manage.py seeder
 Create 2 superusers (one as a teacher, one as a student) to access the django admin interface:
 ```bash
 python3 manage.py createsuperuser --username student_admin --email admin@example.com
-python3 manage.py createsuperuser --username teacher_user --email teacher@example.com
+python3 manage.py createsuperuser --username teacher_admin --email teacher@example.com
 
 python3 manage.py shell
 ```
