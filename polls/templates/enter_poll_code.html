@@ -215,13 +215,11 @@
 
             {% if form.errors %}
                 <div style="color: red;">
-                    <ul>
                     {% for field in form %}
                         {% for error in field.errors %}
-                            <li>{{ error }}</li>
+                            <div>{{ error }}</div>
                         {% endfor %}
                     {% endfor %}
-                    </ul>
                 </div>
             {% endif %}
         </section>
