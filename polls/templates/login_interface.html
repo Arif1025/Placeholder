@@ -87,6 +87,24 @@
             text-decoration: underline;
         }
 
+        .register-button {
+            display: block;
+            margin-top: 20px;
+            padding: 12px;
+            background-color: #388e3c;
+            color: white;
+            font-size: 18px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            text-align: center;
+        }
+
+        .register-button:hover {
+            background-color: #43a047;
+        }
+
         .footer {
             background-color: #9b4dca;
             color: white;
@@ -152,6 +170,9 @@
 
         <!-- Forgot password link -->
         <a href="{% url 'forgot_password' %}" class="forgot-password">Forgot Password?</a>
+
+        <!-- Register button -->
+        <a href="{% url 'register' %}" class="register-button">Create an Account</a>
     </div>
 
     <!-- Footer displaying copyright -->

@@ -1,6 +1,8 @@
 from django.test import TestCase, Client
 from django.urls import reverse
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 class LoginViewTest(TestCase):
     def setUp(self):
@@ -11,6 +13,7 @@ class LoginViewTest(TestCase):
         self.user = User.objects.create_user(username=self.username, password=self.password)
         self.login_url = reverse("login")  # Ensure your URL name is correct in urls.py
         self.forgot_password_url = reverse("forgot-password")  # Ensure your URL name for forgot-password page is correct
+        self.register_url = reverse("register")  # Ensure your URL name for the register page is correct
 
     def test_login_page_loads(self):
         """Test if the login page loads successfully."""
@@ -57,4 +60,11 @@ class LoginViewTest(TestCase):
         """Test if the forgot password page loads successfully."""
         response = self.client.get(self.forgot_password_url)
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Reset Password")  
+        self.assertContains(response, "Reset Password")
+
+    def test_register_button_on_login_page(self):
+        """Test if the 'Create an Account' button is present and links to the correct register page."""
+        response = self.client.get(self.login_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Create an Account')  # Check if "Create an Account" button is present in the HTML
+        self.assertContains(response, f'href="{self.register_url}"')  # Check if the button links to the correct register URL

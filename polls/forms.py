@@ -64,13 +64,15 @@ class PollForm(forms.ModelForm):
 
 
 class JoinPollForm(forms.Form):
-    code = forms.CharField(max_length=20, label="Enter Poll Code")
+    poll_code = forms.CharField(max_length=20, label="Poll Code")
 
-    def clean_code(self):
-        data = self.cleaned_data['code'].strip()
-        if not data:
-            raise forms.ValidationError("The code you have entered is invalid.")
-        return data
+    def clean_poll_code(self):
+        code = self.cleaned_data.get('poll_code')
+        try:
+            poll = Poll.objects.get(code=code)
+        except Poll.DoesNotExist:
+            raise forms.ValidationError('Invalid poll code.')
+        return code
     
 
 class QuestionForm(forms.ModelForm):

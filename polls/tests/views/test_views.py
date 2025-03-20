@@ -1,10 +1,12 @@
 from django.test import TestCase, Client
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.shortcuts import reverse
 from polls.models import Poll, Question, Response, Choice
 from django.core.files.uploadedfile import SimpleUploadedFile
 import csv
 import io
+
+User = get_user_model()
 
 class ViewTests(TestCase):
     """Tests for various views related to the Polling System."""
