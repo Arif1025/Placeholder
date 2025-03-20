@@ -12,34 +12,56 @@ class ForgotPasswordViewTest(TestCase):
         """Test if the forgot password page loads successfully."""
         response = self.client.get(self.forgot_password_url)
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Forgot Your Password?")  # Check if the text "Forgot Your Password?" exists in the HTML
+        self.assertContains(response, "Forgot Your Password")  
 
-    def test_forgot_password_with_valid_email(self):
-        """Test if the password reset process works with a valid email."""
+    def test_forgot_password_with_valid_username(self):
+        """Test if the password reset process works with a valid username."""
         # Create a user to test the reset functionality
         user = User.objects.create_user(username="existinguser", email="test@example.com", password="password123")
         response = self.client.post(self.forgot_password_url, {
-            "email": "test@example.com",
+            "username": "existinguser",  
         })
         self.assertEqual(response.status_code, 302)  # Should redirect after successful password reset request
-        # You might check for a redirect to the login page or a success message
-        self.assertRedirects(response, reverse("login"))  # Assuming it redirects to the login page after a successful reset request
 
-    def test_forgot_password_with_non_existent_email(self):
-        """Test if the password reset fails when an email that doesn't exist is submitted."""
+        self.assertRedirects(response, reverse("login"))  # Redirects to the login page after a successful reset request
+
+    def test_forgot_password_with_non_existent_username(self):
+        """Test if the password reset fails when a username that doesn't exist is submitted."""
         response = self.client.post(self.forgot_password_url, {
-            "email": "nonexistent@example.com",  # Email not in the database
+            "username": "nonexistentuser",  # Username not in the database
         })
         self.assertEqual(response.status_code, 200)  # Should stay on the forgot password page
-        self.assertContains(response, "Email not found")  # Assuming an error message is shown for non-existent email
+        self.assertContains(response, "Username not found")  # Assuming an error message is shown for non-existent username
 
-    def test_forgot_password_with_missing_email(self):
-        """Test if the password reset fails when the email field is missing."""
+    def test_forgot_password_with_missing_username(self):
+        """Test if the password reset fails when the username field is missing."""
         response = self.client.post(self.forgot_password_url, {
-            "email": "",  # Missing email
+            "username": "",  # Missing username
         })
         self.assertEqual(response.status_code, 200)  # Should stay on the forgot password page
         self.assertContains(response, "This field is required.")  # Check if the form validation error message is shown
+
+    def test_forgot_password_with_valid_new_password(self):
+        """Test if a new password and confirm password work correctly."""
+        user = User.objects.create_user(username="existinguser", email="test@example.com", password="password123")
+        response = self.client.post(self.forgot_password_url, {
+            "username": "existinguser",
+            "new_password": "newpassword123",  # New password
+            "confirm_password": "newpassword123",  # Confirm password matches new password
+        })
+        self.assertEqual(response.status_code, 302)  # Should redirect after successful password reset
+        self.assertRedirects(response, reverse("login"))  # Redirects to the login page after a successful reset request
+
+    def test_forgot_password_with_mismatched_passwords(self):
+        """Test if mismatched passwords are handled correctly."""
+        user = User.objects.create_user(username="existinguser", email="test@example.com", password="password123")
+        response = self.client.post(self.forgot_password_url, {
+            "username": "existinguser",
+            "new_password": "newpassword123",  # New password
+            "confirm_password": "differentpassword123",  # Confirm password does not match
+        })
+        self.assertEqual(response.status_code, 200)  # Should stay on the forgot password page
+        self.assertContains(response, "The two password fields didn’t match.")  # Check if the error message for mismatched passwords appears
 
     def test_forgot_password_button_text(self):
         """Test if the reset password button contains the correct text."""
@@ -56,6 +78,8 @@ class ForgotPasswordViewTest(TestCase):
         """Test if the user is redirected after a successful reset request."""
         user = User.objects.create_user(username="existinguser", email="test@example.com", password="password123")
         response = self.client.post(self.forgot_password_url, {
-            "email": "test@example.com",
+            "username": "existinguser",
+            "new_password": "newpassword123",
+            "confirm_password": "newpassword123",
         })
         self.assertRedirects(response, reverse("login"))  # Redirect to the login page after password reset
