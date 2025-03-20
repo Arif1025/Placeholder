@@ -57,6 +57,26 @@
             height: 400px;
         }
 
+        /* Download Report Button */
+        .download-button {
+            background-color: #8e24aa;
+            color: white;
+            font-size: 18px;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            margin-top: 20px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            transition: background-color 0.3s ease;
+        }
+
+        .download-button:hover {
+            background-color: #9b4dca;
+        }
+
         /* Logout Button */
         .logout-button {
             background-color: #d32f2f;
@@ -152,7 +172,7 @@
     <!-- Section for the page title -->
     <h1>Poll Results</h1>
 
-    <!-- Section displaying the charts -->
+    <!-- Section displaying the chart -->
     <section class="chart-section">
         <h2>Poll 1: What's your favorite subject?</h2>
         <canvas id="pollChart1"></canvas>
@@ -163,6 +183,9 @@
         <h2>Poll 2: How do you rate the current semester?</h2>
         <canvas id="pollChart2"></canvas>
     </section>
+
+    <!-- Download Report Button -->
+    <button class="download-button">Download Report</button>
 </main>
 
 <!-- Footer Section -->
