@@ -236,7 +236,30 @@
                 {% for poll in polls %}
                     <li>
                         <a href="{% url 'teacher_view_quiz' poll.id %}">{{ poll.title }}</a>
-                        <a href="{% url 'edit_quiz' poll.id %}" style="margin-left: 10px;">Edit</a>
+
+                        <!-- Show poll code if poll.is_done == False -->
+                        {% if not poll.is_done %}
+                            <p>Code: {{ poll.code }}</p>
+                        {% else %}
+                            <p style="color: gray;">Poll ended</p>
+                        {% endif %}
+                        
+                        <form action="{% url 'edit_quiz' poll.id %}" method="get" style="display: inline;">
+                            <button type="submit" class="btn btn-purple" style="margin-left: 10px;">
+                                Edit
+                            </button>
+                        </form>
+                        
+                        <!-- End poll button (only if poll not done) -->
+                        {% if not poll.is_done %}
+                            <form action="{% url 'end_poll' poll.id %}" method="POST" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-purple" 
+                                        onclick="return confirm('Are you sure you want to end this poll? This will remove its code.')">
+                                    End Poll
+                                </button>
+                            </form>
+                        {% endif %}
 
                         <!-- Delete button -->
                         <form action="{% url 'delete_quiz' poll.id %}" method="POST" style="display:inline;">
