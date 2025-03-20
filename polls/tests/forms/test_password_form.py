@@ -4,8 +4,6 @@ from polls.models import CustomUser
 from polls.forms import PasswordForm
 
 class PasswordFormTestCase(TestCase):
-    # Uncomment if you're using fixtures
-    # fixtures = ['polls/tests/fixtures/default_user.json']
 
     def setUp(self):
         self.user = CustomUser.objects.create_user(username='testuser', password='Password123')
