@@ -235,11 +235,7 @@
             <ul class="polls-list">
                 {% for poll in polls %}
                     <li>
-<<<<<<< HEAD
                         <a href="{% url 'teacher_view_quiz' poll.id %}">{{ poll.title }}</a>
-=======
-                        <!-- Poll title link or text -->
-                        <a href="#">{{ poll.title }}</a>
 
                         <!-- Show poll code if poll.is_done == False -->
                         {% if not poll.is_done %}
@@ -248,10 +244,12 @@
                             <p style="color: gray;">Poll ended</p>
                         {% endif %}
                         
-                        <!-- Edit link -->
->>>>>>> poll_code
-                        <a href="{% url 'edit_quiz' poll.id %}" style="margin-left: 10px;">Edit</a>
-
+                        <form action="{% url 'edit_quiz' poll.id %}" method="get" style="display: inline;">
+                            <button type="submit" class="btn btn-purple" style="margin-left: 10px;">
+                                Edit
+                            </button>
+                        </form>
+                        
                         <!-- End poll button (only if poll not done) -->
                         {% if not poll.is_done %}
                             <form action="{% url 'end_poll' poll.id %}" method="POST" style="display:inline;">

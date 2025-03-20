@@ -198,7 +198,7 @@ def class_view_student(request):
 
 @login_required
 def enter_poll_code(request):
-<<<<<<< HEAD
+
     print("Enter poll code view is being called")  # Debug log
     if request.method == 'POST':
         print("POST data recieved:", request.POST)  # Debug log
@@ -243,17 +243,6 @@ def student_view_quiz(request, poll_code):
 
     # Render the poll's questions
     return render(request, 'student_view_quiz.html', {'poll': poll})
-=======
-    if request.method == 'POST':
-        poll_code = request.POST.get('pollCode')
-        if poll_code:
-            try:
-                poll = Poll.objects.get(code=poll_code, is_done=False)
-                return redirect('question_template', poll_id=poll.id)
-            except Poll.DoesNotExist:
-                return render(request, 'enter_poll_code.html', {'error': 'Invalid or inactive poll code'})
-    return render(request, 'enter_poll_code.html')
->>>>>>> poll_code
 
 
 @login_required
@@ -289,15 +278,7 @@ def view_poll_results(request, poll_id):
     })
 
 def register_view(request):
-<<<<<<< HEAD
-    if request.method == "POST":
-        form = CustomUserCreationForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            login(request, user)  # Automatically log in the user
-            messages.success(request, "Registration successful!")
-            return redirect("dashboard")  # Change to your desired redirect page
-=======
+
     if request.method == 'POST':
         username = request.POST['username']
         password = request.POST['password']
@@ -324,7 +305,6 @@ def register_view(request):
                 return redirect('student_home_interface')
             elif role == 'teacher':
                 return redirect('teacher_home_interface')
->>>>>>> poll_code
         else:
             messages.error(request, "Please correct the errors below.")
     else:
