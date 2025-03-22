@@ -128,10 +128,6 @@ def final_score_page(request):
     # Any logic for final score
     return render(request, "final_score_page.html")
 
-# View for the student home interface page
-def student_home_interface(request):
-    return render(request, 'student_home_interface.html')
-
 # View for the question template page
 def question_template(request):
     return render(request, 'question_template.html')
@@ -245,11 +241,14 @@ def delete_quiz(request, poll_id):
     
     return redirect("teacher_home_interface")  # Redirect after deletion
 
-def class_view_teacher(request):
-    class_name = request.GET.get('class_name')  
-    if not class_name:
-        return HttpResponse("Class not found.", status=404)
-    return render(request, 'class_template_page_teacher.html', {'class_name': class_name})
+def class_view_teacher(request, class_id):
+    class_instance = Class.objects.get(id=class_id)
+    students = CustomUser.objects.filter(classstudent__class_instance=class_instance, role="student")
+    context = {
+        'class': class_instance,
+        'students': students,
+    }
+    return render(request, 'class_template_page_teacher.html', context)
 
 def class_view_student(request):
     class_name = request.GET.get('class_name')

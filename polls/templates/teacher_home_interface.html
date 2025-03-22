@@ -231,16 +231,7 @@
                 <ul>
                     {% for class_instance in classes %}
                         <li>
-                            <h3>{{ class_instance.name }}</h3>
-                            
-                            <h4>Students in this class:</h4>
-                            <ul>
-                                {% for student in class_students %}
-                                    {% if student.class_instance == class_instance %}
-                                        <li>{{ student.name }}</li>
-                                    {% endif %}
-                                {% endfor %}
-                            </ul>
+                            <a href="{% url 'class_view_teacher' class_instance.id %}">{{ class_instance.name }}</a>
                         </li>
                     {% endfor %}
                 </ul>

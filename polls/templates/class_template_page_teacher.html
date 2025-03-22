@@ -224,26 +224,17 @@
 
         <!-- Class Details Section -->
         <section class="class-details">
-            <div class="class-title">Math 101</div>
-            <div class="teacher-name">Teacher: Mr. Smith</div>
+            <div class="class-title">{{ class.name }}</div>
 
             <h2>Enrolled Students</h2>
             <ul class="student-list">
-                <li>
-                    <span>John Doe</span><br>
-                    Grade: 85 <br>
-                    Polls Answered: Poll 1, Poll 2
-                </li>
-                <li>
-                    <span>Jane Smith</span><br>
-                    Grade: 90 <br>
-                    Polls Answered: Poll 1
-                </li>
-                <li>
-                    <span>Samuel Adams</span><br>
-                    Grade: 78 <br>
-                    Polls Answered: Poll 1, Poll 2
-                </li>
+                {% for student in students %}
+                    <li>
+                        <span>{{ student.name }}</span><br>
+                        <!-- Grade: {{ student.grade }} <br>
+                        Polls Answered: {{ student.polls_answered }} -->
+                    </li>
+                {% endfor %}
             </ul>
 
             <h2>Most Recent Poll</h2>
