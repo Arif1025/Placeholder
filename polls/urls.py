@@ -1,6 +1,6 @@
 from django.urls import path
 from . import views
-from .views import login_view
+from .views import login_view, register_view
 from .views import student_home_interface
 from .views import teacher_home_interface
 from .views import create_quiz
@@ -33,6 +33,6 @@ urlpatterns = [
     path('student-confirmation/', views.student_confirmation_page, name='student_confirmation_page'),
     path('polls/results/<int:poll_id>/', views.view_poll_results, name='view_poll_results'),
     path('polls/<int:poll_id>/end/', views.end_poll, name='end_poll'),
-    path('register/', views.register_view, name='register'),
+    path('register/', register_view, name='register'),
     path('forgot-password/', views.forgot_password_view, name='forgot_password'),
 ]

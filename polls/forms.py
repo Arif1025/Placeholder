@@ -6,7 +6,7 @@ from .models import Poll, Question, Choice, CustomUser
 
 class CustomLoginForm(AuthenticationForm):
     role = forms.ChoiceField(
-        choices=[('student', 'Student'), ('professor', 'Professor')],
+        choices=[('student', 'Student'), ('teacher', 'Teacher')],
         required=True,
         label="Login as"
     )
@@ -16,8 +16,8 @@ class CustomUserCreationForm(UserCreationForm):
     password1 = forms.CharField(widget=forms.PasswordInput(attrs={"id": "password"}))
     password2 = forms.CharField(widget=forms.PasswordInput(attrs={"id": "password"}))
     role = forms.ChoiceField(
-        choices=CustomUser.ROLE_CHOICES,
-        widget=forms.Select(attrs={"id": "role"}),
+    choices=[('student', 'Student'), ('professor', 'Teacher')],
+    widget=forms.Select(attrs={"id": "role"}),
     )
 
     class Meta:

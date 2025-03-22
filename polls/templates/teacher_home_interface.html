@@ -261,16 +261,17 @@
                             </form>
                         {% endif %}
 
-                        <!-- Delete button -->
-                        <form action="{% url 'delete_quiz' poll.id %}" method="POST" style="display:inline;">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-danger" style="margin-left: 10px;" onclick="return confirm('Are you sure you want to delete this poll?')">Delete</button>
-                        </form>
-
                         <!-- View Poll Results Button -->
                         <a href="{% url 'view_poll_results' poll.id %}" style="margin-left: 10px;">
                             <button class="btn btn-purple">View Poll Results</button>
                         </a>
+
+                         <!-- Delete button -->
+                         <form action="{% url 'delete_quiz' poll.id %}" method="POST" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger" style="margin-left: 10px;" onclick="return confirm('Are you sure you want to delete this poll?')">Delete</button>
+                        </form>
+
                     </li>
                 {% empty %}
                     <li>No polls created yet.</li>

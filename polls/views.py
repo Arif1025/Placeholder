@@ -128,11 +128,33 @@ def edit_quiz(request, poll_id):
 
         elif "add_question" in request.POST:
             question_form = QuestionForm(request.POST)
+    
             if question_form.is_valid():
                 question = question_form.save(commit=False)
                 question.poll = poll
+                
+                # Check if it's an MCQ
+                if question.question_type == 'mcq':
+                    options = request.POST.get('options', '').strip()
+                    if not options:
+                        messages.error(request, "Please enter at least one option for an MCQ.")
+                        return redirect("edit_quiz", poll_id=poll.id)
+                    
+                    question.save()  # Save question before creating choices
+                    for option_text in options.split(','):
+                        Choice.objects.create(question=question, text=option_text.strip())
+                
+                # Check if it's a written answer and prompt for answer if empty
+                elif question.question_type == 'written':
+                    options  = request.POST.get('options', '').strip()
+                    if not options:
+                        messages.error(request, "Please provide a written answer.")
+                        return redirect("edit_quiz", poll_id=poll.id)
+                    question.options = options
+                
                 question.save()
-                return redirect("edit_quiz", poll_id=poll.id)  # Stay on page to add more questions
+                messages.success(request, "Question added successfully.")
+                return redirect("edit_quiz", poll_id=poll.id)
         
         elif "delete_question" in request.POST:
             question_id = request.POST.get("question_id")
@@ -281,35 +303,14 @@ def view_poll_results(request, poll_id):
     })
 
 def register_view(request):
-
-    if request.method == 'POST':
-        username = request.POST['username']
-        password = request.POST['password']
-        role = request.POST['role']
-        
-        User = get_user_model()
-        user = User.objects.create_user(username=username, password=password)
-        
-        user.role = role
-        user.save()
-        
-        # Set user role if using a custom user model
-        if hasattr(user, 'customuser'):  
-            user.customuser.role = role
-            user.customuser.save()
-
-        # Authenticate and login the user
-        user = authenticate(request, username=username, password=password)
-        if user is not None:
+    if request.method == "POST":
+        form = CustomUserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.role = form.cleaned_data['role']
+            user.save()
             login(request, user)
-
-            # Redirect to the appropriate home interface
-            if role == 'student':
-                return redirect('student_home_interface')
-            elif role == 'teacher':
-                return redirect('teacher_home_interface')
-        else:
-            messages.error(request, "Please correct the errors below.")
+            return redirect("login")  # Redirect to login page after registration
     else:
         form = CustomUserCreationForm()
 
