@@ -7,6 +7,9 @@ from .forms import CustomLoginForm, QuestionForm, PollForm, JoinPollForm, Custom
 from django.forms import modelformset_factory
 import csv
 from .models import Poll, Question, Choice, CustomUser, Response, ClassStudent, Class
+from django.contrib.auth.hashers import make_password
+import re
+
 
 def index(request):
     return HttpResponse("Hello, this is the index view.")
@@ -359,9 +362,6 @@ def register_view(request):
 
     return render(request, "register.html", {"form": form})
 
-def forgot_password_view(request):
-    return render(request, 'forgot_password.html')
-
 def polls_list(request):
     polls = Poll.objects.all()
     return render(request, 'polls/polls.html', {'polls': polls})
@@ -385,3 +385,53 @@ def export_poll_responses(request, poll_id):
         writer.writerow([resp.user.username if resp.user else 'Anonymous', resp.question.text, resp.choice.choice_text, resp.submitted_at])
 
     return response
+
+def forgot_password(request):
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        
+        try:
+            user = CustomUser.objects.get(email=email)
+        except CustomUser.DoesNotExist:
+            messages.error(request, "No account found with this email.")
+            return redirect('forgot_password')
+
+        request.session['reset_email'] = email
+        return redirect('reset_password')  # Redirect to reset password page
+
+    return render(request, 'forgot_password.html')
+
+def reset_password(request):
+    email = request.session.get('reset_email')
+    
+    if not email:
+        messages.error(request, "Session expired. Please request password reset again.")
+        return redirect('forgot_password')
+
+    if request.method == 'POST':
+        password1 = request.POST.get('password1')
+        password2 = request.POST.get('password2')
+        
+        # Validate password length and numeric character requirement
+        if len(password1) < 8:
+            messages.error(request, "Password must be at least 8 characters long.")
+            return redirect('reset_password')
+
+        if not re.search(r'\d', password1):  # Checks if the password has at least one number
+            messages.error(request, "Password must contain at least one number.")
+            return redirect('reset_password')
+
+
+        if password1 != password2:
+            messages.error(request, "Passwords do not match.")
+            return redirect('reset_password')
+
+        user = CustomUser.objects.get(email=email)
+        user.password = make_password(password1)
+        user.save()
+
+        messages.success(request, "Password reset successful! You can now log in.")
+        request.session.pop('reset_email', None)
+        return redirect('login_interface')
+
+    return render(request, 'reset_password.html')
