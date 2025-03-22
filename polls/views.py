@@ -37,11 +37,24 @@ def login_view(request):
 
 @login_required
 def student_home_interface(request):
+    print("student_home_interface view called") # Debug log
+    print("Request user:", request.user) # Debug log
+    print("User role:", request.user.role) # Debug log
+
+    # If the user isn't authenticated or isn't a student, redirect to login
+    if not request.user.is_authenticated or request.user.role != 'student':
+        return redirect('login_interface')
+    
     # Get the polls the student has joined
     joined_polls = request.user.joined_polls.all()
 
     # Get the classes that the student is in
-    classes = ClassStudent.objects.filter(student=request.user)
+    classes = ClassStudent.objects.filter(student=request.user).select_related('class_instance')
+
+    # Debugging print
+    print("Logged in student:", request.user)
+    print("Classes fetched for student:", classes)
+    print("Number of classes:", classes.count())
 
     # Collect teachers for each class
     class_teachers = {}
@@ -51,7 +64,7 @@ def student_home_interface(request):
 
     return render(request, "student_home_interface.html",  {
         'joined_polls': joined_polls,
-        'classes': [class_instance.class_instance for class_instance in classes],
+        'classes': classes,
         'class_teachers': class_teachers
     })
 

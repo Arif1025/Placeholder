@@ -208,19 +208,19 @@
         <!-- Student's Classes Section -->
         <section class="classes-section">
             <h2>Your Enrolled Classes</h2>
-            {% if classes %}
-                <ul>
-                    {% for class_instance in classes %}
-                    <ul>
-                        {% for teacher in entry.teachers %}
-                            <li>{{ teacher.name }}</li>
-                        {% endfor %}
-                    </ul>
-                    {% endfor %}
-                </ul>
-            {% else %}
-                <p>You are not enrolled in any classes.</p>
-            {% endif %}
+            <ul>
+                {% for class_student in classes %}
+                    <li>{{ class_student.class_instance.name }}</li>
+                {% empty %}
+                    <li>You are not enrolled in any classes.</li>
+                {% endfor %}
+            </ul>
+
+            <!-- Debug print in template -->
+            <p>Classes Length: {{ student_classes|length }}</p>
+            <p>Classes: {{ student_classes }}</p>
+            <p>Student Classes Debug: {% for class_student in student_classes %}{{ class_student.class_instance.name }} {% endfor %}</p>
+
         </section>
     
         <!-- Student's Polls Section -->
@@ -233,6 +233,7 @@
                     <li>No polls joined yet.</li>
                 {% endfor %}
             </ul>
+
             <!-- Join Poll Button -->
             <form action="{% url 'enter_poll_code' %}" method="get">
                 {% csrf_token %}

@@ -65,15 +65,21 @@ class Command(BaseCommand):
                 classes.append(class_instance)
 
          # Enroll students in classes
+        random.shuffle(students)
+        class_index = 0
+        
         for class_instance in classes:
-            if len(students) < num_students_per_class:
-                self.stdout.write(self.style.WARNING("Not enough students available. Adjusting number of students per class."))
-                num_students_per_class = len(students)
+            class_instance = classes[class_index % len(classes)]  # Cycle through classes
+            ClassStudent.objects.create(student=student, class_instance=class_instance)
+            class_index += 1    
+            # if len(students) < num_students_per_class:
+            #     self.stdout.write(self.style.WARNING("Not enough students available. Adjusting number of students per class."))
+            #     num_students_per_class = len(students)
 
-            students_in_class = random.sample(students, num_students_per_class)
-            for student in students_in_class:
-                # Create the relationship between student and class in ClassStudent
-                ClassStudent.objects.create(student=student, class_instance=class_instance)
+            # students_in_class = random.sample(students, num_students_per_class)
+            # for student in students_in_class:
+            #     # Create the relationship between student and class in ClassStudent
+            #     ClassStudent.objects.create(student=student, class_instance=class_instance)
 
         # Assign students to teachers
         for student in students:
