@@ -25,6 +25,9 @@ class PollResultsPageViewTestCase(TestCase):
         self.assertContains(response, '<canvas id="pollChart1"></canvas>')
         self.assertContains(response, '<canvas id="pollChart2"></canvas>')
 
+        # Check for the "Download Report" button
+        self.assertContains(response, '<button class="download-button">Download Report</button>')
+
     def test_poll_chart1_canvas(self):
         """Test that the first poll chart canvas is present."""
         response = self.client.get(self.url)
@@ -66,10 +69,14 @@ class PollResultsPageViewTestCase(TestCase):
         """Test specific styles for the page elements."""
         response = self.client.get(self.url)
 
-        # Check background color and button hover styles in the response (basic checks)
+        # Check background color and button hover styles in the response
         self.assertContains(response, 'background-color: #f4f4f4')
-        self.assertContains(response, 'background-color: #007bff')  # Button background color
-        self.assertContains(response, 'background-color: #0056b3')  # Button hover color
+        self.assertContains(response, 'background-color: #007bff')  
+        self.assertContains(response, 'background-color: #0056b3')  
+
+        # Check the "Download Report" button styles
+        self.assertContains(response, 'background-color: #8e24aa')  
+        self.assertContains(response, 'background-color: #9b4dca')  
 
     def test_chart_js_inclusion(self):
         """Test if Chart.js library is included and functional."""

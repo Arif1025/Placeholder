@@ -103,16 +103,6 @@
         .delete-button:hover {
             background-color: #c62828;
         }
-        
-        .edit-button {
-            background-color: #f57c00;
-            font-size: 16px;
-            margin-top: 10px;
-        }
-
-        .edit-button:hover {
-            background-color: #e65100;
-        }
 
         .quiz-container .button-section {
             margin-top: 30px;
@@ -212,10 +202,6 @@
                     {% for question in questions %}
                         <li class="question">
                             {{ question.text }}
-                            <form method="post" action="{% url 'edit_question' question.id %}" style="display:inline;">
-                                {% csrf_token %}
-                                <button type="submit" class="edit-button">Edit</button>
-                            </form>
                             <form method="post" action="{% url 'delete_question' question.id poll.id %}" style="display:inline;">
                                 {% csrf_token %}
                                 <button type="submit" class="delete-button">Delete</button>
