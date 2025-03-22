@@ -5,8 +5,8 @@ from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
 from .forms import CustomLoginForm, QuestionForm, PollForm, JoinPollForm, CustomUserCreationForm
 from django.forms import modelformset_factory
-
-from .models import Poll, Question, Choice, CustomUser
+import csv
+from .models import Poll, Question, Choice, CustomUser, Response
 
 def index(request):
     return HttpResponse("Hello, this is the index view.")
@@ -318,3 +318,27 @@ def register_view(request):
 
 def forgot_password_view(request):
     return render(request, 'forgot_password.html')
+
+def polls_list(request):
+    polls = Poll.objects.all()
+    return render(request, 'polls/polls.html', {'polls': polls})
+
+def export_poll_responses(request, poll_id):
+    # Get the poll or return a 404 if not found
+    poll = get_object_or_404(Poll, id=poll_id)
+    
+    # Get all responses for the poll
+    responses = Response.objects.filter(question__poll=poll)
+    
+    # Create a response object and set headers for CSV download
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = f'attachment; filename="{poll.title}_responses.csv"'
+
+    # Write to CSV
+    writer = csv.writer(response)
+    writer.writerow(['Username', 'Question', 'Choice', 'Submitted At'])
+
+    for resp in responses:
+        writer.writerow([resp.user.username if resp.user else 'Anonymous', resp.question.text, resp.choice.choice_text, resp.submitted_at])
+
+    return response
