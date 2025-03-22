@@ -25,32 +25,41 @@ class Command(BaseCommand):
             return
 
         users = []
-        for _ in range(num_users):
+        teachers = []
+        for _ in range(num_teachers):
             username = fake.unique.user_name()
             email = fake.unique.email()
             password = "Password123"
-            role = random.choice(['student', 'teacher'])  # Assign role randomly
-
-
-            user, created = CustomUser.objects.get_or_create(
+            
+            teacher, created = CustomUser.objects.get_or_create(
                 username=username,
-                defaults={"email": email, "role": role}
+                defaults={"email": email, "role": "teacher"}
             )
             if created:
-                user.set_password(password)
-                user.save()
+                teacher.set_password(password)
+                teacher.save()
+                teachers.append(teacher)
+        
+        students = []
+        for _ in range(num_users - num_teachers):
+            username = fake.unique.user_name()
+            email = fake.unique.email()
+            password = "Password123"
 
-        teachers = [user for user in users if user.role == 'teacher']
-        students = [user for user in users if user.role == 'student']
-
-        if len(teachers) < num_teachers:
-            self.stdout.write(self.style.WARNING("Not enough teachers were generated. Adjusting to available teachers."))
-            num_teachers = len(teachers)
+            student, created = CustomUser.objects.get_or_create(
+                username=username,
+                defaults={"email": email, "role": "student"}
+            )
+            if created:
+                student.set_password(password)
+                student.save()
+                students.append(student)
 
         # Create fake classes
         classes = []
         for _ in range(num_classes):
             if teachers:
+                teacher = random.choice(teachers)
                 class_name = fake.company()
                 class_instance = Class.objects.create(name=class_name, teacher=teacher)
                 classes.append(class_instance)
@@ -66,10 +75,9 @@ class Command(BaseCommand):
                 # Create the relationship between student and class in ClassStudent
                 ClassStudent.objects.create(student=student, class_instance=class_instance)
 
-        # Assign teachers to classes via the Teaching model (many-to-many relation)
+        # Assign students to teachers
         for student in students:
             teacher = random.choice(teachers)
-            # Use Teaching model to assign teacher to class
             Teaching.objects.create(teacher=teacher, student=student)
 
         self.stdout.write(self.style.SUCCESS(f"Successfully seeded {num_users} users, {num_classes} classes, {num_teachers} teachers, and {num_students_per_class} students per class."))
