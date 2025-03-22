@@ -33,5 +33,6 @@ urlpatterns = [
     path('student-confirmation/', views.student_confirmation_page, name='student_confirmation_page'),
     path('polls/results/<int:poll_id>/', views.view_poll_results, name='view_poll_results'),
     path('register/', views.register_view, name='register'),
-    path('forgot-password/', views.forgot_password_view, name='forgot_password'),
+    path('forgot-password/', views.forgot_password, name='forgot_password'),
+    path('reset-password/', views.reset_password, name='reset_password'),
 ]
