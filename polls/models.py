@@ -78,4 +78,29 @@ class CustomUser(AbstractUser):
         ('teacher', 'Teacher'),
     ]
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='student')
+    
+    students = models.ManyToManyField('self', related_name='teachers', through='Teaching', symmetrical=False, blank=True)
 
+    def __str__(self):
+        return self.username
+
+class Teaching(models.Model):
+    teacher = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='teaching')
+    student = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='being_taught_by')
+
+    def __str__(self):
+        return f"{self.teacher} teaches {self.student}"
+    
+class Class(models.Model):
+    name = models.CharField(max_length=255)
+    teacher = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='classes')
+
+    def __str__(self):
+        return self.name
+
+class ClassStudent(models.Model):
+    student = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    class_instance = models.ForeignKey(Class, on_delete=models.CASCADE) 
+
+    def __str__(self):
+        return f"{self.student.username} in {self.class_instance.name}"

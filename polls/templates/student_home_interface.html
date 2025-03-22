@@ -207,11 +207,20 @@
     
         <!-- Student's Classes Section -->
         <section class="classes-section">
-            <h2>Your Classes</h2>
-            <ul class="classes-list">
-                <li><a href="{% url 'class_view_student' %}?class_name=Math%20101">Math 101 - Mr. Smith</a></li>
-                <li><a href="{% url 'class_view_student' %}?class_name=History%20202">History 202 - Ms. Johnson</a></li>
-            </ul>
+            <h2>Your Enrolled Classes</h2>
+            {% if classes %}
+                <ul>
+                    {% for class_instance in classes %}
+                    <ul>
+                        {% for teacher in entry.teachers %}
+                            <li>{{ teacher.name }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>You are not enrolled in any classes.</p>
+            {% endif %}
         </section>
     
         <!-- Student's Polls Section -->

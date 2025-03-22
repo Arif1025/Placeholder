@@ -227,10 +227,26 @@
         <!-- Teacher's Classes Section -->
         <section class="classes-section">
             <h2>Your Classes</h2>
-            <ul class="classes-list">
-                <li><a href="{% url 'class_view_teacher' %}?class_name=Math%20101">Math 101 - Mr. Smith</a></li>
-                <li><a href="{% url 'class_view_teacher' %}?class_name=History%20202">History 202 - Ms. Johnson</a></li>
-            </ul>
+            {% if classes %}
+                <ul>
+                    {% for class_instance in classes %}
+                        <li>
+                            <h3>{{ class_instance.name }}</h3>
+                            
+                            <h4>Students in this class:</h4>
+                            <ul>
+                                {% for student in class_students %}
+                                    {% if student.class_instance == class_instance %}
+                                        <li>{{ student.name }}</li>
+                                    {% endif %}
+                                {% endfor %}
+                            </ul>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>You have no classes assigned yet.</p>
+            {% endif %}
         </section>
     
         <!-- Teacher's Polls Section -->

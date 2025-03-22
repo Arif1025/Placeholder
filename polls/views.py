@@ -6,7 +6,7 @@ from django.contrib.auth.decorators import login_required
 from .forms import CustomLoginForm, QuestionForm, PollForm, JoinPollForm, CustomUserCreationForm
 from django.forms import modelformset_factory
 import csv
-from .models import Poll, Question, Choice, CustomUser, Response
+from .models import Poll, Question, Choice, CustomUser, Response, ClassStudent, Class
 
 def index(request):
     return HttpResponse("Hello, this is the index view.")
@@ -38,14 +38,40 @@ def login_view(request):
 @login_required
 def student_home_interface(request):
     # Get the polls the student has joined
-    joined_polls = request.user.joined_polls.all()    
-    
-    return render(request, "student_home_interface.html",  {'joined_polls': joined_polls})
+    joined_polls = request.user.joined_polls.all()
+
+    # Get the classes that the student is in
+    classes = ClassStudent.objects.filter(student=request.user)
+
+    # Collect teachers for each class
+    class_teachers = {}
+    for class_student in classes:
+        teacher = class_student.class_instance.teacher
+        class_teachers[class_student.class_instance] = teacher
+
+    return render(request, "student_home_interface.html",  {
+        'joined_polls': joined_polls,
+        'classes': [class_instance.class_instance for class_instance in classes],
+        'class_teachers': class_teachers
+    })
 
 @login_required
 def teacher_home_interface(request):
+    # Get all polls created by the teacher
     quizzes = Poll.objects.all()
-    return render(request, "teacher_home_interface.html", {"polls": quizzes})
+
+    # Get the classes that the teacher is teaching
+    classes = Class.objects.filter(teacher=request.user)
+
+    # Collect students in each class
+    class_students = {}
+    for class_instance in classes:
+        students = ClassStudent.objects.filter(class_instance=class_instance)
+        class_students[class_instance] = [student.student for student in students]
+
+
+    return render(request, "teacher_home_interface.html", {"polls": quizzes,'classes': classes,
+        'class_students': class_students})
 
 @login_required
 def create_quiz(request):
