@@ -242,7 +242,7 @@ def delete_quiz(request, poll_id):
     return redirect("teacher_home_interface")  # Redirect after deletion
 
 def class_view_teacher(request, class_id):
-    class_instance = Class.objects.get(id=class_id)
+    class_instance = get_object_or_404(Class, id=class_id)
     students = CustomUser.objects.filter(classstudent__class_instance=class_instance, role="student")
     context = {
         'class': class_instance,
@@ -250,11 +250,16 @@ def class_view_teacher(request, class_id):
     }
     return render(request, 'class_template_page_teacher.html', context)
 
-def class_view_student(request):
-    class_name = request.GET.get('class_name')
-    if not class_name:
-        return HttpResponse("Class not found.", status=404) 
-    return render(request, 'class_template_page_student.html', {'class_name': class_name})
+def class_view_student(request, class_id):
+    class_instance = get_object_or_404(Class, id=class_id)
+
+    students = CustomUser.objects.filter(classstudent__class_instance=class_instance)
+
+    return render(request, 'class_template_page_student.html', {
+        'class_name': class_instance.name,
+        'teacher': class_instance.teacher,  # Assuming there's a teacher field
+        'students': students,
+    })
 
 @login_required
 def enter_poll_code(request):

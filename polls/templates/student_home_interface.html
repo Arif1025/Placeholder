@@ -208,18 +208,17 @@
         <!-- Student's Classes Section -->
         <section class="classes-section">
             <h2>Your Enrolled Classes</h2>
-            <ul>
+            <ul class="classes-list">
                 {% for class_student in classes %}
-                    <li>{{ class_student.class_instance.name }}</li>
+                    <li>
+                        <a href="{% url 'class_view_student' class_student.class_instance.id %}">
+                            {{ class_student.class_instance.name }}
+                        </a>
+                    </li>
                 {% empty %}
                     <li>You are not enrolled in any classes.</li>
                 {% endfor %}
             </ul>
-
-            <!-- Debug print in template -->
-            <p>Classes Length: {{ student_classes|length }}</p>
-            <p>Classes: {{ student_classes }}</p>
-            <p>Student Classes Debug: {% for class_student in student_classes %}{{ class_student.class_instance.name }} {% endfor %}</p>
 
         </section>
     
