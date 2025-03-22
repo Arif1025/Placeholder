@@ -184,8 +184,11 @@
         <canvas id="pollChart2"></canvas>
     </section>
 
-    <!-- Download Report Button -->
-    <button class="download-button">Download Report</button>
+    
+    <a href="{% url 'export_poll_responses' poll.id %}">
+        <button class="download-button">Download Report</button>
+    </a><!-- Download Report Button -->
+    
 </main>
 
 <!-- Footer Section -->

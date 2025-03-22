@@ -6,7 +6,7 @@ from .models import Poll, Question, Choice, CustomUser
 
 class CustomLoginForm(AuthenticationForm):
     role = forms.ChoiceField(
-        choices=[('student', 'Student'), ('professor', 'Professor')],
+        choices=[('student', 'Student'), ('teacher', 'Teacher')],
         required=True,
         label="Login as"
     )
@@ -16,8 +16,8 @@ class CustomUserCreationForm(UserCreationForm):
     password1 = forms.CharField(widget=forms.PasswordInput(attrs={"id": "password"}))
     password2 = forms.CharField(widget=forms.PasswordInput(attrs={"id": "password"}))
     role = forms.ChoiceField(
-        choices=CustomUser.ROLE_CHOICES,
-        widget=forms.Select(attrs={"id": "role"}),
+    choices=[('student', 'Student'), ('professor', 'Teacher')],
+    widget=forms.Select(attrs={"id": "role"}),
     )
 
     class Meta:
@@ -93,3 +93,22 @@ class ChoiceForm(forms.ModelForm):
 
 QuestionFormSet = inlineformset_factory(Poll, Question, form=QuestionForm, extra=1, can_delete=True)
 ChoiceFormSet = inlineformset_factory(Question, Choice, form=ChoiceForm, extra=3, can_delete=True)
+
+class AnswerForm(forms.Form):
+    def __init__(self, *args, **kwargs):
+        question = kwargs.pop('question', None)
+        super().__init__(*args, **kwargs)
+
+        if question.question_type == 'mcq':
+            choices = [(choice.id, choice.choice_text) for choice in question.choices.all()]
+            self.fields['answer'] = forms.ChoiceField(
+                choices=choices,
+                widget=forms.RadioSelect,
+                label=question.text
+            )
+        else:
+            self.fields['answer'] = forms.CharField(
+                widget=forms.Textarea,
+                label=question.text,
+                required=True
+            )

@@ -35,4 +35,6 @@ urlpatterns = [
     path('polls/<int:poll_id>/end/', views.end_poll, name='end_poll'),
     path('register/', views.register_view, name='register'),
     path('forgot-password/', views.forgot_password_view, name='forgot_password'),
+    path('', views.polls_list, name='polls_list'),
+    path('export_poll_responses/<int:poll_id>/', views.export_poll_responses, name='export_poll_responses'),
 ]
