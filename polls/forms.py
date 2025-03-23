@@ -78,18 +78,17 @@ class JoinPollForm(forms.Form):
 class QuestionForm(forms.ModelForm):
     class Meta:
         model = Question
-        fields = ['text', 'question_type', 'options']
+        fields = ['text', 'question_type', 'options', 'correct_answer']
 
-    OPTIONS_HELP_TEXT = "For multiple-choice questions, separate options with a comma."
 
     text = forms.CharField(label="Question Text", widget=forms.Textarea)
     question_type = forms.ChoiceField(choices=[('text', 'Written Answer'), ('mcq', 'Multiple Choice')])
-    options = forms.CharField(required=False, help_text=OPTIONS_HELP_TEXT)
+    options = forms.CharField(widget=forms.Textarea, required=False, help_text="Enter one option per line.")
 
 class ChoiceForm(forms.ModelForm):
     class Meta:
         model = Choice
-        fields = ['choice_text']
+        fields = ['text']
 
 QuestionFormSet = inlineformset_factory(Poll, Question, form=QuestionForm, extra=1, can_delete=True)
 ChoiceFormSet = inlineformset_factory(Question, Choice, form=ChoiceForm, extra=3, can_delete=True)

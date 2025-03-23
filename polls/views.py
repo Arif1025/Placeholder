@@ -91,13 +91,13 @@ def teacher_home_interface(request):
 
 @login_required
 def create_quiz(request):
-    poll_id = request.session.pop("poll_id", None)  # Get poll ID from session
-    poll = None
-    poll_form = PollForm()
-    question_form = QuestionForm()
+    poll_id = request.session.get("poll_id")  # Get poll ID from session
+    poll = Poll.objects.filter(id=poll_id).first() if poll_id else None
+    poll_form = PollForm(instance=poll) if poll else PollForm() 
+    question_form = QuestionForm() if poll else None
     
     if request.method == "POST" and "save_quiz" in request.POST:
-        poll_form = PollForm(request.POST)
+        poll_form = PollForm(request.POST, instance=poll)
         if poll_form.is_valid():
             poll = poll_form.save(commit=False)
             poll.created_by = request.user
@@ -110,11 +110,19 @@ def create_quiz(request):
             if question_form.is_valid():
                 question = question_form.save(commit=False)
                 question.poll = poll
+                question.correct_answer = request.POST.get('correct_answer')
                 question.save()
+
+                options = request.POST.getlist("options[]")
+                for option_text in options:
+                    if option_text.strip():
+                        Choice.objects.create(question=question, text=option_text.strip())
+
                 return redirect("create_quiz")  # Stay on page to add more questions
 
-    questions = Question.objects.filter(poll=poll) if poll else []
-
+    elif "poll_id" in request.GET:
+        poll = get_object_or_404(Poll, id=request.GET["poll_id"])
+        questions = poll.questions.all()
 
     return render(request, "create_quiz.html", {
         "poll_form": poll_form,

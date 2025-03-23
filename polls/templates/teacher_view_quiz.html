@@ -86,6 +86,7 @@
     <ul>
         {% for question in questions %}
             <li>{{ question.text }}</li>
+            <p><strong>Correct Answer:</strong> {{ question.correct_answer }}</p>
         {% empty %}
             <li>No questions available.</li>
         {% endfor %}
