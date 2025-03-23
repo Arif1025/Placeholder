@@ -161,18 +161,20 @@
 </head>
 <body>
 
-<!-- Back Button -->
-{% if poll_code %}
-    <a href="{% url 'student_confirmation_page' poll_code=poll_code %}">Back</a>
-{% else %}
-    <p>Error: poll_code is missing</p>
-{% endif %}
+    <!-- Back Button -->
+    {% if poll_code %}
+        <form action="{% url 'student_confirmation_page' poll_code=poll_code %}" method="get" style="display: inline;">
+            <button type="submit" class="back-button">Back</button>
+        </form>
+    {% else %}
+        <p>Error: poll_code is missing</p>
+    {% endif %}
 
-<!-- Form to handle the logout action -->
-<form action="{% url 'logout' %}" method="post">
-    {% csrf_token %}
-    <button type="submit" class="logout-button">Logout</button>
-</form>
+    <!-- Form to handle the logout action -->
+    <form action="{% url 'logout' %}" method="post">
+        {% csrf_token %}
+        <button type="submit" class="logout-button">Logout</button>
+    </form>
 
     <!-- Main content section where the score and questions are displayed -->
     <main class="main-content">
@@ -193,11 +195,6 @@
             </section>
         {% endfor %}
     
-        <section class="navigation-buttons">
-            <form action="{% url 'student_home_interface' %}" method="get">
-                <button class="navigation-button" type="submit">Back to Home</button>
-            </form>
-        </section>
     </main>
 
     <!-- Footer section -->

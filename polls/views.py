@@ -146,11 +146,12 @@ def final_score_page(request, poll_code):
         "poll": poll,
         "poll_code": poll_code,
         "student_result": student_result,
+        "quiz_results": quiz_results
     }
     if not quiz_results:
          return redirect('student_home_interface')  # Redirect if no results found
     
-    return render(request, "final_score_page.html", {"quiz_results": quiz_results}, context)
+    return render(request, "final_score_page.html", context)
 
 # View for the question template page
 def question_template(request):
