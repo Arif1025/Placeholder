@@ -153,12 +153,24 @@
             <label for="password">Password</label>
             <input type="password" id="password" name="password" required>
 
+             <!-- Confirm Password Field -->
+            <label for="confirm_password">Confirm Password</label>
+            <input type="password" id="confirm_password" name="confirm_password" required>
+
             <!-- Role Selector -->
             <label for="role">I am a</label>
             <select id="role" name="role" required>
                 <option value="student">Student</option>
                 <option value="teacher">Teacher</option>
             </select>
+
+            {% if messages %}
+                <ul>
+                    {% for message in messages %}
+                        <li style="color: red;">{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
 
             <!-- Submit Button -->
             <a href="{% url 'login_interface' %}">

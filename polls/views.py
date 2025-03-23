@@ -350,17 +350,50 @@ def view_poll_results(request, poll_id):
 
 def register_view(request):
     if request.method == "POST":
-        form = CustomUserCreationForm(request.POST)
-        if form.is_valid():
-            user = form.save(commit=False)
-            user.role = form.cleaned_data['role']
-            user.save()
-            login(request, user)
-            return redirect("login")  # Redirect to login page after registration
-    else:
-        form = CustomUserCreationForm()
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+        confirm_password = request.POST.get("confirm_password")
+        role = request.POST.get("role")
 
-    return render(request, "register.html", {"form": form})
+        print(f"Received data - Username: {username}, Role: {role}")  # Debug log
+
+        # Check if passwords match
+        if password != confirm_password:
+            messages.error(request, "Passwords do not match!")
+            return redirect("register")
+
+        # Check if username already exists
+        if CustomUser.objects.filter(username=username).exists():
+            messages.error(request, "Username already taken!")
+            return redirect("register")
+        
+        # Check password length and number requirement
+        if len(password) < 8 or not re.search(r"\d", password):
+            messages.error(request, "Password must be at least 8 characters long and contain at least 1 number.")
+            return redirect("register")
+
+        # Create the user
+        user = CustomUser.objects.create_user(username=username, password=password)
+        user.role = role
+        user.save()
+
+        print(f"User created: {user.username} - Role: {user.role}")  # Debug log
+
+        # Log in the user and redirect to home
+        user = authenticate(request, username=username, password=password)
+        if user:
+            print(f"User authenticated: {user.username}")  # Debug log    
+            login(request, user)
+            if user.role == 'student':
+                return redirect('student_home_interface')
+            elif user.role == 'teacher':
+                return redirect('teacher_home_interface')
+        else:
+            print("Authentication failed!")  # Debug log
+            messages.error(request, "Something went wrong. Please try logging in manually.")
+            return redirect("login_interface")
+
+    return render(request, "register.html")
 
 def polls_list(request):
     polls = Poll.objects.all()
