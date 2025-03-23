@@ -143,7 +143,7 @@
     <main>
         <h1>Create an Account</h1>
 
-        <form action="{% url 'login_interface' %}" method="GET">
+        <form action="{% url 'register' %}" method="POST">
             {% csrf_token %}
             <!-- Username Field -->
             <label for="username">Username</label>
@@ -161,7 +161,9 @@
             </select>
 
             <!-- Submit Button -->
-            <button type="submit">Register</button>
+            <a href="{% url 'login_interface' %}">
+                <button type="button">Register</button>
+            </a>
         </form>
     </main>
 

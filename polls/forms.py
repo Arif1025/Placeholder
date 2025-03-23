@@ -11,24 +11,17 @@ class CustomLoginForm(AuthenticationForm):
         label="Login as"
     )
 class CustomUserCreationForm(UserCreationForm):
-    email = forms.EmailField(widget=forms.EmailInput(attrs={"id": "email"}))
+    
     username = forms.CharField(widget=forms.TextInput(attrs={"id": "username"}))
-    password1 = forms.CharField(widget=forms.PasswordInput(attrs={"id": "password"}))
-    password2 = forms.CharField(widget=forms.PasswordInput(attrs={"id": "password"}))
+    password = forms.CharField(widget=forms.PasswordInput(attrs={"id": "password"}))
     role = forms.ChoiceField(
-    choices=[('student', 'Student'), ('professor', 'Teacher')],
+    choices=[('student', 'Student'), ('teacher', 'Teacher')],
     widget=forms.Select(attrs={"id": "role"}),
     )
 
     class Meta:
         model = CustomUser
-        fields = ["username", "email", "role", "password1", "password2"]
-
-    def clean_email(self):
-        email = self.cleaned_data.get("email")
-        if CustomUser.objects.filter(email=email).exists():
-            raise forms.ValidationError("This email is already in use.")
-        return email
+        fields = ["username", "role", "password"]
 
     def save(self, commit=True):
         user = super().save(commit=False)
