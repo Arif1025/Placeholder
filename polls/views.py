@@ -6,7 +6,7 @@ from django.contrib.auth.decorators import login_required
 from .forms import CustomLoginForm, QuestionForm, PollForm, JoinPollForm, CustomUserCreationForm
 from django.forms import modelformset_factory
 import csv
-from .models import Poll, Question, Choice, CustomUser, Response, ClassStudent, Class
+from .models import Poll, Question, Choice, CustomUser, Response, ClassStudent, Class, StudentResponse, StudentQuizResult
 from django.contrib.auth.hashers import make_password
 import re
 
@@ -95,6 +95,7 @@ def create_quiz(request):
     poll = Poll.objects.filter(id=poll_id).first() if poll_id else None
     poll_form = PollForm(instance=poll) if poll else PollForm() 
     question_form = QuestionForm() if poll else None
+    questions = []
     
     if request.method == "POST" and "save_quiz" in request.POST:
         poll_form = PollForm(request.POST, instance=poll)
@@ -135,9 +136,21 @@ def logout_view(request):
     logout(request)  # Log out the user
     return redirect('login_interface')  # Redirect to the login page
 
-def final_score_page(request):
-    # Any logic for final score
-    return render(request, "final_score_page.html")
+def final_score_page(request, poll_code):
+    quiz_results = request.session.get('quiz_results', None)
+    poll = get_object_or_404(Poll, code=poll_code)
+
+    student_result = StudentQuizResult.objects.filter(student=request.user, poll=poll).first()
+
+    context = {
+        "poll": poll,
+        "poll_code": poll_code,
+        "student_result": student_result,
+    }
+    if not quiz_results:
+         return redirect('student_home_interface')  # Redirect if no results found
+    
+    return render(request, "final_score_page.html", {"quiz_results": quiz_results}, context)
 
 # View for the question template page
 def question_template(request):
@@ -334,11 +347,12 @@ def student_view_quiz(request, poll_code):
         return redirect('student_home_interface')
 
     # Prepare options for MCQ questions
-    for question in poll.questions.all():
-        if question.question_type == 'mcq' and question.options:
-            question.options_list = [opt.strip() for opt in question.options.split(',')]
+    questions = poll.questions.all()
+    for question in questions:
+        if question.question_type == 'mcq':
+            question.options_list = list(question.choices.values_list("text", flat=True))
 
-    return render(request, 'student_view_quiz.html', {'poll': poll})
+    return render(request, 'student_view_quiz.html', {'poll': poll, 'questions': questions})
 
 @login_required
 def end_poll(request, poll_id):
@@ -352,8 +366,14 @@ def end_poll(request, poll_id):
     return redirect("teacher_home_interface")  
 
 # View for the student confirmation page
-def student_confirmation_page(request):
-    return render(request, 'student_confirmation_page.html')
+def student_confirmation_page(request, poll_code):
+    poll = get_object_or_404(Poll, code=poll_code)  # Ensure poll exists
+
+    context = {
+        "poll": poll,
+        "poll_code": poll_code,
+    }
+    return render(request, "student_confirmation_page.html", context)
 
 
 @login_required
@@ -459,3 +479,73 @@ def reset_password(request):
         return redirect('login_interface')
 
     return render(request, 'reset_password.html')
+
+@login_required
+def submit_quiz(request, poll_code):
+    poll = get_object_or_404(Poll, code=poll_code)
+    print(f"Poll Code: {poll.code}") # Debug log
+
+    # Ensure the student is a participant
+    if request.user not in poll.participants.all():
+        return redirect('student_home_interface')
+
+    if request.method == "POST":
+        score = 0  # Track student score
+        total_questions = poll.questions.count()
+        student_answers = []  # Store student responses for session
+
+        for question in poll.questions.all():
+            student_answer = request.POST.get(f"question_{question.id}", "").strip()
+
+            is_correct = False  # Default to incorrect
+
+            # If MCQ, check if the answer is correct
+            if question.question_type == "mcq":
+                correct_choice = question.choices.filter(is_correct=True).first()
+                if correct_choice and student_answer == correct_choice.text:
+                    is_correct = True
+                    score += 1  # Increase score for correct answers
+
+            # If Text-based, save the student's response
+            elif question.question_type == "text":
+                StudentResponse.objects.create(
+                    student=request.user,
+                    question=question,
+                    response=student_answer
+                )
+                is_correct = student_answer.lower() == question.correct_answer.lower()
+
+                if is_correct:
+                    score += 1  # Increase score for correct text answers
+
+            # Store student answer for final score page
+            student_answers.append({
+                'question': question.text,
+                'user_answer': student_answer,
+                'correct_answer': question.correct_answer if question.question_type == "text" else (correct_choice.text if correct_choice else "No correct answer set"),
+                'is_correct': is_correct
+            })
+
+        # Store student score in database
+        StudentQuizResult.objects.create(
+            student=request.user,
+            poll=poll,
+            score=score,
+            total_questions=total_questions
+        )
+
+        # Store results in session for final score page
+        request.session['quiz_results'] = {
+            'poll_code': poll_code,
+            'score_percentage': round((score / total_questions) * 100) if total_questions > 0 else 0,
+            'correct_count': score,
+            'total_questions': total_questions,
+            'student_answers': student_answers
+        }
+
+        return redirect("student_confirmation_page", poll_code=poll.code)  # Redirect to confirmation page
+
+    if poll_code:
+        return redirect("student_view_quiz", poll_code=poll_code)
+    else:
+        return redirect("student_home_interface")

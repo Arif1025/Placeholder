@@ -162,7 +162,11 @@
 <body>
 
 <!-- Back Button -->
-<a href="{% url 'student_confirmation_page' %}" class="back-button">Back</a>
+{% if poll_code %}
+    <a href="{% url 'student_confirmation_page' poll_code=poll_code %}">Back</a>
+{% else %}
+    <p>Error: poll_code is missing</p>
+{% endif %}
 
 <!-- Form to handle the logout action -->
 <form action="{% url 'logout' %}" method="post">
@@ -172,58 +176,27 @@
 
     <!-- Main content section where the score and questions are displayed -->
     <main class="main-content">
-        <!-- Section displaying the final score -->
         <section class="score-section">
+            Poll Code: {{ poll.code }}
             <h1>Final Score</h1>
-            <!-- Paragraph showing the user's score -->
-            <p class="score">Your Score: 80% (4/5 Correct)</p> 
+            <p class="score">Your Score: {{ quiz_results.score_percentage }}% ({{ quiz_results.correct_count }}/{{ quiz_results.total_questions }} Correct)</p>
         </section>
-
-        <!-- Section for Question 1 -->
-        <section class="question-section">
-            <p class="question">Question 1: What is the capital of France?</p>
-            <!-- Result showing the correct answer for Question 1 -->
-            <p class="result">Correct: Paris</p> 
-        </section>
-
-        <!-- Section for Question 2 -->
-        <section class="question-section">
-            <p class="question">Question 2: What is the largest planet in the solar system?</p>
-            <!-- Result showing the wrong answer for Question 2, and the correct one -->
-            <p class="wrong">Wrong: Earth (Correct Answer: Jupiter)</p>
-        </section>
-
-        <!-- Section for Question 3 -->
-        <section class="question-section">
-            <p class="question">Question 3: What is 2 + 2?</p>
-            <!-- Result showing the correct answer for Question 3 -->
-            <p class="result">Correct: 4</p> 
-        </section>
-
-        <!-- Section for Question 4 -->
-        <section class="question-section">
-            <p class="question">Question 4: Who wrote 'Romeo and Juliet'?</p>
-            <!-- Result showing the wrong answer for Question 4, and the correct one -->
-            <p class="wrong">Wrong: Mark Twain (Correct Answer: William Shakespeare)</p> 
-        </section>
-
-        <!-- Section for Question 5 -->
-        <section class="question-section">
-            <p class="question">Question 5: What is the square root of 9?</p>
-            <!-- Result showing the correct answer for Question 5 -->
-            <p class="result">Correct: 3</p> 
-        </section>
-
-        <!-- Section with navigation buttons -->
+    
+        {% for answer in quiz_results.student_answers %}
+            <section class="question-section">
+                <p class="question">{{ answer.question }}</p>
+                {% if answer.is_correct %}
+                    <p class="result">Correct: {{ answer.correct_answer }}</p>
+                {% else %}
+                    <p class="wrong">Wrong: {{ answer.user_answer }} (Correct Answer: {{ answer.correct_answer }})</p>
+                {% endif %}
+            </section>
+        {% endfor %}
+    
         <section class="navigation-buttons">
-            <!-- Button to go back to the home page -->
-            <a href="{% url 'student_home_interface' %}">
-                <button class="navigation-button">Back to Home</button>
-            </a>
-            <!-- Button to allow the user to try the quiz again -->
-            <a href="{% url 'question_template' %}">
-                <button class="navigation-button">Try Again</button>
-            </a>
+            <form action="{% url 'student_home_interface' %}" method="get">
+                <button class="navigation-button" type="submit">Back to Home</button>
+            </form>
         </section>
     </main>
 

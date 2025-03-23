@@ -51,6 +51,7 @@ class Question(models.Model):
 class Choice(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='choices')
     text = models.CharField(max_length=255)
+    is_correct = models.BooleanField(default=False)
 
     def __str__(self):
         return self.text.strip().replace('\r\n', ' ').replace('\n', ' ')
@@ -107,3 +108,17 @@ class ClassStudent(models.Model):
 
     def __str__(self):
         return f"{self.student.username} in {self.class_instance.name}"
+    
+class StudentResponse(models.Model):
+    student = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    response = models.TextField()
+    submitted_at = models.DateTimeField(auto_now_add=True)
+
+class StudentQuizResult(models.Model):
+    student = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    poll = models.ForeignKey(Poll, on_delete=models.CASCADE)
+    score = models.IntegerField()
+    total_questions = models.IntegerField()
+    submitted_at = models.DateTimeField(auto_now_add=True)
+    
