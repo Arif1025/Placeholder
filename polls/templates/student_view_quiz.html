@@ -82,7 +82,7 @@
             background-color: #9b4dca;
         }
 
-        /* Back Button Styling */
+        /* Back Button Positioned at Top Left */
         .back-button {
             background-color: #9b4dca;
             color: white;
@@ -137,32 +137,35 @@
 <body>
     <main>
         <h2>{{ poll.title }}</h2>
-    <p>{{ poll.description }}</p>
+        <p>{{ poll.description }}</p>
 
-    <!-- Render poll questions -->
-    {% for question in poll.questions.all %}
-    <div class="quiz-container">
-        <h3>{{ question.text }}</h3>
-        
-        {% if question.question_type == 'mcq' %}
-            <ul class="quiz-options">
-                {% for option in question.options_list %}
-                    <li>
-                        <label>
-                            <input type="radio" name="question_{{ question.id }}" value="{{ option }}">
-                            {{ option }}
-                        </label>
-                    </li>
-                {% endfor %}
-            </ul>
-        {% elif question.question_type == 'text' %}
-            <p>Your Answer:</p>
-            <textarea name="question_{{ question.id }}" rows="4" cols="50"></textarea>
-        {% endif %}
-        </div>
-    {% endfor %}    
+        <form action="{% url 'submit_quiz' poll.code %}" method="post">
+            {% csrf_token %}
+            
+            {% for question in questions %}
+            <div class="quiz-container">
+                <p class="quiz-question">{{ question.text }}</p>
 
-    <button type="submit" class="submit-button">Submit Answers</button>
+                {% if question.question_type == 'mcq' %}
+                    <ul class="quiz-options">
+                        {% for option in question.options_list %}
+                            <li>
+                                <label>
+                                    <input type="radio" name="question_{{ question.id }}" value="{{ option }}">
+                                    {{ option }}
+                                </label>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% elif question.question_type == 'text' %}
+                    <p>Your Answer:</p>
+                    <textarea name="question_{{ question.id }}" rows="4" cols="50"></textarea>
+                {% endif %}
+            </div>
+            {% endfor %}
+
+            <button type="submit" class="submit-button">Submit Answers</button>
+        </form>
     </main>
 
     <!-- Logout Button -->

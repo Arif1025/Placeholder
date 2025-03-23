@@ -140,7 +140,7 @@
 <body>
 
     <!-- Back to Home Button -->
-    <a href="{% url 'home' %}">
+    <a href="{% url 'student_home_interface' %}">
         <button class="back-to-home-button">Back to Home</button>
     </a>
 
@@ -160,8 +160,8 @@
 
         <!-- Navigation Button to show results -->
         <section class="navigation-buttons">
-            <a href="{% url 'final_score_page' %}">
-            <button class="navigation-button">Show My Results</button>
+            <a href="{% url 'final_score_page' poll_code=poll_code %}">
+                <button class="navigation-button">Show My Results</button>
             </a>
         </section>
 

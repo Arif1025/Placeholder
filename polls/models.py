@@ -30,14 +30,14 @@ class Poll(models.Model):
 
 class Question(models.Model):
     QUESTION_TYPES = [
-        ('text', 'Written Answer'),
+        ('written', 'Written Answer'),
         ('mcq', 'Multiple Choice'),
     ]
 
     poll = models.ForeignKey(Poll, on_delete=models.CASCADE, related_name='questions')
     text = models.CharField(max_length=255) 
-    question_type = models.CharField(max_length=10, choices=QUESTION_TYPES, default='text')
-    options = models.TextField(blank=True, help_text="Comma-separated options for MCQ")
+    question_type = models.CharField(max_length=10, choices=QUESTION_TYPES, default='written')
+    correct_answer = models.CharField(max_length=255, blank=True) # For written answers
 
     def __str__(self):
         return self.text
@@ -50,11 +50,15 @@ class Question(models.Model):
 
 class Choice(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='choices')
-    choice_text = models.CharField(max_length=255)
+    text = models.CharField(max_length=255)
+    is_correct = models.BooleanField(default=False)
 
     def __str__(self):
-        return self.choice_text
+        return self.text.strip().replace('\r\n', ' ').replace('\n', ' ')
     
+    def save(self, *args, **kwargs):
+        self.text = self.text.strip().replace('\r\n', ' ').replace('\n', ' ')
+        super().save(*args, **kwargs)
 
 class Response(models.Model):
     user = models.ForeignKey(
@@ -104,3 +108,17 @@ class ClassStudent(models.Model):
 
     def __str__(self):
         return f"{self.student.username} in {self.class_instance.name}"
+    
+class StudentResponse(models.Model):
+    student = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    response = models.TextField()
+    submitted_at = models.DateTimeField(auto_now_add=True)
+
+class StudentQuizResult(models.Model):
+    student = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    poll = models.ForeignKey(Poll, on_delete=models.CASCADE)
+    score = models.IntegerField()
+    total_questions = models.IntegerField()
+    submitted_at = models.DateTimeField(auto_now_add=True)
+    

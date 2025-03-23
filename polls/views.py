@@ -6,7 +6,7 @@ from django.contrib.auth.decorators import login_required
 from .forms import CustomLoginForm, QuestionForm, PollForm, JoinPollForm, CustomUserCreationForm
 from django.forms import modelformset_factory
 import csv
-from .models import Poll, Question, Choice, CustomUser, Response, ClassStudent, Class
+from .models import Poll, Question, Choice, CustomUser, Response, ClassStudent, Class, StudentResponse, StudentQuizResult
 from django.contrib.auth.hashers import make_password
 import re
 
@@ -91,13 +91,14 @@ def teacher_home_interface(request):
 
 @login_required
 def create_quiz(request):
-    poll_id = request.session.pop("poll_id", None)  # Get poll ID from session
-    poll = None
-    poll_form = PollForm()
-    question_form = QuestionForm()
+    poll_id = request.session.get("poll_id")  # Get poll ID from session
+    poll = Poll.objects.filter(id=poll_id).first() if poll_id else None
+    poll_form = PollForm(instance=poll) if poll else PollForm() 
+    question_form = QuestionForm() if poll else None
+    questions = []
     
     if request.method == "POST" and "save_quiz" in request.POST:
-        poll_form = PollForm(request.POST)
+        poll_form = PollForm(request.POST, instance=poll)
         if poll_form.is_valid():
             poll = poll_form.save(commit=False)
             poll.created_by = request.user
@@ -110,11 +111,19 @@ def create_quiz(request):
             if question_form.is_valid():
                 question = question_form.save(commit=False)
                 question.poll = poll
+                question.correct_answer = request.POST.get('correct_answer')
                 question.save()
+
+                options = request.POST.getlist("options[]")
+                for option_text in options:
+                    if option_text.strip():
+                        Choice.objects.create(question=question, text=option_text.strip())
+
                 return redirect("create_quiz")  # Stay on page to add more questions
 
-    questions = Question.objects.filter(poll=poll) if poll else []
-
+    elif "poll_id" in request.GET:
+        poll = get_object_or_404(Poll, id=request.GET["poll_id"])
+        questions = poll.questions.all()
 
     return render(request, "create_quiz.html", {
         "poll_form": poll_form,
@@ -127,9 +136,22 @@ def logout_view(request):
     logout(request)  # Log out the user
     return redirect('login_interface')  # Redirect to the login page
 
-def final_score_page(request):
-    # Any logic for final score
-    return render(request, "final_score_page.html")
+def final_score_page(request, poll_code):
+    quiz_results = request.session.get('quiz_results', None)
+    poll = get_object_or_404(Poll, code=poll_code)
+
+    student_result = StudentQuizResult.objects.filter(student=request.user, poll=poll).first()
+
+    context = {
+        "poll": poll,
+        "poll_code": poll_code,
+        "student_result": student_result,
+        "quiz_results": quiz_results
+    }
+    if not quiz_results:
+         return redirect('student_home_interface')  # Redirect if no results found
+    
+    return render(request, "final_score_page.html", context)
 
 # View for the question template page
 def question_template(request):
@@ -297,9 +319,25 @@ def enter_poll_code(request):
 @login_required
 def teacher_view_quiz(request, poll_id):
     poll = get_object_or_404(Poll, id=poll_id)
-    questions = Question.objects.filter(poll=poll)
+    questions = Question.objects.filter(poll=poll).prefetch_related('choices')
 
-    return render(request, 'teacher_view_quiz.html', {'poll': poll, 'questions': questions})
+    questions_with_choices = []
+
+    for question in questions:
+        choices = list(question.choices.all())
+        choice_labels = list(zip("abcdefghijklmnopqrstuvwxyz", choices))
+    
+        # Debugging: Print choices
+        print(f"Question: {question.text}")
+        for letter, choice in choice_labels:
+            print(f"{letter}) {choice.text}")
+        
+        questions_with_choices.append({
+            'question': question,
+            'choice_labels': choice_labels
+        })
+
+    return render(request, 'teacher_view_quiz.html', {'poll': poll, 'questions_with_choices': questions_with_choices})
 
 @login_required
 def student_view_quiz(request, poll_code):
@@ -310,11 +348,12 @@ def student_view_quiz(request, poll_code):
         return redirect('student_home_interface')
 
     # Prepare options for MCQ questions
-    for question in poll.questions.all():
-        if question.question_type == 'mcq' and question.options:
-            question.options_list = [opt.strip() for opt in question.options.split(',')]
+    questions = poll.questions.all()
+    for question in questions:
+        if question.question_type == 'mcq':
+            question.options_list = list(question.choices.values_list("text", flat=True))
 
-    return render(request, 'student_view_quiz.html', {'poll': poll})
+    return render(request, 'student_view_quiz.html', {'poll': poll, 'questions': questions})
 
 @login_required
 def end_poll(request, poll_id):
@@ -328,26 +367,70 @@ def end_poll(request, poll_id):
     return redirect("teacher_home_interface")  
 
 # View for the student confirmation page
-def student_confirmation_page(request):
-    return render(request, 'student_confirmation_page.html')
+def student_confirmation_page(request, poll_code):
+    poll = get_object_or_404(Poll, code=poll_code)  # Ensure poll exists
+
+    context = {
+        "poll": poll,
+        "poll_code": poll_code,
+    }
+    return render(request, "student_confirmation_page.html", context)
 
 
 @login_required
 def view_poll_results(request, poll_id):
-    # Fetch the poll based on the poll_id
     poll = get_object_or_404(Poll, id=poll_id)
+    questions_data = []
 
-    # Fetch related data
-    questions = Question.objects.filter(poll=poll)
-    choices = Choice.objects.filter(question__in=questions)
+    for question in poll.questions.all():
+        # Determine the correct answer based on the question type
+        if question.question_type == "mcq":
+            correct_choice = question.choices.filter(is_correct=True).first()
+            correct_choice_text = correct_choice.choice_text if correct_choice else "No correct answer set"
+        elif question.question_type == "text":
+            correct_choice_text = question.correct_answer
 
-    # Pass data to the chart template
+        # Fetch all student responses for the question
+        student_responses = StudentResponse.objects.filter(question=question).select_related('student')
+
+        correct_count = 0
+        wrong_count = 0
+        response_data = []
+
+        for response in student_responses:
+            is_correct = False
+
+            # Check correctness based on question type
+            if question.question_type == "mcq" and correct_choice_text:
+                is_correct = response.response.strip().lower() == correct_choice_text.strip().lower()
+            elif question.question_type == "text":
+                is_correct = response.response.strip().lower() == correct_choice_text.strip().lower()
+
+            if is_correct:
+                correct_count += 1
+            else:
+                wrong_count += 1
+
+            # Append response details
+            response_data.append({
+                'student_name': response.student.get_full_name() or response.student.username,
+                'student_response': response.response,
+                'is_correct': 'Yes' if is_correct else 'No'
+            })
+
+        # Append question data
+        questions_data.append({
+            'question_text': question.text,
+            'correct_choice': correct_choice_text,
+            'correct_count': correct_count,
+            'wrong_count': wrong_count,
+            'responses': response_data
+        })
+
     return render(request, 'charts.html', {
         'poll': poll,
-        'questions': questions,
-        'choices': choices,
+        'questions_data': questions_data
     })
-
 def register_view(request):
     if request.method == "POST":
         username = request.POST.get("username")
@@ -403,19 +486,51 @@ def export_poll_responses(request, poll_id):
     # Get the poll or return a 404 if not found
     poll = get_object_or_404(Poll, id=poll_id)
     
-    # Get all responses for the poll
-    responses = Response.objects.filter(question__poll=poll)
-    
+    # Get all student responses and results for the poll
+    student_responses = StudentResponse.objects.filter(question__poll=poll)
+    student_results = StudentQuizResult.objects.filter(poll=poll)
+
     # Create a response object and set headers for CSV download
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = f'attachment; filename="{poll.title}_responses.csv"'
 
     # Write to CSV
     writer = csv.writer(response)
-    writer.writerow(['Username', 'Question', 'Choice', 'Submitted At'])
+    writer.writerow(['Student', 'Question', 'Answer', 'Correct Answer', 'Is Correct', 'Submitted At'])
 
-    for resp in responses:
-        writer.writerow([resp.user.username if resp.user else 'Anonymous', resp.question.text, resp.choice.choice_text, resp.submitted_at])
+    for resp in student_responses:
+        correct_answer = resp.question.correct_answer if resp.question.question_type == "text" else (
+            resp.question.choices.filter(is_correct=True).first().choice_text if resp.question.choices.filter(is_correct=True).exists() else "N/A"
+        )
+
+        is_correct = (
+            resp.response.strip().lower() == correct_answer.strip().lower()
+            if resp.question.question_type == "text" else
+            "N/A"  # No direct check for MCQ without choice tracking
+        )
+
+        writer.writerow([
+            resp.student.username,
+            resp.question.text,
+            resp.response,
+            correct_answer,
+            'Yes' if is_correct else 'No',
+            resp.submitted_at
+        ])
+
+    # Add a separator and summary of student results
+    writer.writerow([])
+    writer.writerow(['Student', 'Score', 'Total Questions', 'Score Percentage', 'Submitted At'])
+
+    for result in student_results:
+        score_percentage = round((result.score / result.total_questions) * 100, 2) if result.total_questions > 0 else 0
+        writer.writerow([
+            result.student.username,
+            result.score,
+            result.total_questions,
+            f"{score_percentage}%",
+            result.submitted_at
+        ])
 
     return response
 
@@ -475,3 +590,73 @@ def reset_password(request):
             return redirect('login_interface')
 
     return render(request, 'reset_password.html')
+
+@login_required
+def submit_quiz(request, poll_code):
+    poll = get_object_or_404(Poll, code=poll_code)
+    print(f"Poll Code: {poll.code}") # Debug log
+
+    # Ensure the student is a participant
+    if request.user not in poll.participants.all():
+        return redirect('student_home_interface')
+
+    if request.method == "POST":
+        score = 0  # Track student score
+        total_questions = poll.questions.count()
+        student_answers = []  # Store student responses for session
+
+        for question in poll.questions.all():
+            student_answer = request.POST.get(f"question_{question.id}", "").strip()
+
+            is_correct = False  # Default to incorrect
+
+            # If MCQ, check if the answer is correct
+            if question.question_type == "mcq":
+                correct_choice = question.choices.filter(is_correct=True).first()
+                if correct_choice and student_answer == correct_choice.text:
+                    is_correct = True
+                    score += 1  # Increase score for correct answers
+
+            # If Text-based, save the student's response
+            elif question.question_type == "text":
+                StudentResponse.objects.create(
+                    student=request.user,
+                    question=question,
+                    response=student_answer
+                )
+                is_correct = student_answer.lower() == question.correct_answer.lower()
+
+                if is_correct:
+                    score += 1  # Increase score for correct text answers
+
+            # Store student answer for final score page
+            student_answers.append({
+                'question': question.text,
+                'user_answer': student_answer,
+                'correct_answer': question.correct_answer if question.question_type == "text" else (correct_choice.text if correct_choice else "No correct answer set"),
+                'is_correct': is_correct
+            })
+
+        # Store student score in database
+        StudentQuizResult.objects.create(
+            student=request.user,
+            poll=poll,
+            score=score,
+            total_questions=total_questions
+        )
+
+        # Store results in session for final score page
+        request.session['quiz_results'] = {
+            'poll_code': poll_code,
+            'score_percentage': round((score / total_questions) * 100) if total_questions > 0 else 0,
+            'correct_count': score,
+            'total_questions': total_questions,
+            'student_answers': student_answers
+        }
+
+        return redirect("student_confirmation_page", poll_code=poll.code)  # Redirect to confirmation page
+
+    if poll_code:
+        return redirect("student_view_quiz", poll_code=poll_code)
+    else:
+        return redirect("student_home_interface")
