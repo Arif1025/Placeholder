@@ -388,23 +388,28 @@ def export_poll_responses(request, poll_id):
 
 def forgot_password(request):
     if request.method == 'POST':
-        email = request.POST.get('email')
+        username = request.POST.get('username')
+        print("Existing usernames:", list(CustomUser.objects.values_list("username", flat=True)))
+        print("Entered username:", username)
         
         try:
-            user = CustomUser.objects.get(email=email)
+            user = CustomUser.objects.get(username=username)
+            request.session['reset_username'] = username
+            return redirect('reset_password')  # Redirect to reset password page
         except CustomUser.DoesNotExist:
-            messages.error(request, "No account found with this email.")
+            messages.error(request, "No account found with this username.")
             return redirect('forgot_password')
-
-        request.session['reset_email'] = email
-        return redirect('reset_password')  # Redirect to reset password page
 
     return render(request, 'forgot_password.html')
 
 def reset_password(request):
-    email = request.session.get('reset_email')
+    if "reset_username" not in request.session:
+        messages.error(request, "No username provided for password reset.")
+        return redirect("forgot_password")    
     
-    if not email:
+    username = request.session['reset_username']
+    
+    if not username:
         messages.error(request, "Session expired. Please request password reset again.")
         return redirect('forgot_password')
 
@@ -425,13 +430,15 @@ def reset_password(request):
         if password1 != password2:
             messages.error(request, "Passwords do not match.")
             return redirect('reset_password')
-
-        user = CustomUser.objects.get(email=email)
-        user.password = make_password(password1)
-        user.save()
-
-        messages.success(request, "Password reset successful! You can now log in.")
-        request.session.pop('reset_email', None)
-        return redirect('login_interface')
+        try:
+            user = CustomUser.objects.get(username=username)
+            user.password = make_password(password1)
+            user.save()
+            messages.success(request, "Password successfully updated. You can now log in.")
+            del request.session["reset_username"]  # Remove username from session
+            return redirect("login_interface")  # Redirect to login page
+        except CustomUser.DoesNotExist:
+            request.session.pop('reset_username', None)
+            return redirect('login_interface')
 
     return render(request, 'reset_password.html')
