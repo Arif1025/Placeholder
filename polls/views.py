@@ -379,20 +379,58 @@ def student_confirmation_page(request, poll_code):
 
 @login_required
 def view_poll_results(request, poll_id):
-    # Fetch the poll based on the poll_id
     poll = get_object_or_404(Poll, id=poll_id)
+    questions_data = []
 
-    # Fetch related data
-    questions = Question.objects.filter(poll=poll)
-    choices = Choice.objects.filter(question__in=questions)
+    for question in poll.questions.all():
+        # Determine the correct answer based on the question type
+        if question.question_type == "mcq":
+            correct_choice = question.choices.filter(is_correct=True).first()
+            correct_choice_text = correct_choice.choice_text if correct_choice else "No correct answer set"
+        elif question.question_type == "text":
+            correct_choice_text = question.correct_answer
 
-    # Pass data to the chart template
+        # Fetch all student responses for the question
+        student_responses = StudentResponse.objects.filter(question=question).select_related('student')
+
+        correct_count = 0
+        wrong_count = 0
+        response_data = []
+
+        for response in student_responses:
+            is_correct = False
+
+            # Check correctness based on question type
+            if question.question_type == "mcq" and correct_choice_text:
+                is_correct = response.response.strip().lower() == correct_choice_text.strip().lower()
+            elif question.question_type == "text":
+                is_correct = response.response.strip().lower() == correct_choice_text.strip().lower()
+
+            if is_correct:
+                correct_count += 1
+            else:
+                wrong_count += 1
+
+            # Append response details
+            response_data.append({
+                'student_name': response.student.get_full_name() or response.student.username,
+                'student_response': response.response,
+                'is_correct': 'Yes' if is_correct else 'No'
+            })
+
+        # Append question data
+        questions_data.append({
+            'question_text': question.text,
+            'correct_choice': correct_choice_text,
+            'correct_count': correct_count,
+            'wrong_count': wrong_count,
+            'responses': response_data
+        })
+
     return render(request, 'charts.html', {
         'poll': poll,
-        'questions': questions,
-        'choices': choices,
+        'questions_data': questions_data
     })
-
 def register_view(request):
     if request.method == "POST":
         form = CustomUserCreationForm(request.POST)
@@ -415,19 +453,51 @@ def export_poll_responses(request, poll_id):
     # Get the poll or return a 404 if not found
     poll = get_object_or_404(Poll, id=poll_id)
     
-    # Get all responses for the poll
-    responses = Response.objects.filter(question__poll=poll)
-    
+    # Get all student responses and results for the poll
+    student_responses = StudentResponse.objects.filter(question__poll=poll)
+    student_results = StudentQuizResult.objects.filter(poll=poll)
+
     # Create a response object and set headers for CSV download
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = f'attachment; filename="{poll.title}_responses.csv"'
 
     # Write to CSV
     writer = csv.writer(response)
-    writer.writerow(['Username', 'Question', 'Choice', 'Submitted At'])
+    writer.writerow(['Student', 'Question', 'Answer', 'Correct Answer', 'Is Correct', 'Submitted At'])
 
-    for resp in responses:
-        writer.writerow([resp.user.username if resp.user else 'Anonymous', resp.question.text, resp.choice.choice_text, resp.submitted_at])
+    for resp in student_responses:
+        correct_answer = resp.question.correct_answer if resp.question.question_type == "text" else (
+            resp.question.choices.filter(is_correct=True).first().choice_text if resp.question.choices.filter(is_correct=True).exists() else "N/A"
+        )
+
+        is_correct = (
+            resp.response.strip().lower() == correct_answer.strip().lower()
+            if resp.question.question_type == "text" else
+            "N/A"  # No direct check for MCQ without choice tracking
+        )
+
+        writer.writerow([
+            resp.student.username,
+            resp.question.text,
+            resp.response,
+            correct_answer,
+            'Yes' if is_correct else 'No',
+            resp.submitted_at
+        ])
+
+    # Add a separator and summary of student results
+    writer.writerow([])
+    writer.writerow(['Student', 'Score', 'Total Questions', 'Score Percentage', 'Submitted At'])
+
+    for result in student_results:
+        score_percentage = round((result.score / result.total_questions) * 100, 2) if result.total_questions > 0 else 0
+        writer.writerow([
+            result.student.username,
+            result.score,
+            result.total_questions,
+            f"{score_percentage}%",
+            result.submitted_at
+        ])
 
     return response
 
