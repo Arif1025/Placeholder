@@ -305,9 +305,25 @@ def enter_poll_code(request):
 @login_required
 def teacher_view_quiz(request, poll_id):
     poll = get_object_or_404(Poll, id=poll_id)
-    questions = Question.objects.filter(poll=poll)
+    questions = Question.objects.filter(poll=poll).prefetch_related('choices')
 
-    return render(request, 'teacher_view_quiz.html', {'poll': poll, 'questions': questions})
+    questions_with_choices = []
+
+    for question in questions:
+        choices = list(question.choices.all())
+        choice_labels = list(zip("abcdefghijklmnopqrstuvwxyz", choices))
+    
+        # Debugging: Print choices
+        print(f"Question: {question.text}")
+        for letter, choice in choice_labels:
+            print(f"{letter}) {choice.text}")
+        
+        questions_with_choices.append({
+            'question': question,
+            'choice_labels': choice_labels
+        })
+
+    return render(request, 'teacher_view_quiz.html', {'poll': poll, 'questions_with_choices': questions_with_choices})
 
 @login_required
 def student_view_quiz(request, poll_code):

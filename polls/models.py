@@ -53,8 +53,11 @@ class Choice(models.Model):
     text = models.CharField(max_length=255)
 
     def __str__(self):
-        return self.text
+        return self.text.strip().replace('\r\n', ' ').replace('\n', ' ')
     
+    def save(self, *args, **kwargs):
+        self.text = self.text.strip().replace('\r\n', ' ').replace('\n', ' ')
+        super().save(*args, **kwargs)
 
 class Response(models.Model):
     user = models.ForeignKey(

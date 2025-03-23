@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ poll.title }} - Questions</title>
+    <title>{{ poll.title }} - Questions with Answers</title>
     <style>
         body {
             font-family: 'Poppins', sans-serif;
@@ -84,9 +84,24 @@
 <body>
     <h1>{{ poll.title }}</h1>
     <ul>
-        {% for question in questions %}
-            <li>{{ question.text }}</li>
-            <p><strong>Correct Answer:</strong> {{ question.correct_answer }}</p>
+        {% for item in questions_with_choices %}
+            <li>
+                <p><strong>Question:</strong> {{ item.question.text }}</p>
+
+                <!-- Display options if it's a multiple-choice question -->
+                {% if item.question.question_type == "mcq" %}
+                    <p><strong>Options:</strong></p>
+                    <ul class="options">   
+                        {% for letter, choice in item.choice_labels %}
+                            <li>{{ letter }}) {{ choice.text }}</li>
+                        {% empty %}
+                            <li><em>No options available.</em></li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+
+                <p class="correct-answer"><strong>Correct Answer:</strong> {{ item.question.correct_answer }}</p>
+            </li>
         {% empty %}
             <li>No questions available.</li>
         {% endfor %}
