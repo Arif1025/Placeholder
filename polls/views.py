@@ -433,17 +433,50 @@ def view_poll_results(request, poll_id):
     })
 def register_view(request):
     if request.method == "POST":
-        form = CustomUserCreationForm(request.POST)
-        if form.is_valid():
-            user = form.save(commit=False)
-            user.role = form.cleaned_data['role']
-            user.save()
-            login(request, user)
-            return redirect("login")  # Redirect to login page after registration
-    else:
-        form = CustomUserCreationForm()
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+        confirm_password = request.POST.get("confirm_password")
+        role = request.POST.get("role")
 
-    return render(request, "register.html", {"form": form})
+        print(f"Received data - Username: {username}, Role: {role}")  # Debug log
+
+        # Check if passwords match
+        if password != confirm_password:
+            messages.error(request, "Passwords do not match!")
+            return redirect("register")
+
+        # Check if username already exists
+        if CustomUser.objects.filter(username=username).exists():
+            messages.error(request, "Username already taken!")
+            return redirect("register")
+        
+        # Check password length and number requirement
+        if len(password) < 8 or not re.search(r"\d", password):
+            messages.error(request, "Password must be at least 8 characters long and contain at least 1 number.")
+            return redirect("register")
+
+        # Create the user
+        user = CustomUser.objects.create_user(username=username, password=password)
+        user.role = role
+        user.save()
+
+        print(f"User created: {user.username} - Role: {user.role}")  # Debug log
+
+        # Log in the user and redirect to home
+        user = authenticate(request, username=username, password=password)
+        if user:
+            print(f"User authenticated: {user.username}")  # Debug log    
+            login(request, user)
+            if user.role == 'student':
+                return redirect('student_home_interface')
+            elif user.role == 'teacher':
+                return redirect('teacher_home_interface')
+        else:
+            print("Authentication failed!")  # Debug log
+            messages.error(request, "Something went wrong. Please try logging in manually.")
+            return redirect("login_interface")
+
+    return render(request, "register.html")
 
 def polls_list(request):
     polls = Poll.objects.all()
@@ -503,23 +536,28 @@ def export_poll_responses(request, poll_id):
 
 def forgot_password(request):
     if request.method == 'POST':
-        email = request.POST.get('email')
+        username = request.POST.get('username')
+        print("Existing usernames:", list(CustomUser.objects.values_list("username", flat=True)))
+        print("Entered username:", username)
         
         try:
-            user = CustomUser.objects.get(email=email)
+            user = CustomUser.objects.get(username=username)
+            request.session['reset_username'] = username
+            return redirect('reset_password')  # Redirect to reset password page
         except CustomUser.DoesNotExist:
-            messages.error(request, "No account found with this email.")
+            messages.error(request, "No account found with this username.")
             return redirect('forgot_password')
-
-        request.session['reset_email'] = email
-        return redirect('reset_password')  # Redirect to reset password page
 
     return render(request, 'forgot_password.html')
 
 def reset_password(request):
-    email = request.session.get('reset_email')
+    if "reset_username" not in request.session:
+        messages.error(request, "No username provided for password reset.")
+        return redirect("forgot_password")    
     
-    if not email:
+    username = request.session['reset_username']
+    
+    if not username:
         messages.error(request, "Session expired. Please request password reset again.")
         return redirect('forgot_password')
 
@@ -540,14 +578,16 @@ def reset_password(request):
         if password1 != password2:
             messages.error(request, "Passwords do not match.")
             return redirect('reset_password')
-
-        user = CustomUser.objects.get(email=email)
-        user.password = make_password(password1)
-        user.save()
-
-        messages.success(request, "Password reset successful! You can now log in.")
-        request.session.pop('reset_email', None)
-        return redirect('login_interface')
+        try:
+            user = CustomUser.objects.get(username=username)
+            user.password = make_password(password1)
+            user.save()
+            messages.success(request, "Password successfully updated. You can now log in.")
+            del request.session["reset_username"]  # Remove username from session
+            return redirect("login_interface")  # Redirect to login page
+        except CustomUser.DoesNotExist:
+            request.session.pop('reset_username', None)
+            return redirect('login_interface')
 
     return render(request, 'reset_password.html')
 
