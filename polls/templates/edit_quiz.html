@@ -143,23 +143,7 @@
             display: block;
             margin-top: 10px;
         }
-
-        button[type="submit"] {
-            background-color: #8e24aa;
-            color: white;
-            font-size: 18px;
-            padding: 12px 30px;
-            border: none;
-            border-radius: 50px;
-            cursor: pointer;
-            display: block;
-            margin-top: 20px;
-        }
-
-        button[type="submit"]:hover {
-            background-color: #9b4dca;
-        }
-
+        
         /* Logout Button Positioned at Top Right */
         .logout-button {
             background-color: #d32f2f; 
@@ -254,6 +238,11 @@
                     {% for question in questions %}
                         <li class="question">
                             {{ question.text }}
+                            <form method="post" action="{% url 'edit_quiz' poll.id %}" style="display:inline;">
+                                {% csrf_token %}
+                                <input type="hidden" name="question_id" value="{{ question.id }}">
+                                <button type="submit" name="delete_question" class="delete-button">Delete</button>
+                            </form>
                         </li>
                     {% endfor %}
                 </ul>
@@ -301,12 +290,6 @@
         <input type="hidden" name="poll_id" value="{{ poll.id }}">
         {{ poll_form.as_p }}
         <button type="submit" name="save_quiz">Save Quiz</button>
-    </form>
-
-    <!-- Delete Question Button -->
-    <form method="post" action="{% if question.id %}{% url 'delete_question' question.id poll.id %}{% endif %}" style="display:inline;">
-        {% csrf_token %}
-        <button type="submit" class="delete-button">Delete</button>
     </form>
 
     <!-- Logout Button -->
