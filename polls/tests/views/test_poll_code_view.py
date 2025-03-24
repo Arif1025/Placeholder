@@ -6,20 +6,29 @@ from polls.models import Poll
 User = get_user_model()
 
 class EnterPollCodeViewTest(TestCase):
-    """Tests for the Enter Poll Code page (enter_poll_code view)."""
+    """
+    Test cases for the Enter Poll Code page ('enter_poll_code' view).
+    """
 
     fixtures = ['tutorials/tests/fixtures/default_user.json']
 
     def setUp(self):
+        """
+        Set up test data, including URL and a user for testing.
+        """
         self.url = reverse('enter_poll_code')
         self.user = User.objects.get(username='@johndoe')
 
     def test_enter_poll_code_url(self):
-        """Ensure the URL path for 'enter_poll_code' is what we expect."""
+        """
+        Test that the URL path for 'enter_poll_code' matches the expected URL.
+        """
         self.assertEqual(self.url, '/enter_poll_code/')
 
     def test_get_enter_poll_code_anonymous(self):
-        """Unauthenticated users can still view the code entry page (assuming no login required)."""
+        """
+        Test that unauthenticated users can view the poll code entry page.
+        """
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'enter_poll_code.html')
@@ -31,7 +40,9 @@ class EnterPollCodeViewTest(TestCase):
         self.assertContains(response, '<button class="logout-button">Logout</button>')
 
     def test_get_enter_poll_code_logged_in(self):
-        """A logged-in user can access the poll code entry page, sees the same content."""
+        """
+        Test that a logged-in user can access the poll code entry page and sees the same content.
+        """
         self.client.login(username=self.user.username, password="Password123")
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
@@ -39,28 +50,33 @@ class EnterPollCodeViewTest(TestCase):
 
     def test_submit_poll_code_form_valid(self):
         """
-        Submitting a valid code should redirect the user 
-        to the question_template (or wherever your code says).
+        Test that submitting a valid poll code redirects to the 'question_template' page.
         """
         response = self.client.post(self.url, {'pollCode': '12345'})
-        self.assertRedirects(response, '/question_template/')  # or use reverse('question_template')
+        self.assertRedirects(response, '/question_template/')  # or reverse('question_template')
 
     def test_submit_poll_code_form_empty(self):
-        """Submitting an empty poll code should re-render form with a validation error."""
+        """
+        Test that submitting an empty poll code shows a validation error and re-renders the form.
+        """
         response = self.client.post(self.url, {'pollCode': ''})
-        # Ensure the view or form signals an error
-        # If you have a form, you might do: self.assertFormError(response, 'form', 'pollCode', 'This field is required.')
-        # Or if you manually handle it, check for an error message:
+        # Check that the form re-renders with a validation error message
         self.assertContains(response, 'Invalid poll code')
 
+
 class EndPollViewTest(TestCase):
-    """Tests for the 'end_poll' view that ends a poll (sets is_done=True, code=None)."""
+    """
+    Test cases for the 'end_poll' view, which ends a poll (sets is_done=True, code=None).
+    """
 
     def setUp(self):
+        """
+        Set up users (teacher and student), log in the teacher, and create an active poll for testing.
+        """
         self.teacher_user = User.objects.create_user(username="teacher", password="password123")
         self.student_user = User.objects.create_user(username="student", password="password123")
 
-        # Log in teacher by default
+        # Log in the teacher by default
         self.client.login(username="teacher", password="password123")
 
         # Create an active poll
@@ -75,12 +91,12 @@ class EndPollViewTest(TestCase):
 
     def test_end_poll_success(self):
         """
-        A teacher (creator) can successfully end the poll: sets poll.is_done=True and poll.code=None,
-        then redirects to the teacher home page.
+        Test that a teacher (poll creator) can successfully end a poll, which sets is_done=True 
+        and clears the poll's code, then redirects to the teacher's home interface.
         """
         response = self.client.post(self.end_poll_url)
         self.assertRedirects(response, "/teacher_home_interface/")
 
         self.poll.refresh_from_db()
         self.assertTrue(self.poll.is_done, "Poll should be ended.")
-      
+        self.assertIsNone(self.poll.code, "Poll code should be cleared.")
