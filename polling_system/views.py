@@ -1,19 +1,1 @@
-import  csv
-from django.http import HttpResponse
-from django.contrib.auth.decorators import login_required
-
-@login_required
-def download_poll_responses(request, poll_id):
-    poll=get_object_or_404(Poll, pk=poll_id)
-    responses= Response.objects.filter(question_poll=poll).select_related('user', 'question', 'choice')
-
-    response= HttpResponse(cotent_type='text/csv')
-    response['Content-Disposition']= f'attachment; filename= "{poll.title}_responses.csv"'
-
-    writer= csv.writer(response)
-    writer= writerow('User', 'Question', 'Choice', 'Submitted At')
-
-    for resp in responses:
-        wri .writerow([resp.user.username, resp.question.question_text, resp.choice.choice_text, resp.submitted_at])
-
-    return response
+import  csvfrom django.http import HttpResponsefrom django.contrib.auth.decorators import login_requiredfrom django.shortcuts import render, get_opject_or_404from django.http import JsonResponsefrom django.views.decorators.csrf import csrf_exempt@csrf_exemptdef create_poll(request):    if request.method=='POST':        data=json.loads(request.body)        question=data.get('question')        option=data.get('options', [])        poll=Poll.objects.create(question=question)        for option_text in options:            Option.objects.create(poll=poll, text=option_text)        return JsonResponse({"message":"Poll created successfully"}, staus=201)def get_poll(request,poll_id):    poll=get_opject_or_404(Poll, id=poll_id)    option=list(poll,options.values('id','text','vote'))    return JsonResponse({'question':poll.question, 'options':options})@csrf_exemptdef vote(request, option_id):    if request.method=='POST':        option=get_opject_or_404(Option,id=option_id)        option.vote+=1        option.save()        return  JsonResponse({'message':'Vote recorded successfully'}, status=200)@login_requireddef download_poll_responses(request, poll_id):    poll=get_object_or_404(Poll, pk=poll_id)    responses= Response.objects.filter(question_poll=poll).select_related('user', 'question', 'choice')    response= HttpResponse(cotent_type='text/csv')    response['Content-Disposition']= f'attachment; filename= "{poll.title}_responses.csv"'    writer= csv.writer(response)    writer= writerow('User', 'Question', 'Choice', 'Submitted At')    for resp in responses:        wri .writerow([resp.user.username, resp.question.question_text, resp.choice.choice_text, resp.submitted_at])    return response
