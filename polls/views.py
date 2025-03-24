@@ -420,7 +420,7 @@ def view_poll_results(request, poll_id):
         if question.question_type == "mcq":
             correct_choice = question.choices.filter(is_correct=True).first()
             correct_choice_text = correct_choice.choice_text if correct_choice else "No correct answer set"
-        elif question.question_type == "text":
+        elif question.question_type == "written":
             correct_choice_text = question.correct_answer
 
         # Fetch all student responses for the question
@@ -436,7 +436,7 @@ def view_poll_results(request, poll_id):
             # Check correctness based on question type
             if question.question_type == "mcq" and correct_choice_text:
                 is_correct = response.response.strip().lower() == correct_choice_text.strip().lower()
-            elif question.question_type == "text":
+            elif question.question_type == "written":
                 is_correct = response.response.strip().lower() == correct_choice_text.strip().lower()
 
             if is_correct:
@@ -532,13 +532,13 @@ def export_poll_responses(request, poll_id):
     writer.writerow(['Student', 'Question', 'Answer', 'Correct Answer', 'Is Correct', 'Submitted At'])
 
     for resp in student_responses:
-        correct_answer = resp.question.correct_answer if resp.question.question_type == "text" else (
+        correct_answer = resp.question.correct_answer if resp.question.question_type == "written" else (
             resp.question.choices.filter(is_correct=True).first().choice_text if resp.question.choices.filter(is_correct=True).exists() else "N/A"
         )
 
         is_correct = (
             resp.response.strip().lower() == correct_answer.strip().lower()
-            if resp.question.question_type == "text" else
+            if resp.question.question_type == "written" else
             "N/A"  # No direct check for MCQ without choice tracking
         )
 
@@ -642,7 +642,6 @@ def submit_quiz(request, poll_code):
             student_answer = request.POST.get(f"question_{question.id}", "").strip()
             is_correct = False  # Default to incorrect
 
-            correct_choice = None  # Ensure correct_choice is reset every loop
 
             # If MCQ, check if the answer is correct
             if question.question_type == "mcq":
@@ -653,7 +652,7 @@ def submit_quiz(request, poll_code):
                     score += 1  # Increase score for correct answers
 
             # If Text-based, save the student's response
-            elif question.question_type == "text":
+            elif question.question_type == "written":
                 StudentResponse.objects.create(
                     student=request.user,
                     question=question,
@@ -662,9 +661,10 @@ def submit_quiz(request, poll_code):
                 is_correct = student_answer.lower() == question.correct_answer.lower()
                 if is_correct:
                     score += 1  # Increase score for correct text answers
+                
+                print(f"DEBUG: Text Question - {question.text} | Stored Correct Answer: {question.correct_answer}")
 
-            # **Final Debug Before Appending**
-            correct_answer_value = question.correct_answer if question.question_type == "text" else (correct_choice.text if correct_choice else "No correct answer set")
+            correct_answer_value = question.correct_answer if question.question_type == "written" else (correct_choice.text if correct_choice else "No correct answer set")
             print(f"DEBUG: Storing Question - {question.text} | Correct Answer: {correct_answer_value}")
 
             # Store student answer for final score page
