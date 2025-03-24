@@ -60,21 +60,6 @@ class Choice(models.Model):
         self.text = self.text.strip().replace('\r\n', ' ').replace('\n', ' ')
         super().save(*args, **kwargs)
 
-class Response(models.Model):
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        null=True,
-        blank=True
-    )
-    question = models.ForeignKey(Question, on_delete=models.CASCADE)
-    choice = models.ForeignKey(Choice, on_delete=models.CASCADE)
-    submitted_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"{self.user} - {self.question} - {self.choice}"
-
-
 
 class CustomUser(AbstractUser):
     ROLE_CHOICES = [

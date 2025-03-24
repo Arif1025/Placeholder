@@ -6,16 +6,9 @@ from django.contrib.auth.decorators import login_required
 from .forms import CustomLoginForm, QuestionForm, PollForm, JoinPollForm, CustomUserCreationForm
 from django.forms import modelformset_factory
 import csv
-from .models import Poll, Question, Choice, CustomUser, Response, ClassStudent, Class, StudentResponse, StudentQuizResult
+from .models import Poll, Question, Choice, CustomUser, ClassStudent, Class, StudentResponse, StudentQuizResult
 from django.contrib.auth.hashers import make_password
 import re
-
-
-def index(request):
-    return HttpResponse("Hello, this is the index view.")
-
-def homepage(request):
-    return HttpResponse("Hello! This is the homepage at the root URL.")
 
 
 def login_view(request):
@@ -170,18 +163,18 @@ def edit_quiz(request, poll_id):
 
     if request.method == "POST":
         if "save_quiz" in request.POST:
-            print("✅ Save Quiz button clicked in edit!")  # Debugging log
+            print("Save Quiz button clicked in edit!")  # Debugging log
             print("POST data:", request.POST)  # Log the entire POST data
             poll_form = PollForm(request.POST, instance=poll)
             if poll_form.is_valid():
                 poll_form.save()  # Save changes to the poll
-                print("✅ Redirecting to teacher_home_interface...")  # Debugging log
+                print("Redirecting to teacher_home_interface...")  # Debugging log
                 return redirect("teacher_home_interface")  # Redirect to the teacher home interface
             else:
-                print("❌ Form is invalid. Errors:", poll_form.errors.as_json())  # Debugging log
+                print("Form is invalid. Errors:", poll_form.errors.as_json())  # Debugging log
 
         elif "add_question" in request.POST:
-            print("🚀 Add Question button clicked!")  # Debugging log
+            print("Add Question button clicked!")  # Debugging log
             print("POST Data Received:", request.POST)  # Debugging log    
             question_text = request.POST.get("question_text", "").strip()
             question_type = request.POST.get("question_type", "").strip()
@@ -215,7 +208,7 @@ def edit_quiz(request, poll_id):
             # Check if it's a written answer and prompt for answer if empty
             elif question.question_type == 'written':
                 correct_answer = request.POST.get('correct_answer', '').strip()
-                print("✅ Saving Written Answer:", correct_answer)  # Debugging log
+                print("Saving Written Answer:", correct_answer)  # Debugging log
                 if not correct_answer:
                     messages.error(request, "Please provide a correct answer.")
                     return redirect("edit_quiz", poll_id=poll.id)
@@ -223,20 +216,6 @@ def edit_quiz(request, poll_id):
                 question.save()
             
             messages.success(request, "Question added successfully.")
-            return redirect("edit_quiz", poll_id=poll.id)
-        
-        elif "delete_question" in request.POST:
-            question_id = request.POST.get("question_id")
-            if question_id:
-                question = Question.objects.filter(id=question_id, poll=poll).first()
-                if question:
-                    if Question.objects.filter(poll=poll).count() > 1:  # Prevent deleting last question
-                        question.delete()
-                        messages.success(request, "Question deleted successfully.")
-                    else:
-                        messages.error(request, "A poll must have at least one question.")
-                else:
-                    messages.error(request, "Invalid question selected for deletion.")
             return redirect("edit_quiz", poll_id=poll.id)
 
     return render(request, "edit_quiz.html", {
@@ -247,25 +226,20 @@ def edit_quiz(request, poll_id):
     })
 
 @login_required
-def edit_question(request, question_id):
-    question = get_object_or_404(Question, id=question_id, poll__created_by=request.user)
+def delete_question(request, poll_id, question_id):
+    poll = Poll.objects.filter(id=poll_id).first()
+    question = Question.objects.filter(id=question_id, poll=poll).first()
 
-    if request.method == "POST":
-        form = QuestionForm(request.POST, instance=question)
-        if form.is_valid():
-            form.save()
-            return redirect("edit_quiz")
+    if not poll or not question:
+        messages.error(request, "Invalid question or poll.")
+        return redirect("edit_quiz", poll_id=poll_id)
 
+    if Question.objects.filter(poll=poll).count() > 1:  # Prevent deleting the last question
+        question.delete()
+        messages.success(request, "Question deleted successfully.")
     else:
-        form = QuestionForm(instance=question)
+        messages.error(request, "A poll must have at least one question.")
 
-    return render(request, "edit_question.html", {"form": form, "question": question})
-
-@login_required
-def delete_question(request, question_id, poll_id):
-    question = get_object_or_404(Question, id=question_id, poll__created_by=request.user)
-    poll_id = question.poll.id
-    question.delete()
     return redirect("edit_quiz", poll_id=poll_id)
 
 @login_required
@@ -407,7 +381,7 @@ def view_poll_results(request, poll_id):
         # Determine the correct answer based on the question type
         if question.question_type == "mcq":
             correct_choice = question.choices.filter(is_correct=True).first()
-            correct_choice_text = correct_choice.choice_text if correct_choice else "No correct answer set"
+            correct_choice_text = correct_choice.text if correct_choice else "No correct answer set"
         elif question.question_type == "written":
             correct_choice_text = question.correct_answer
 
@@ -521,7 +495,7 @@ def export_poll_responses(request, poll_id):
 
     for resp in student_responses:
         correct_answer = resp.question.correct_answer if resp.question.question_type == "written" else (
-            resp.question.choices.filter(is_correct=True).first().choice_text if resp.question.choices.filter(is_correct=True).exists() else "N/A"
+            resp.question.choices.filter(is_correct=True).first().text if resp.question.choices.filter(is_correct=True).exists() else "N/A"
         )
 
         is_correct = (
