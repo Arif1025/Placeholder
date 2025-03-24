@@ -22,4 +22,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('polls/<int:poll_id>/results/', poll_results, name='poll_results'),
     path('polls/<int:poll_id/download/', download_poll_responses, name='download_poll_responses')
+    path('create_poll/', create_poll, name='create_poll'),
+    path('get_poll/<int:poll_id>/', get_poll, name='get_poll'),
+    path('vote/<int:option_id>/', vote, name='vote'),
 ]
