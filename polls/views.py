@@ -412,33 +412,104 @@ def student_confirmation_page(request, poll_code):
 
 @login_required
 def view_poll_results(request, poll_id):
-    # Fetch the poll based on the poll_id
     poll = get_object_or_404(Poll, id=poll_id)
+    questions_data = []
 
-    # Fetch related data
-    questions = Question.objects.filter(poll=poll)
-    choices = Choice.objects.filter(question__in=questions)
+    for question in poll.questions.all():
+        # Determine the correct answer based on the question type
+        if question.question_type == "mcq":
+            correct_choice = question.choices.filter(is_correct=True).first()
+            correct_choice_text = correct_choice.choice_text if correct_choice else "No correct answer set"
+        elif question.question_type == "text":
+            correct_choice_text = question.correct_answer
 
-    # Pass data to the chart template
+        # Fetch all student responses for the question
+        student_responses = StudentResponse.objects.filter(question=question).select_related('student')
+
+        correct_count = 0
+        wrong_count = 0
+        response_data = []
+
+        for response in student_responses:
+            is_correct = False
+
+            # Check correctness based on question type
+            if question.question_type == "mcq" and correct_choice_text:
+                is_correct = response.response.strip().lower() == correct_choice_text.strip().lower()
+            elif question.question_type == "text":
+                is_correct = response.response.strip().lower() == correct_choice_text.strip().lower()
+
+            if is_correct:
+                correct_count += 1
+            else:
+                wrong_count += 1
+
+            # Append response details
+            response_data.append({
+                'student_name': response.student.get_full_name() or response.student.username,
+                'student_response': response.response,
+                'is_correct': 'Yes' if is_correct else 'No'
+            })
+
+        # Append question data
+        questions_data.append({
+            'question_text': question.text,
+            'correct_choice': correct_choice_text,
+            'correct_count': correct_count,
+            'wrong_count': wrong_count,
+            'responses': response_data
+        })
+
     return render(request, 'charts.html', {
         'poll': poll,
-        'questions': questions,
-        'choices': choices,
+        'questions_data': questions_data
     })
-
 def register_view(request):
     if request.method == "POST":
-        form = CustomUserCreationForm(request.POST)
-        if form.is_valid():
-            user = form.save(commit=False)
-            user.role = form.cleaned_data['role']
-            user.save()
-            login(request, user)
-            return redirect("login")  # Redirect to login page after registration
-    else:
-        form = CustomUserCreationForm()
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+        confirm_password = request.POST.get("confirm_password")
+        role = request.POST.get("role")
 
-    return render(request, "register.html", {"form": form})
+        print(f"Received data - Username: {username}, Role: {role}")  # Debug log
+
+        # Check if passwords match
+        if password != confirm_password:
+            messages.error(request, "Passwords do not match!")
+            return redirect("register")
+
+        # Check if username already exists
+        if CustomUser.objects.filter(username=username).exists():
+            messages.error(request, "Username already taken!")
+            return redirect("register")
+        
+        # Check password length and number requirement
+        if len(password) < 8 or not re.search(r"\d", password):
+            messages.error(request, "Password must be at least 8 characters long and contain at least 1 number.")
+            return redirect("register")
+
+        # Create the user
+        user = CustomUser.objects.create_user(username=username, password=password)
+        user.role = role
+        user.save()
+
+        print(f"User created: {user.username} - Role: {user.role}")  # Debug log
+
+        # Log in the user and redirect to home
+        user = authenticate(request, username=username, password=password)
+        if user:
+            print(f"User authenticated: {user.username}")  # Debug log    
+            login(request, user)
+            if user.role == 'student':
+                return redirect('student_home_interface')
+            elif user.role == 'teacher':
+                return redirect('teacher_home_interface')
+        else:
+            print("Authentication failed!")  # Debug log
+            messages.error(request, "Something went wrong. Please try logging in manually.")
+            return redirect("login_interface")
+
+    return render(request, "register.html")
 
 def polls_list(request):
     polls = Poll.objects.all()
@@ -448,41 +519,78 @@ def export_poll_responses(request, poll_id):
     # Get the poll or return a 404 if not found
     poll = get_object_or_404(Poll, id=poll_id)
     
-    # Get all responses for the poll
-    responses = Response.objects.filter(question__poll=poll)
-    
+    # Get all student responses and results for the poll
+    student_responses = StudentResponse.objects.filter(question__poll=poll)
+    student_results = StudentQuizResult.objects.filter(poll=poll)
+
     # Create a response object and set headers for CSV download
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = f'attachment; filename="{poll.title}_responses.csv"'
 
     # Write to CSV
     writer = csv.writer(response)
-    writer.writerow(['Username', 'Question', 'Choice', 'Submitted At'])
+    writer.writerow(['Student', 'Question', 'Answer', 'Correct Answer', 'Is Correct', 'Submitted At'])
 
-    for resp in responses:
-        writer.writerow([resp.user.username if resp.user else 'Anonymous', resp.question.text, resp.choice.choice_text, resp.submitted_at])
+    for resp in student_responses:
+        correct_answer = resp.question.correct_answer if resp.question.question_type == "text" else (
+            resp.question.choices.filter(is_correct=True).first().choice_text if resp.question.choices.filter(is_correct=True).exists() else "N/A"
+        )
+
+        is_correct = (
+            resp.response.strip().lower() == correct_answer.strip().lower()
+            if resp.question.question_type == "text" else
+            "N/A"  # No direct check for MCQ without choice tracking
+        )
+
+        writer.writerow([
+            resp.student.username,
+            resp.question.text,
+            resp.response,
+            correct_answer,
+            'Yes' if is_correct else 'No',
+            resp.submitted_at
+        ])
+
+    # Add a separator and summary of student results
+    writer.writerow([])
+    writer.writerow(['Student', 'Score', 'Total Questions', 'Score Percentage', 'Submitted At'])
+
+    for result in student_results:
+        score_percentage = round((result.score / result.total_questions) * 100, 2) if result.total_questions > 0 else 0
+        writer.writerow([
+            result.student.username,
+            result.score,
+            result.total_questions,
+            f"{score_percentage}%",
+            result.submitted_at
+        ])
 
     return response
 
 def forgot_password(request):
     if request.method == 'POST':
-        email = request.POST.get('email')
+        username = request.POST.get('username')
+        print("Existing usernames:", list(CustomUser.objects.values_list("username", flat=True)))
+        print("Entered username:", username)
         
         try:
-            user = CustomUser.objects.get(email=email)
+            user = CustomUser.objects.get(username=username)
+            request.session['reset_username'] = username
+            return redirect('reset_password')  # Redirect to reset password page
         except CustomUser.DoesNotExist:
-            messages.error(request, "No account found with this email.")
+            messages.error(request, "No account found with this username.")
             return redirect('forgot_password')
-
-        request.session['reset_email'] = email
-        return redirect('reset_password')  # Redirect to reset password page
 
     return render(request, 'forgot_password.html')
 
 def reset_password(request):
-    email = request.session.get('reset_email')
+    if "reset_username" not in request.session:
+        messages.error(request, "No username provided for password reset.")
+        return redirect("forgot_password")    
     
-    if not email:
+    username = request.session['reset_username']
+    
+    if not username:
         messages.error(request, "Session expired. Please request password reset again.")
         return redirect('forgot_password')
 
@@ -503,14 +611,16 @@ def reset_password(request):
         if password1 != password2:
             messages.error(request, "Passwords do not match.")
             return redirect('reset_password')
-
-        user = CustomUser.objects.get(email=email)
-        user.password = make_password(password1)
-        user.save()
-
-        messages.success(request, "Password reset successful! You can now log in.")
-        request.session.pop('reset_email', None)
-        return redirect('login_interface')
+        try:
+            user = CustomUser.objects.get(username=username)
+            user.password = make_password(password1)
+            user.save()
+            messages.success(request, "Password successfully updated. You can now log in.")
+            del request.session["reset_username"]  # Remove username from session
+            return redirect("login_interface")  # Redirect to login page
+        except CustomUser.DoesNotExist:
+            request.session.pop('reset_username', None)
+            return redirect('login_interface')
 
     return render(request, 'reset_password.html')
 
