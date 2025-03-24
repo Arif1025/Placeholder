@@ -1,11 +1,11 @@
 from django.test import TestCase
 from django.urls import reverse
 
-
 class QuestionPageViewTestCase(TestCase):
     """Tests for the question page view and its elements."""
 
     def setUp(self):
+        """Set up the URL for the question page."""
         self.url = reverse('question_page')  
 
     def test_question_page_url(self):
@@ -13,13 +13,16 @@ class QuestionPageViewTestCase(TestCase):
         self.assertEqual(self.url, '/question_page/') 
 
     def test_get_question_page(self):
-        """Test that the question page loads properly."""
+        """
+        Test that the question page loads properly and contains the necessary content.
+        Verifies that the correct template is used and important elements are present.
+        """
         response = self.client.get(self.url)
 
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'question_page.html')  
 
-        # Check for expected elements in the HTML (e.g., the question and options)
+        # Ensure key content is present
         self.assertContains(response, '<h1>Question 1</h1>')
         self.assertContains(response, 'What is the capital of France?')
         self.assertContains(response, 'Paris')
@@ -40,30 +43,31 @@ class QuestionPageViewTestCase(TestCase):
         self.assertContains(response, '<button class="leave-quiz-button" onclick="window.location.href=\'{% url \'leave_quiz\' %}\'">Leave Quiz</button>')
 
     def test_navigation_buttons(self):
-        """Test that the navigation buttons (Back and Next) are present."""
+        """Test that the 'Back' and 'Next' navigation buttons are present."""
         response = self.client.get(self.url)
 
         self.assertContains(response, '<button class="navigation-button">Back</button>')
         self.assertContains(response, '<button class="navigation-button">Next</button>')
 
     def test_control_buttons(self):
-        """Test that the control buttons (Lock Answer and Show Answer) are present."""
+        """Test that the 'Lock Answer' and 'Show Answer' buttons are present."""
         response = self.client.get(self.url)
 
         self.assertContains(response, '<button class="control-button">Lock Answer</button>')
         self.assertContains(response, '<button class="control-button">Show Answer</button>')
 
     def test_answer_toggle_buttons(self):
-        """Test that the Unlock Answer and Hide Answer buttons are present."""
+        """Test that the 'Unlock Answer' and 'Hide Answer' buttons are present."""
         response = self.client.get(self.url)
 
         self.assertContains(response, '<button class="answer-toggle-button">Unlock Answer</button>')
         self.assertContains(response, '<button class="answer-toggle-button">Hide Answer</button>')
 
+        # Check for a specific style to ensure the answer buttons are styled correctly
         self.assertContains(response, 'background-color: #8e24aa') 
 
     def test_mobile_responsiveness(self):
-        """Test if the page is responsive on smaller screens."""
+        """Test if the page is responsive on smaller screens (e.g., mobile)."""
         response = self.client.get(self.url)
         
         self.assertContains(response, '@media screen and (max-width: 768px)')
@@ -75,7 +79,10 @@ class QuestionPageViewTestCase(TestCase):
         self.assertContains(response, '&copy; 2025 Polling System')
 
     def test_question_options(self):
-        """Test that the question options are present and correctly rendered."""
+        """
+        Test that the question options (radio buttons) are present and correctly rendered.
+        Ensures all options are properly listed.
+        """
         response = self.client.get(self.url)
 
         # Ensure radio buttons for options are rendered properly

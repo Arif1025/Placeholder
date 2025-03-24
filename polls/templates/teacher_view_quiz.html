@@ -89,6 +89,7 @@
 <body>
     <h1>{{ poll.title }}</h1>
     <ul>
+        <!-- Loop through all questions and their choices -->
         {% for item in questions_with_choices %}
             <li>
                 <p><strong>Question:</strong> {{ item.question.text }}</p>
@@ -105,6 +106,7 @@
                     </ul>
                 {% endif %}
 
+                <!-- Display the correct answer for multiple-choice questions -->
                 {% if item.question.question_type == "mcq" %}
                     <p class="correct-answer"><strong>Correct Answer:</strong> 
                         {% for choice in item.question.choices.all %}
@@ -114,6 +116,7 @@
                         {% endfor %}
                     </p>
                 {% else %}
+                    <!-- Display the correct answer for written questions -->
                     <p class="correct-answer"><strong>Correct Answer:</strong> {{ item.question.correct_answer }}</p>
                 {% endif %}
             </li>
@@ -121,15 +124,17 @@
             <li>No questions available.</li>
         {% endfor %}
     </ul>
+
+    <!-- Back Button to return to teacher home -->
     <a href="{% url 'teacher_home_interface' %}" class="back-button">Back to Home</a>
 
-    <!-- Logout Button -->
+    <!-- Logout Form -->
     <form action="{% url 'logout' %}" method="post">
         {% csrf_token %}
         <button type="submit" class="logout-button">Logout</button>
     </form>
 
-    <!-- Footer Section -->
+    <!-- Footer Section with Copyright -->
     <footer>
         <p>&copy; 2025 Polling System</p>
     </footer>

@@ -177,39 +177,41 @@
     </section>
     {% endfor %}
 
-    <a href="{% url 'export_poll_responses' poll.id %}">
+    <a href="{% url 'export_poll_responses' poll.id %}"> <!-- Link to download responses -->
         <button class="download-button">Download Report</button>
     </a>
 </main>
 
 <footer>
-    <p>&copy; 2025 Polling System</p>
+    <p>&copy; 2025 Polling System</p> <!-- Footer with copyright -->
 </footer>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Include Chart.js library -->
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Poll data for chart rendering 
         const questionsData = {{ questions_data|safe }};
         
         questionsData.forEach((question, index) => {
-            const ctx = document.getElementById(`pollChart${index + 1}`).getContext('2d');
+            // Get canvas context 
+            const ctx = document.getElementById(`pollChart${index + 1}`).getContext('2d'); 
             const chartData = {
                 labels: ['Correct Answers', 'Wrong Answers'],
                 datasets: [{
                     label: `Question ${index + 1} Results`,
                     data: [question.correct_count, question.wrong_count],
-                    backgroundColor: ['#4CAF50', '#F44336'],
+                    backgroundColor: ['#4CAF50', '#F44336'], // Colors for correct/wrong answers
                 }]
             };
 
             new Chart(ctx, {
-                type: 'bar',
+                type: 'bar', // Bar chart type 
                 data: chartData,
                 options: {
-                    responsive: true,
+                    responsive: true, // Make chart responsive 
                     scales: {
                         y: {
-                            beginAtZero: true
+                            beginAtZero: true  // Ensure y-axis starts at 0 
                         }
                     }
                 }

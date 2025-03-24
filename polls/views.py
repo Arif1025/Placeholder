@@ -16,6 +16,7 @@ def login_view(request):
         username = request.POST['username']
         password = request.POST['password']
         
+        # Authenticate the user
         user = authenticate(request, username=username, password=password)
         
         if user is not None:
@@ -28,29 +29,19 @@ def login_view(request):
         else:
             # Handle invalid login
             return render(request, 'login_interface.html', {'error': 'Invalid username or password'})
-    return render(request, 'login_interface.html')
-
+    return render(request, 'login_interface.html')  # Render login page if GET request
 
 @login_required
 def student_home_interface(request):
-    print("student_home_interface view called") # Debug log
-    print("Request user:", request.user) # Debug log
-    print("User role:", request.user.role) # Debug log
-
-    # If the user isn't authenticated or isn't a student, redirect to login
+    # Ensure the user is a student
     if not request.user.is_authenticated or request.user.role != 'student':
         return redirect('login_interface')
     
     # Get the polls the student has joined
     joined_polls = request.user.joined_polls.all()
 
-    # Get the classes that the student is in
+    # Get the classes the student is in
     classes = ClassStudent.objects.filter(student=request.user).select_related('class_instance')
-
-    # Debugging print
-    print("Logged in student:", request.user)
-    print("Classes fetched for student:", classes)
-    print("Number of classes:", classes.count())
 
     # Collect teachers for each class
     class_teachers = {}
@@ -69,7 +60,7 @@ def teacher_home_interface(request):
     # Get all polls created by the teacher
     quizzes = Poll.objects.all()
 
-    # Get the classes that the teacher is teaching
+    # Get the classes the teacher is teaching
     classes = Class.objects.filter(teacher=request.user)
 
     # Collect students in each class
@@ -78,12 +69,11 @@ def teacher_home_interface(request):
         students = ClassStudent.objects.filter(class_instance=class_instance)
         class_students[class_instance] = [student.student for student in students]
 
-
-    return render(request, "teacher_home_interface.html", {"polls": quizzes,'classes': classes,
-        'class_students': class_students})
+    return render(request, "teacher_home_interface.html", {"polls": quizzes, 'classes': classes, 'class_students': class_students})
 
 @login_required
 def create_quiz(request):
+    # Remove any existing poll_id in session
     if "poll_id" in request.session:
         del request.session["poll_id"]
 
@@ -112,7 +102,7 @@ def create_quiz(request):
         "poll": poll,
         "questions": questions
     })
-    
+
 def logout_view(request):
     logout(request)  # Log out the user
     return redirect('login_interface')  # Redirect to the login page
@@ -131,24 +121,17 @@ def final_score_page(request, poll_code):
     }
     if not quiz_results:
          return redirect('student_home_interface')  # Redirect if no results found
-    
-    print("\n==== DEBUG: Loaded Quiz Results from Session ====")
-    import pprint
-    pp = pprint.PrettyPrinter(indent=4)
-    pp.pprint(quiz_results)
 
     return render(request, "final_score_page.html", context)
 
-# View for the question template page
 def question_template(request):
+    # Render the question template page
     return render(request, 'question_template.html')
 
-# View for leave_quiz view
 def leave_quiz(request):
-    if request.method == "POST":  # Handle the POST request when the form is submitted
+    if request.method == "POST":
         return redirect('enter_poll_code')  # Redirect to the enter_poll_code page
-    return redirect('enter_poll_code')
-
+    return redirect('enter_poll_code')  # If not POST, redirect anyway
 
 @login_required
 def edit_quiz(request, poll_id):
@@ -163,29 +146,20 @@ def edit_quiz(request, poll_id):
 
     if request.method == "POST":
         if "save_quiz" in request.POST:
-            print("Save Quiz button clicked in edit!")  # Debugging log
-            print("POST data:", request.POST)  # Log the entire POST data
             poll_form = PollForm(request.POST, instance=poll)
             if poll_form.is_valid():
                 poll_form.save()  # Save changes to the poll
-                print("Redirecting to teacher_home_interface...")  # Debugging log
                 return redirect("teacher_home_interface")  # Redirect to the teacher home interface
-            else:
-                print("Form is invalid. Errors:", poll_form.errors.as_json())  # Debugging log
 
         elif "add_question" in request.POST:
-            print("Add Question button clicked!")  # Debugging log
-            print("POST Data Received:", request.POST)  # Debugging log    
             question_text = request.POST.get("question_text", "").strip()
             question_type = request.POST.get("question_type", "").strip()
             correct_answer = request.POST.get("correct_answer", "").strip()
 
-            print("Received correct_answer:", correct_answer)  # Debugging log
-
             if not question_text:
                 messages.error(request, "Question text cannot be empty.")
                 return redirect("edit_quiz", poll_id=poll.id)
-            
+
             question = Question(poll=poll, text=question_text, question_type=question_type)
                 
             # Check if it's an MCQ
@@ -208,7 +182,6 @@ def edit_quiz(request, poll_id):
             # Check if it's a written answer and prompt for answer if empty
             elif question.question_type == 'written':
                 correct_answer = request.POST.get('correct_answer', '').strip()
-                print("Saving Written Answer:", correct_answer)  # Debugging log
                 if not correct_answer:
                     messages.error(request, "Please provide a correct answer.")
                     return redirect("edit_quiz", poll_id=poll.id)
@@ -274,30 +247,17 @@ def class_view_student(request, class_id):
 
 @login_required
 def enter_poll_code(request):
-
-    print("Enter poll code view is being called")  # Debug log
     if request.method == 'POST':
-        print("POST data recieved:", request.POST)  # Debug log
         form = JoinPollForm(request.POST)
         if form.is_valid():
             poll_code = form.cleaned_data['poll_code']
             try:
-                print(f"Looking for poll with code: {poll_code}")  # Debug log                
                 poll = Poll.objects.get(code=poll_code)
-                print(f"Poll found: {poll.title}")  # Debug log                
-
                 poll.participants.add(request.user)
-                print(f"User {request.user.username} added to poll {poll.title}")  # Debug log
-
-                # Redirect back to student home interface with success message
                 return redirect('student_home_interface')
             except Poll.DoesNotExist:
-                print("Poll not found")  # Debug log
                 form.add_error('poll_code', 'Invalid poll code. Please try again.')
-        else:
-            print(form.errors)
     else:
-        print("GET request recieved")  # Debug log
         form = JoinPollForm()
 
     return render(request, 'enter_poll_code.html', {'form': form})
@@ -313,11 +273,6 @@ def teacher_view_quiz(request, poll_id):
         choices = list(question.choices.all())
         choice_labels = list(zip("abcdefghijklmnopqrstuvwxyz", choices))
     
-        # Debugging: Print choices
-        print(f"Question: {question.text}")
-        for letter, choice in choice_labels:
-            print(f"{letter}) {choice.text}")
-        
         questions_with_choices.append({
             'question': question,
             'choice_labels': choice_labels
@@ -331,35 +286,36 @@ def student_view_quiz(request, poll_code):
     
     # Check if the student is a participant in this poll
     if request.user not in poll.participants.all():
-        return redirect('student_home_interface')
+        return redirect('student_home_interface')  # Redirect if not a participant
 
     # Prepare options for MCQ questions
     questions = poll.questions.all().order_by('id')
     for question in questions:
         if question.question_type == 'mcq':
-            question.options_list = list(question.choices.values_list("text", flat=True))
+            question.options_list = list(question.choices.values_list("text", flat=True))  # List MCQ options
         
+        # Determine correct answer based on question type
         if question.question_type == 'mcq':
             correct_choice = question.choices.filter(is_correct=True).first()
             correct_answer = correct_choice.text if correct_choice else "No correct option set"
         else:
-            correct_answer = question.correct_answer  # Written questions store correct_answer directly
+            correct_answer = question.correct_answer  # Direct correct answer for written questions
 
         print(f"Question ID: {question.id} -> {question.text}")
         print(f"Correct Answer: {correct_answer}\n")
 
-    return render(request, 'student_view_quiz.html', {'poll': poll, 'questions': questions})
+    return render(request, 'student_view_quiz.html', {'poll': poll, 'questions': questions})  # Render the quiz view for student
 
 @login_required
 def end_poll(request, poll_id):
-    poll = get_object_or_404(Poll, id=poll_id, created_by=request.user)
+    poll = get_object_or_404(Poll, id=poll_id, created_by=request.user)  # Only the poll creator can end it
     if request.method == 'POST':
-        poll.is_done = True
-        poll.code = None  
+        poll.is_done = True  # Mark the poll as done
+        poll.code = None  # Clear the poll code
         poll.save()
         messages.success(request, f"Poll '{poll.title}' has been ended. Code cleared.")
-        return redirect("teacher_home_interface")
-    return redirect("teacher_home_interface")  
+        return redirect("teacher_home_interface")  # Redirect to teacher's home interface
+    return redirect("teacher_home_interface")  # Redirect if not POST request
 
 # View for the student confirmation page
 def student_confirmation_page(request, poll_code):
@@ -369,8 +325,7 @@ def student_confirmation_page(request, poll_code):
         "poll": poll,
         "poll_code": poll_code,
     }
-    return render(request, "student_confirmation_page.html", context)
-
+    return render(request, "student_confirmation_page.html", context)  # Render the confirmation page for student
 
 @login_required
 def view_poll_results(request, poll_id):
@@ -425,7 +380,8 @@ def view_poll_results(request, poll_id):
     return render(request, 'charts.html', {
         'poll': poll,
         'questions_data': questions_data
-    })
+    })  # Render poll results with student responses and correctness
+
 def register_view(request):
     if request.method == "POST":
         username = request.POST.get("username")
@@ -471,11 +427,11 @@ def register_view(request):
             messages.error(request, "Something went wrong. Please try logging in manually.")
             return redirect("login_interface")
 
-    return render(request, "register.html")
+    return render(request, "register.html")  # Render the registration page
 
 def polls_list(request):
-    polls = Poll.objects.all()
-    return render(request, 'polls/polls.html', {'polls': polls})
+    polls = Poll.objects.all()  # Fetch all polls
+    return render(request, 'polls/polls.html', {'polls': polls})  # Render the polls list page
 
 def export_poll_responses(request, poll_id):
     # Get the poll or return a 404 if not found
@@ -527,12 +483,12 @@ def export_poll_responses(request, poll_id):
             result.submitted_at
         ])
 
-    return response
+    return response  # Return the CSV file for download
 
 def forgot_password(request):
     if request.method == 'POST':
         username = request.POST.get('username')
-        print("Existing usernames:", list(CustomUser.objects.values_list("username", flat=True)))
+        print("Existing usernames:", list(CustomUser.objects.values_list("username", flat=True)))  # Debug log
         print("Entered username:", username)
         
         try:
@@ -543,7 +499,7 @@ def forgot_password(request):
             messages.error(request, "No account found with this username.")
             return redirect('forgot_password')
 
-    return render(request, 'forgot_password.html')
+    return render(request, 'forgot_password.html')  # Render the forgot password page
 
 def reset_password(request):
     if "reset_username" not in request.session:
@@ -584,52 +540,55 @@ def reset_password(request):
             request.session.pop('reset_username', None)
             return redirect('login_interface')
 
-    return render(request, 'reset_password.html')
+    return render(request, 'reset_password.html')  # Render the reset password page
 
 @login_required
 def submit_quiz(request, poll_code):
     poll = get_object_or_404(Poll, code=poll_code)
-    print(f"Poll Code: {poll.code}") # Debug log
+    print(f"Poll Code: {poll.code}")  # Debug log to check which poll is being accessed
 
-    # Ensure the student is a participant
+    # Ensure the student is a participant in this poll
     if request.user not in poll.participants.all():
-        return redirect('student_home_interface')
+        return redirect('student_home_interface')  # Redirect if the user is not a participant
 
     if request.method == "POST":
-        score = 0  # Track student score
-        total_questions = poll.questions.count()
-        student_answers = []  # Store student responses for session
+        score = 0  # Initialize the student's score
+        total_questions = poll.questions.count()  # Total number of questions in the poll
+        student_answers = []  # List to store all the student's responses for session storage
 
+        # Iterate over all the questions in the poll
         for question in poll.questions.all():
-            student_answer = request.POST.get(f"question_{question.id}", "").strip()
-            is_correct = False  # Default to incorrect
+            student_answer = request.POST.get(f"question_{question.id}", "").strip()  # Get student's answer
+            is_correct = False  # Default assumption: the student's answer is incorrect
 
-
-            # If MCQ, check if the answer is correct
+            # If the question is multiple-choice (MCQ), check if the answer is correct
             if question.question_type == "mcq":
-                correct_choice = question.choices.filter(is_correct=True).first()
+                correct_choice = question.choices.filter(is_correct=True).first()  # Find the correct choice
                 print(f"DEBUG: Processing MCQ - {question.text} | Correct Choice: {correct_choice.text if correct_choice else 'None'}")
+                # If the student's answer matches the correct choice, it's correct
                 if correct_choice and student_answer == correct_choice.text:
                     is_correct = True
                     score += 1  # Increase score for correct answers
 
-            # If Text-based, save the student's response
+            # If the question is a written answer, check if the answer matches the correct answer
             elif question.question_type == "written":
+                # Store the student's written response in the database
                 StudentResponse.objects.create(
                     student=request.user,
                     question=question,
                     response=student_answer
                 )
+                # Check if the student's answer is correct
                 is_correct = student_answer.lower() == question.correct_answer.lower()
                 if is_correct:
-                    score += 1  # Increase score for correct text answers
-                
+                    score += 1  # Increase score for correct answers
                 print(f"DEBUG: Text Question - {question.text} | Stored Correct Answer: {question.correct_answer}")
 
+            # Determine the correct answer to store, depending on the question type
             correct_answer_value = question.correct_answer if question.question_type == "written" else (correct_choice.text if correct_choice else "No correct answer set")
             print(f"DEBUG: Storing Question - {question.text} | Correct Answer: {correct_answer_value}")
 
-            # Store student answer for final score page
+            # Append the student's answer and correctness info to the answers list
             student_answers.append({
                 'question': question.text,
                 'user_answer': student_answer,
@@ -637,7 +596,7 @@ def submit_quiz(request, poll_code):
                 'is_correct': is_correct
             })
 
-        # Store student score in database
+        # Store the student's quiz result in the database
         StudentQuizResult.objects.create(
             student=request.user,
             poll=poll,
@@ -645,23 +604,26 @@ def submit_quiz(request, poll_code):
             total_questions=total_questions
         )
 
-        # Store results in session for final score page
+        # Store the results in the session for the final score page
         request.session['quiz_results'] = {
             'poll_code': poll_code,
-            'score_percentage': round((score / total_questions) * 100) if total_questions > 0 else 0,
+            'score_percentage': round((score / total_questions) * 100) if total_questions > 0 else 0,  # Calculate percentage
             'correct_count': score,
             'total_questions': total_questions,
             'student_answers': student_answers
         }
 
+        # Debug log to print out all the student's answers before saving to session
         print("\n==== DEBUG: Final Student Answers Before Saving to Session ====")
         import pprint
         pp = pprint.PrettyPrinter(indent=4)
         pp.pprint(student_answers)
 
-        return redirect("student_confirmation_page", poll_code=poll.code)  # Redirect to confirmation page
+        # Redirect the student to the confirmation page
+        return redirect("student_confirmation_page", poll_code=poll.code)  
 
+    # If it's not a POST request, redirect to the quiz view page to start the quiz
     if poll_code:
         return redirect("student_view_quiz", poll_code=poll_code)
     else:
-        return redirect("student_home_interface")
+        return redirect("student_home_interface")  # If no poll code, redirect to the student's home interface

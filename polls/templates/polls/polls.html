@@ -1,9 +1,9 @@
-{% for poll in polls %}
-    <h2>{{ poll.title }}</h2>
+{% for poll in polls %}  <!-- Loop through each poll in the 'polls' list -->
+    <h2>{{ poll.title }}</h2>  <!-- Display the title of the poll -->
     <a href="{% url 'export_poll_responses' poll.id %}" class="btn btn-primary">
-        Download Responses as CSV
+        Download Responses as CSV  <!-- Link to download poll responses as a CSV file -->
     </a>
-    <p>{{ poll.description }}</p>
+    <p>{{ poll.description }}</p>  <!-- Display the description of the poll -->
 {% empty %}
-    <p>No polls available.</p>
+    <p>No polls available.</p>  <!-- Message if there are no polls -->
 {% endfor %}

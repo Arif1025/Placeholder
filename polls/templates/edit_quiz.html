@@ -253,6 +253,7 @@
                 <option value="written">Written Answer</option>
             </select>
 
+            <!-- Options Section -->
             <div id="options-section">
                 <label>Options:</label>
                 <div id="options-container">
@@ -267,15 +268,18 @@
                 <button type="button" class="add-option" onclick="addOption()">+ Add Option</button>
             </div>
 
+            <!-- Written Answer Section -->
             <div id="written-answer" style="display:none;">
                 <label for="correct_answer">Correct Answer:</label>
                 <input type="text" id="correct_answer" name="correct_answer">
             </div>
 
+            <!-- Submit Button -->
             <button type="submit" name="add_question">Add Question</button>
 
         </form>
 
+        <!-- Delete Question -->
         {% for question in questions %}
             <form method="post" action="{% url 'delete_question' poll.id question.id %}" id="delete-form-{{ question.id }}">
                 {% csrf_token %}
@@ -300,68 +304,74 @@
         <button type="submit" class="logout-button">Logout</button>
     </form>    
 
-    <!-- Footer Section -->
+    <!-- Footer Section with Copyright -->
     <footer>
         <p>&copy; 2025 Polling System</p>
     </footer>
 
     <script>
+        // Function to add a new option input field
         function addOption() {
             const container = document.getElementById("options-container");
             const correctAnswerDropdown = document.getElementById("correct_option");
-
+    
             const wrapper = document.createElement("div");
             wrapper.classList.add("option-wrapper");
-
+    
             const input = document.createElement("input");
             input.type = "text";
             input.name = "options[]";
             input.placeholder = "Enter an option";
             input.required = true;
-
+    
             const removeButton = document.createElement("button");
             removeButton.type = "button";
             removeButton.classList.add("remove-option");
             removeButton.innerText = "Remove";
             removeButton.onclick = function() {
-                container.removeChild(wrapper);
-                updateCorrectAnswerDropdown();
+                container.removeChild(wrapper);  // Remove option on button click
+                updateCorrectAnswerDropdown();  // Update dropdown options
             };
-
+    
             wrapper.appendChild(input);
             wrapper.appendChild(removeButton);
             container.appendChild(wrapper);
-
-            input.addEventListener("input", updateCorrectAnswerDropdown);
+    
+            input.addEventListener("input", updateCorrectAnswerDropdown);  // Update dropdown when input changes
         }
-
+    
+        // Function to toggle between MCQ and written answer options
         function toggleOptions() {
             var type = document.getElementById("question_type").value;
             var optionsSection = document.getElementById("options-section");
             var writtenAnswerSection = document.getElementById("written-answer");
             var correctOptionSelect = document.getElementById("correct_option");
-
+    
+            // Show MCQ options and hide written answer section
             if (type === "mcq") {
                 optionsSection.style.display = "block";
                 writtenAnswerSection.style.display = "none";
                 correctOptionSelect.setAttribute("required", "true");
-            } else {
+            } else { // Show written answer and hide MCQ options
                 optionsSection.style.display = "none";
                 writtenAnswerSection.style.display = "block";
-                correctOptionSelect.removeAttribute("required");  // ✅ Remove required for written answers
+                correctOptionSelect.removeAttribute("required");  // Remove required for written answers
             }
         }
-
+    
+        // Run toggleOptions when the page loads
         document.addEventListener("DOMContentLoaded", function () {
-            toggleOptions();  // Run this function when the page loads
+            toggleOptions();
         });
-
+    
+        // Function to update the correct answer dropdown based on available options
         function updateCorrectAnswerDropdown() {
             const correctAnswerDropdown = document.getElementById("correct_option");
             correctAnswerDropdown.innerHTML = '<option value="">Select the correct option</option>'; // Reset
-
+    
             let hasOptions = false;
-
+    
+            // Loop through option inputs and add them to the dropdown
             document.querySelectorAll("input[name='options[]']").forEach((optionInput) => {
                 if (optionInput.value.trim() !== "") {
                     let optionElement = document.createElement("option");
@@ -372,13 +382,14 @@
                 }
             });
             
+            // If there are no valid options, remove the 'required' attribute
             if (!hasOptions) {
-                correctAnswerDropdown.removeAttribute("required"); // Ensure it won't block form submission
+                correctAnswerDropdown.removeAttribute("required");
             } else {
                 correctAnswerDropdown.setAttribute("required", "true");
             }
         }
-    </script>
+    </script>    
 
 </body>
 </html>

@@ -161,7 +161,7 @@
 </head>
 <body>
 
-    <!-- Back Button -->
+    <!-- Back Button to Student Confirmation Page-->
     {% if poll_code %}
         <form action="{% url 'student_confirmation_page' poll_code=poll_code %}" method="get" style="display: inline;">
             <button type="submit" class="back-button">Back</button>
@@ -197,7 +197,7 @@
     
     </main>
 
-    <!-- Footer section -->
+    <!-- Footer section with Copyright -->
     <footer>
         <!-- Footer with copyright notice -->
         <p>&copy; 2025 Polling System</p>

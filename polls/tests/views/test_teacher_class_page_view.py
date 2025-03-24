@@ -5,20 +5,21 @@ class TeacherPageViewTestCase(TestCase):
     """Tests for the teacher class page view and its elements."""
 
     def setUp(self):
-        self.url = reverse('class_view_teacher') 
+        """Setup the test by defining the URL for the teacher's class page."""
+        self.url = reverse('class_view_teacher')  # URL for the teacher's class page
 
     def test_teacher_page_url(self):
-        """Test that the URL is correct."""
-        self.assertEqual(self.url, '/class_view_teacher/')  
+        """Test that the URL is correctly resolved."""
+        self.assertEqual(self.url, '/class_view_teacher/')  # Ensure the URL is correct
 
     def test_get_teacher_page(self):
         """Test that the teacher page loads properly."""
         response = self.client.get(self.url)
 
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'class_template_page_teacher.html')
+        self.assertEqual(response.status_code, 200)  # Ensure the page loads with status code 200 (OK)
+        self.assertTemplateUsed(response, 'class_template_page_teacher.html')  # Ensure the correct template is used
 
-        # Check for expected elements in the HTML (e.g., class title, teacher's name)
+        # Check for key content that should be displayed (e.g., class title, teacher's name)
         self.assertContains(response, '<h1>Class View</h1>')
         self.assertContains(response, 'Welcome, Teacher!')
         self.assertContains(response, 'Math 101')
@@ -28,6 +29,7 @@ class TeacherPageViewTestCase(TestCase):
         """Test that the list of enrolled students and their grades are displayed correctly."""
         response = self.client.get(self.url)
 
+        # Ensure the "Enrolled Students" section contains expected students and their details
         self.assertContains(response, 'Enrolled Students')
         self.assertContains(response, 'John Doe')
         self.assertContains(response, 'Grade: 85')
@@ -43,6 +45,7 @@ class TeacherPageViewTestCase(TestCase):
         """Test that the most recent poll is displayed correctly."""
         response = self.client.get(self.url)
 
+        # Check for the "Most Recent Poll" section and its content
         self.assertContains(response, 'Most Recent Poll')
         self.assertContains(response, 'Poll 2: Feedback on last lesson')
 
@@ -50,24 +53,28 @@ class TeacherPageViewTestCase(TestCase):
         """Test that the average grade for the most recent poll is displayed correctly."""
         response = self.client.get(self.url)
 
+        # Check that the average grade for the recent poll is displayed
         self.assertContains(response, 'Average Grade for Recent Poll: 84.3')
 
     def test_logout_button(self):
         """Test that the 'Logout' button is visible on the page."""
         response = self.client.get(self.url)
 
+        # Ensure the 'Logout' button is present on the page
         self.assertContains(response, '<button type="submit" class="logout-button">Logout</button>')
 
     def test_footer(self):
         """Test that the footer is displayed properly with the correct text."""
         response = self.client.get(self.url)
 
+        # Check for the footer and ensure it contains the copyright text
         self.assertContains(response, '&copy; 2025 Polling System')
 
     def test_mobile_responsiveness(self):
         """Test if the page is responsive on smaller screens."""
         response = self.client.get(self.url)
         
+        # Ensure media query for responsiveness is included in the page's content
         self.assertContains(response, '@media screen and (max-width: 768px)')
 
     def test_student_elements_visibility(self):
@@ -86,17 +93,19 @@ class TeacherPageViewTestCase(TestCase):
         """Test that the poll list items are displayed correctly for the teacher."""
         response = self.client.get(self.url)
         
+        # Ensure that poll list items are shown correctly for the teacher
         self.assertContains(response, '<li>Poll 2: Feedback on last lesson</li>')
 
     def test_logout_button_position(self):
         """Test that the logout button is correctly positioned at the top-right corner."""
         response = self.client.get(self.url)
 
+        # Check that the logout button is correctly styled and positioned
         self.assertContains(response, 'position: fixed; top: 20px; right: 20px;')
 
     def test_back_button_position(self):
         """Test that the back button is correctly positioned at the top-left corner."""
         response = self.client.get(self.url)
 
+        # Check that the back button is correctly styled and positioned
         self.assertContains(response, 'position: fixed; top: 20px; left: 20px;')
-

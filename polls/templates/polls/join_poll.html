@@ -1,16 +1,15 @@
-<h1>Join a Poll</h1>
+<h1>Join a Poll</h1>  
 
-
-{% if messages %}
-  {% for message in messages %}
+{% if messages %}  <!-- Check if there are any messages to display -->
+  {% for message in messages %}  <!-- Loop through and display all messages -->
     <div style="color: red;">
-      {{ message }}
+      {{ message }}  <!-- Display the message in red -->
     </div>
   {% endfor %}
 {% endif %}
 
-<form method="POST" novalidate>
-  {% csrf_token %}
-  {{ form.as_p }}
-  <button type="submit">Join</button>
+<form method="POST" novalidate>  <!-- Form to join the poll -->
+  {% csrf_token %}  <!-- CSRF token for security -->
+  {{ form.as_p }}  <!-- Render the form fields as paragraph elements -->
+  <button type="submit">Join</button>  <!-- Submit button to join the poll -->
 </form>

@@ -1,6 +1,7 @@
-<h1>{{ poll.title }} - Questions</h1>
+<h1>{{ poll.title }} - Questions</h1>  <!-- Display the poll title -->
+
 <ul>
-  {% for question in questions %}
-    <li>{{ question.question_text }}</li>
+  {% for question in questions %}  <!-- Loop through each question in the 'questions' list -->
+    <li>{{ question.question_text }}</li>  <!-- Display the text of each question -->
   {% endfor %}
 </ul>
