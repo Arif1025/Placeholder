@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-device,initial-scale=1.0">
+    <title>Polling system</title>
+    <script src="https:/code.jquery.com/jqury-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Polling System</h1>
+    <div id="teacher-section">
+        <h2>Create a Poll</h2>
+        <input type="text" id="question" placeholder="Enter poll question"><br>
+        <div id="options>">
+            <input type="text" class="option" placeholder="=option1"><br>
+            <input type="text" class="option" placeholder="=option2"><br>
+        </div>
+        <button onclick="addOption()">Add Option</button>
+        <button onclick="createPoll()">Create Poll</button>
+    </div>
+
+    <div id="poll-section">
+        <h2>Vote on a Poll</h2>
+        <div id="poll-question"></div>
+        <div id="poll-option"></div>
+        <button onclick="submitVote()">Submit Vote</button>
+    </div>
+    <script>
+        function addOption(){
+            $('#options').append('input type='text' class='option' placeholder='New Option'><br>
+        }
+
+        function createPoll(){
+            let question = $('#question').val();
+            let options=[];
+            $('.option').each(function(){
+                let value=$(this).val();
+                if(value) options.push(value);
+            });
+
+            $.post('/create_poll', {question, options), function(data){
+                alert('Poll Created Successfully!);
+                leadPoll();
+            })
+        }
+
+        function loadPoll(){
+            $.get('/get_poll', function(data){
+                $('#poll-question').text(data.question);
+                let option Html='';
+                data.options.forEach(option=>{
+                    optionHtml+='<input type='radio' name='vote' value='${option}'>${option}<br>';
+                })
+                $('#poll-options').html(optionHtml);
+            })
+        }
+
+        function submitVote(){
+            let selectedOption = $('input[name='vote']:checked').val();
+            if(!selectedOption){
+                alert('please select an option.');
+                return;
+            }
+
+            $.post('/vote', {option:selectOption}, function(data){
+                alert('Vote submitted successfully!);
+            });
+        }
+
+        $(document.ready(function(){
+            loadPoll();
+        });
+    </script>
+</body>
+</html>
