@@ -108,6 +108,58 @@
             margin-top: 30px;
         }
 
+        .options-container {
+            margin-bottom: 10px;
+        }
+
+        .option-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .remove-option {
+            background-color: #f44336;
+            color: white;
+            font-size: 14px;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .remove-option:hover {
+            background-color: #d32f2f;
+        }
+
+        .add-option {
+            background-color: #4CAF50;
+            color: white;
+            font-size: 16px;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            display: block;
+            margin-top: 10px;
+        }
+
+        button[type="submit"] {
+            background-color: #8e24aa;
+            color: white;
+            font-size: 18px;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            display: block;
+            margin-top: 20px;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #9b4dca;
+        }
+
         /* Logout Button Positioned at Top Right */
         .logout-button {
             background-color: #d32f2f; 
@@ -187,7 +239,7 @@
 
     <!-- Main quiz container -->
     <div class="quiz-container">
-        <form method="post">
+        <form method="post" action="{% url 'edit_quiz' poll.id %}">
             {% csrf_token %}
             
             <!-- Poll Form -->
@@ -202,30 +254,60 @@
                     {% for question in questions %}
                         <li class="question">
                             {{ question.text }}
-                            <form method="post" action="{% url 'delete_question' question.id poll.id %}" style="display:inline;">
-                                {% csrf_token %}
-                                <button type="submit" class="delete-button">Delete</button>
-                            </form>
                         </li>
                     {% endfor %}
                 </ul>
             
+                <!-- Add New Question -->
                 <h3>Add a New Question</h3>
-                <form method="post">
-                    {% csrf_token %}
-                    {{ question_form.as_p }}
-                    <button type="submit" name="add_question">Add Question</button>
-                </form>
+                <label for="question_text">Question:</label>
+                <input type="text" id="question_text" name="question_text" required>
 
-                <h3>Edit Poll Title</h3>
-                <form method="post">
-                    {% csrf_token %}
-                    {{ poll_form.as_p }}
-                    <button type="submit" name="save_quiz">Save Quiz</button>
-                </form>
+                <label for="question_type">Question Type:</label>
+                <select id="question_type" name="question_type" required onchange="toggleOptions()">
+                    <option value="mcq">Multiple Choice</option>
+                    <option value="written">Written Answer</option>
+                </select>
+
+                <div id="options-section">
+                    <label>Options:</label>
+                    <div id="options-container">
+                        <div class="option-wrapper">
+                            <input type="text" name="options[]" placeholder="Enter an option">
+                        </div>
+                    </div>
+                    <label for="correct_option">Correct Answer:</label>
+                    <select id="correct_option" name="correct_option" required>
+                        <option value="">Select the correct option</option>
+                    </select>
+                    <button type="button" class="add-option" onclick="addOption()">+ Add Option</button>
+                </div>
+
+                <div id="written-answer" style="display:none;">
+                    <label for="correct_answer">Correct Answer:</label>
+                    <input type="text" id="correct_answer" name="correct_answer">
+                </div>
+
+                <button type="submit" name="add_question">Add Question</button>
+
             {% endif %}
         </form>
     </div>
+
+    <!-- Edit Poll Title -->
+    <h3>Edit Poll Title</h3>
+    <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="poll_id" value="{{ poll.id }}">
+        {{ poll_form.as_p }}
+        <button type="submit" name="save_quiz">Save Quiz</button>
+    </form>
+
+    <!-- Delete Question Button -->
+    <form method="post" action="{% if question.id %}{% url 'delete_question' question.id poll.id %}{% endif %}" style="display:inline;">
+        {% csrf_token %}
+        <button type="submit" class="delete-button">Delete</button>
+    </form>
 
     <!-- Logout Button -->
     <form action="{% url 'logout' %}" method="post" style="display: inline;">
@@ -237,5 +319,81 @@
     <footer>
         <p>&copy; 2025 Polling System</p>
     </footer>
+
+    <script>
+        function addOption() {
+            const container = document.getElementById("options-container");
+            const correctAnswerDropdown = document.getElementById("correct_option");
+
+            const wrapper = document.createElement("div");
+            wrapper.classList.add("option-wrapper");
+
+            const input = document.createElement("input");
+            input.type = "text";
+            input.name = "options[]";
+            input.placeholder = "Enter an option";
+            input.required = true;
+
+            const removeButton = document.createElement("button");
+            removeButton.type = "button";
+            removeButton.classList.add("remove-option");
+            removeButton.innerText = "Remove";
+            removeButton.onclick = function() {
+                container.removeChild(wrapper);
+                updateCorrectAnswerDropdown();
+            };
+
+            wrapper.appendChild(input);
+            wrapper.appendChild(removeButton);
+            container.appendChild(wrapper);
+
+            input.addEventListener("input", updateCorrectAnswerDropdown);
+        }
+
+        function toggleOptions() {
+            var type = document.getElementById("question_type").value;
+            var optionsSection = document.getElementById("options-section");
+            var writtenAnswerSection = document.getElementById("written-answer");
+            var correctOptionSelect = document.getElementById("correct_option");
+
+            if (type === "mcq") {
+                optionsSection.style.display = "block";
+                writtenAnswerSection.style.display = "none";
+                correctOptionSelect.setAttribute("required", "true");
+            } else {
+                optionsSection.style.display = "none";
+                writtenAnswerSection.style.display = "block";
+                correctOptionSelect.removeAttribute("required");  // ✅ Remove required for written answers
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            toggleOptions();  // Run this function when the page loads
+        });
+
+        function updateCorrectAnswerDropdown() {
+            const correctAnswerDropdown = document.getElementById("correct_option");
+            correctAnswerDropdown.innerHTML = '<option value="">Select the correct option</option>'; // Reset
+
+            let hasOptions = false;
+
+            document.querySelectorAll("input[name='options[]']").forEach((optionInput) => {
+                if (optionInput.value.trim() !== "") {
+                    let optionElement = document.createElement("option");
+                    optionElement.value = optionInput.value.trim();
+                    optionElement.innerText = optionInput.value.trim();
+                    correctAnswerDropdown.appendChild(optionElement);
+                    hasOptions = true;
+                }
+            });
+            
+            if (!hasOptions) {
+                correctAnswerDropdown.removeAttribute("required"); // Ensure it won't block form submission
+            } else {
+                correctAnswerDropdown.setAttribute("required", "true");
+            }
+        }
+    </script>
+
 </body>
 </html>

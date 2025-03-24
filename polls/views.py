@@ -151,6 +151,11 @@ def final_score_page(request, poll_code):
     if not quiz_results:
          return redirect('student_home_interface')  # Redirect if no results found
     
+    print("\n==== DEBUG: Loaded Quiz Results from Session ====")
+    import pprint
+    pp = pprint.PrettyPrinter(indent=4)
+    pp.pprint(quiz_results)
+
     return render(request, "final_score_page.html", context)
 
 # View for the question template page
@@ -167,6 +172,7 @@ def leave_quiz(request):
 @login_required
 def edit_quiz(request, poll_id):
     poll = Poll.objects.filter(id=poll_id).first()
+    questions = Question.objects.filter(poll=poll)
 
     if not poll:
         return redirect("create_quiz")  # Redirect to the create quiz page if poll does not exist
@@ -187,45 +193,63 @@ def edit_quiz(request, poll_id):
                 print("❌ Form is invalid. Errors:", poll_form.errors.as_json())  # Debugging log
 
         elif "add_question" in request.POST:
-            question_form = QuestionForm(request.POST)
-    
-            if question_form.is_valid():
-                question = question_form.save(commit=False)
-                question.poll = poll
-                
-                # Check if it's an MCQ
-                if question.question_type == 'mcq':
-                    options = request.POST.get('options', '').strip()
-                    if not options:
-                        messages.error(request, "Please enter at least one option for an MCQ.")
-                        return redirect("edit_quiz", poll_id=poll.id)
-                    
-                    question.save()  # Save question before creating choices
-                    for option_text in options.split(','):
-                        Choice.objects.create(question=question, text=option_text.strip())
-                
-                # Check if it's a written answer and prompt for answer if empty
-                elif question.question_type == 'written':
-                    options  = request.POST.get('options', '').strip()
-                    if not options:
-                        messages.error(request, "Please provide a written answer.")
-                        return redirect("edit_quiz", poll_id=poll.id)
-                    question.options = options
-                
-                question.save()
-                messages.success(request, "Question added successfully.")
+            print("🚀 Add Question button clicked!")  # Debugging log
+            print("POST Data Received:", request.POST)  # Debugging log    
+            question_text = request.POST.get("question_text", "").strip()
+            question_type = request.POST.get("question_type", "").strip()
+            correct_answer = request.POST.get("correct_answer", "").strip()
+
+            print("Received correct_answer:", correct_answer)  # Debugging log
+
+            if not question_text:
+                messages.error(request, "Question text cannot be empty.")
                 return redirect("edit_quiz", poll_id=poll.id)
+            
+            question = Question(poll=poll, text=question_text, question_type=question_type)
+                
+            # Check if it's an MCQ
+            if question.question_type == 'mcq':
+                options = request.POST.getlist('options[]')
+                correct_option = request.POST.get('correct_option')
+                if not options or len(options) < 2:
+                    messages.error(request, "Please enter at least 2 options for an MCQ.")
+                    return redirect("edit_quiz", poll_id=poll.id)
+                
+                if correct_option not in options:
+                    messages.error(request, "The correct answer must be one of the provided options.")
+                    return redirect("edit_quiz", poll_id=poll.id)
+                
+                question.save()  # Save question before creating choices
+                for option_text in options:
+                    is_correct = (option_text.strip() == correct_option.strip())  # Mark correct option
+                    Choice.objects.create(question=question, text=option_text.strip(), is_correct=is_correct)
+            
+            # Check if it's a written answer and prompt for answer if empty
+            elif question.question_type == 'written':
+                correct_answer = request.POST.get('correct_answer', '').strip()
+                print("✅ Saving Written Answer:", correct_answer)  # Debugging log
+                if not correct_answer:
+                    messages.error(request, "Please provide a correct answer.")
+                    return redirect("edit_quiz", poll_id=poll.id)
+                question.correct_answer = correct_answer
+                question.save()
+            
+            messages.success(request, "Question added successfully.")
+            return redirect("edit_quiz", poll_id=poll.id)
         
         elif "delete_question" in request.POST:
             question_id = request.POST.get("question_id")
             if question_id:
-                question = Question.objects.get(id=question_id)
-                if questions.count() > 1:  # Prevent deleting last question
-                    question.delete()
+                question = Question.objects.filter(id=question_id, poll=poll).first()
+                if question:
+                    if Question.objects.filter(poll=poll).count() > 1:  # Prevent deleting last question
+                        question.delete()
+                        messages.success(request, "Question deleted successfully.")
+                    else:
+                        messages.error(request, "A poll must have at least one question.")
                 else:
-                    messages.error(request, "A poll must have at least one question.")
-
-    questions = Question.objects.filter(poll=poll)
+                    messages.error(request, "Invalid question selected for deletion.")
+            return redirect("edit_quiz", poll_id=poll.id)
 
     return render(request, "edit_quiz.html", {
         "poll_form": poll_form,
@@ -348,10 +372,19 @@ def student_view_quiz(request, poll_code):
         return redirect('student_home_interface')
 
     # Prepare options for MCQ questions
-    questions = poll.questions.all()
+    questions = poll.questions.all().order_by('id')
     for question in questions:
         if question.question_type == 'mcq':
             question.options_list = list(question.choices.values_list("text", flat=True))
+        
+        if question.question_type == 'mcq':
+            correct_choice = question.choices.filter(is_correct=True).first()
+            correct_answer = correct_choice.text if correct_choice else "No correct option set"
+        else:
+            correct_answer = question.correct_answer  # Written questions store correct_answer directly
+
+        print(f"Question ID: {question.id} -> {question.text}")
+        print(f"Correct Answer: {correct_answer}\n")
 
     return render(request, 'student_view_quiz.html', {'poll': poll, 'questions': questions})
 
@@ -497,12 +530,14 @@ def submit_quiz(request, poll_code):
 
         for question in poll.questions.all():
             student_answer = request.POST.get(f"question_{question.id}", "").strip()
-
             is_correct = False  # Default to incorrect
+
+            correct_choice = None  # Ensure correct_choice is reset every loop
 
             # If MCQ, check if the answer is correct
             if question.question_type == "mcq":
                 correct_choice = question.choices.filter(is_correct=True).first()
+                print(f"DEBUG: Processing MCQ - {question.text} | Correct Choice: {correct_choice.text if correct_choice else 'None'}")
                 if correct_choice and student_answer == correct_choice.text:
                     is_correct = True
                     score += 1  # Increase score for correct answers
@@ -515,15 +550,18 @@ def submit_quiz(request, poll_code):
                     response=student_answer
                 )
                 is_correct = student_answer.lower() == question.correct_answer.lower()
-
                 if is_correct:
                     score += 1  # Increase score for correct text answers
+
+            # **Final Debug Before Appending**
+            correct_answer_value = question.correct_answer if question.question_type == "text" else (correct_choice.text if correct_choice else "No correct answer set")
+            print(f"DEBUG: Storing Question - {question.text} | Correct Answer: {correct_answer_value}")
 
             # Store student answer for final score page
             student_answers.append({
                 'question': question.text,
                 'user_answer': student_answer,
-                'correct_answer': question.correct_answer if question.question_type == "text" else (correct_choice.text if correct_choice else "No correct answer set"),
+                'correct_answer': correct_answer_value,
                 'is_correct': is_correct
             })
 
@@ -543,6 +581,11 @@ def submit_quiz(request, poll_code):
             'total_questions': total_questions,
             'student_answers': student_answers
         }
+
+        print("\n==== DEBUG: Final Student Answers Before Saving to Session ====")
+        import pprint
+        pp = pprint.PrettyPrinter(indent=4)
+        pp.pprint(student_answers)
 
         return redirect("student_confirmation_page", poll_code=poll.code)  # Redirect to confirmation page
 

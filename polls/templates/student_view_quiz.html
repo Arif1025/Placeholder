@@ -157,7 +157,7 @@
                             </li>
                         {% endfor %}
                     </ul>
-                {% elif question.question_type == 'text' %}
+                {% elif question.question_type == 'written' %}
                     <p>Your Answer:</p>
                     <textarea name="question_{{ question.id }}" rows="4" cols="50"></textarea>
                 {% endif %}

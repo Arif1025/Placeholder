@@ -105,7 +105,17 @@
                     </ul>
                 {% endif %}
 
-                <p class="correct-answer"><strong>Correct Answer:</strong> {{ item.question.correct_answer }}</p>
+                {% if item.question.question_type == "mcq" %}
+                    <p class="correct-answer"><strong>Correct Answer:</strong> 
+                        {% for choice in item.question.choices.all %}
+                            {% if choice.is_correct %}
+                                {{ choice.text }}
+                            {% endif %}
+                        {% endfor %}
+                    </p>
+                {% else %}
+                    <p class="correct-answer"><strong>Correct Answer:</strong> {{ item.question.correct_answer }}</p>
+                {% endif %}
             </li>
         {% empty %}
             <li>No questions available.</li>
