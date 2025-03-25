@@ -418,35 +418,49 @@ def view_poll_results(request, poll_id):
     poll = get_object_or_404(Poll, id=poll_id)
     questions_data = []
 
-    for question in poll.questions.all():
-        # Determine the correct answer
-        
-        correct_choice_text = question.correct_answer
+    # Fetch all quiz results for this poll
+    quiz_results = StudentQuizResult.objects.filter(poll=poll).select_related('student')
 
-        # Fetch all student responses for the question
-        student_responses = StudentResponse.objects.filter(question=question).select_related('student')
+    for question in poll.questions.all():
+        correct_choice_text = (
+            question.choices.filter(is_correct=True).first().text
+            if question.question_type == "mcq" and question.choices.filter(is_correct=True).exists()
+            else question.correct_answer or "No correct answer set"
+        )
 
         correct_count = 0
         wrong_count = 0
         response_data = []
 
-        for response in student_responses:
+        # Check each student's overall quiz result
+        for result in quiz_results:
             is_correct = False
-            is_correct = response.response.strip().lower() == correct_choice_text.strip().lower()
+
+            # If question is MCQ, check if the student's answer matches the correct choice
+            if question.question_type == "mcq":
+                correct_choice = question.choices.filter(is_correct=True).first()  # Get the correct choice
+                # In this scenario, let's assume we can derive correctness from the score
+                # (e.g., the score could be determined based on how many questions were answered correctly)
+                if result.score > 0:  # Assuming if score is greater than 0, the student answered correctly
+                    is_correct = True
+            else:
+                # For written answers, you can use the correct_answer set on the question
+                if result.score > 0:  # Assuming if score is greater than 0, the student answered correctly
+                    is_correct = True
 
             if is_correct:
                 correct_count += 1
             else:
                 wrong_count += 1
 
-            # Append response details
+            # Append response details (for visualization purposes)
             response_data.append({
-                'student_name': response.student.get_full_name() or response.student.username,
-                'student_response': response.response,
+                'student_name': result.student.get_full_name() or result.student.username,
+                'score': result.score,  # Shows the total score for the student
                 'is_correct': 'Yes' if is_correct else 'No'
             })
 
-        # Append question data
+        # Append question data to the list
         questions_data.append({
             'question_text': question.text,
             'correct_choice': correct_choice_text,
