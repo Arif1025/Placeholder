@@ -509,6 +509,8 @@ def register_view(request):
         # Create the user
         user = CustomUser.objects.create_user(username=username, password=password)
         user.role = role
+        if role == "teacher":
+            user.is_teacher = True
         user.save()
 
         print(f"User created: {user.username} - Role: {user.role}")  # Debug log
@@ -516,7 +518,7 @@ def register_view(request):
         # Log in the user and redirect to home
         user = authenticate(request, username=username, password=password)
         if user:
-            print(f"User authenticated: {user.username}")  # Debug log    
+            print(f"User authenticated: {user.username}")  # Debug log 
             login(request, user)
             if user.role == 'student':
                 return redirect('student_home_interface')
