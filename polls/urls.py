@@ -90,5 +90,6 @@ urlpatterns = [
     path('submit_quiz/<str:poll_code>/submit/', submit_quiz, name='submit_quiz'),
 
     # Charts url
-    path('polls/charts/', views.PollResultsPageView.as_view(), name='charts'),
+    path('polls/<int:poll_id>/results/', views.view_poll_results, name='charts'),
+
 ]
