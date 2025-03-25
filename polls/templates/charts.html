@@ -168,6 +168,7 @@
 </form>
 
 <!-- Main content section for displaying charts -->
+<h2>{{ poll.title }}</h2>
 <main class="main-content">
     <h1>Poll Results</h1>
     {% for question in poll.questions.all %}
@@ -186,11 +187,12 @@
     <p>&copy; 2025 Polling System</p> <!-- Footer with copyright -->
 </footer>
 
+{{ questions_data|json_script:"questions-data" }}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Include Chart.js library -->
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Poll data for chart rendering 
-        const questionsData = {{ questions_data|safe }};
+        const questionsData = JSON.parse(document.getElementById('questions-data').textContent);
         
         questionsData.forEach((question, index) => {
             // Get canvas context 

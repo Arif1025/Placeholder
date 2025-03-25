@@ -21,14 +21,15 @@ def login_view(request):
 
             user = authenticate(request, username=username, password=password)
 
-            if user is not None and user.role == role:
-                login(request, user)
-                if user.role == 'student':
-                    return redirect('student_home_interface')
-                elif user.role == 'teacher':
-                    return redirect('teacher_home_interface')
-            elif username == username and password == password and user.role != role:
-                form.add_error('role', "Invalid role selected for this user.")
+            if user is not None:
+                if user.role == role:
+                    login(request, user)
+                    if user.role == 'student':
+                        return redirect('student_home_interface')
+                    elif user.role == 'teacher':
+                        return redirect('teacher_home_interface')
+                else:
+                    form.add_error('role', "Invalid role selected for this user.")
             else:
                 form.add_error(None, "Invalid username or password")
 
@@ -47,10 +48,11 @@ def student_home_interface(request):
     classes = ClassStudent.objects.filter(student=request.user).select_related('class_instance')
 
     # Collect teachers for each class
-    class_teachers = {}
+    class_teachers = {cls.id: cls.teacher.username for cls in Class.objects.all()}    
+    
     for class_student in classes:
         class_instance = class_student.class_instance
-        class_student.teacher_name = class_teachers.get(class_instance, "Unknown Teacher")
+        class_student.teacher_name = class_teachers.get(class_instance.id, "Unknown Teacher")
 
     return render(request, "student_home_interface.html",  {
         'joined_polls': joined_polls,

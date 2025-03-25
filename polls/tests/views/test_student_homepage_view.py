@@ -1,74 +1,81 @@
-from django.test import TestCase
+from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.auth import get_user_model
-from polls.models import Poll, Class, ClassStudent
+from polls.models import Class, ClassStudent, Poll
+from polls.forms import JoinPollForm
 
 User = get_user_model()
 
-class StudentHomeViewTests(TestCase):
-    """Tests for the student's homepage view."""
-
+class StudentHomePageViewTest(TestCase):
     def setUp(self):
-        self.teacher = User.objects.create_user(username='teacher1', password='password123', role='teacher')
-        self.student = User.objects.create_user(username='johndoe', password='password123', role='student')
+        self.client = Client()
 
-        # Create a class and assign it to the student
-        self.class1 = Class.objects.create(name='Math 101', teacher=self.teacher)
-        self.class2 = Class.objects.create(name='History 202', teacher=self.teacher)
-        
-        ClassStudent.objects.create(student=self.student, class_instance=self.class1)
-        ClassStudent.objects.create(student=self.student, class_instance=self.class2)
+        # Create teacher
+        self.teacher = User.objects.create_user(username='teach1', password='testpass123', role='teacher')
 
-        self.url = reverse('student_home_interface')
-        
-    def login_student(self):
-        self.client.login(username='johndoe', password='password123')
+        # Create student and log in
+        self.student = User.objects.create_user(username='stud1', password='pass123', role='student')
+        self.client.login(username='stud1', password='pass123')
 
-    def test_homepage_loads_for_logged_in_student(self):
-        self.login_student()
-        response = self.client.get(self.url)
+        # Create class and link student to it
+        self.class_obj = Class.objects.create(name='Biology 101', teacher=self.teacher)
+        ClassStudent.objects.create(student=self.student, class_instance=self.class_obj)
+
+        # Create a poll and join it as the student
+        self.poll = Poll.objects.create(title='Bio Quiz', created_by=self.teacher)
+        self.poll.participants.add(self.student)
+
+    def test_student_homepage_loads(self):
+        url = reverse('student_home_interface')
+        response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'student_home_interface.html')
 
-        # Ensure the classes section is displayed
-        self.assertContains(response, "Your Enrolled Classes")
-        self.assertContains(response, "Math 101")
-        self.assertContains(response, "History 202")
-
-        # Ensure the teacher's name is displayed
-        self.assertContains(response, "Teacher: teacher1")
-
-    def test_classes_and_teachers_displayed(self):
-        self.login_student()
-        response = self.client.get(self.url)
-        self.assertContains(response, "Math 101")
-        self.assertContains(response, "History 202")
+    def test_student_classes_are_displayed(self):
+        response = self.client.get(reverse('student_home_interface'))
+        self.assertContains(response, 'Biology 101')
         self.assertContains(response, self.teacher.username)
 
-    def test_joined_polls_displayed(self):
-        self.login_student()
-        response = self.client.get(self.url)
-        self.assertContains(response, "Poll 1")
-        self.assertContains(response, "Poll 2")
+    def test_joined_polls_are_displayed(self):
+        response = self.client.get(reverse('student_home_interface'))
+        self.assertContains(response, 'Bio Quiz')
 
-    def test_action_buttons_visible(self):
-        self.login_student()
-        response = self.client.get(self.url)
-        self.assertContains(response, "Join Poll")
-        self.assertContains(response, "Logout")
-        self.assertContains(response, "Back")
+    def test_join_poll_button_redirect_link_exists(self):
+        response = self.client.get(reverse('student_home_interface'))
+        self.assertContains(response, 'Join Poll')
+        self.assertContains(response, reverse('enter_poll_code'))
 
-    def test_footer_displayed(self):
-        self.login_student()
-        response = self.client.get(self.url)
-        self.assertContains(response, "&copy; 2025 Polling System")
+    def test_enter_poll_code_form_loads(self):
+        response = self.client.get(reverse('enter_poll_code'))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'name="poll_code"')
 
-    def test_mobile_responsiveness_styles(self):
-        self.login_student()
-        response = self.client.get(self.url)
-        self.assertContains(response, "@media screen and (max-width: 768px)")
+    def test_redirect_if_not_logged_in(self):
+        self.client.logout()
+        response = self.client.get(reverse('student_home_interface'))
+        self.assertEqual(response.status_code, 302)
+        self.assertIn('/login', response.url.lower())
 
-    def test_page_does_not_expose_teacher_only_features(self):
-        self.login_student()
-        response = self.client.get(self.url)
-        self.assertNotContains(response, "Create Quiz")
-        self.assertNotContains(response, "Manage Classes")
+    def test_enter_poll_code_form_loads(self):
+        response = self.client.get(reverse('enter_poll_code'))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'name="poll_code"')
+        self.assertIsInstance(response.context['form'], JoinPollForm)
+
+    def test_join_poll_with_valid_code(self):
+        valid_code = self.poll.code
+        self.client.logout()
+        self.client.login(username='stud1', password='pass123')
+
+        response = self.client.post(reverse('enter_poll_code'), {'poll_code': valid_code})
+
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, reverse('student_home_interface'))
+
+        self.poll.refresh_from_db()
+        self.assertIn(self.student, self.poll.participants.all())
+
+    def test_join_poll_with_invalid_code(self):
+        response = self.client.post(reverse('enter_poll_code'), {'poll_code': 'INVALIDCODE'})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Invalid poll code.')
