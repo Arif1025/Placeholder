@@ -8,7 +8,11 @@ from .models import Poll, Question, Choice, CustomUser
 class CustomLoginForm(forms.Form):
     username = forms.CharField(required=True)
     password = forms.CharField(widget=forms.PasswordInput, required=True)
-    role = forms.ChoiceField(choices=[('student', 'Student'), ('teacher', 'Teacher')], required=True)
+    role = forms.ChoiceField(
+        choices=[('student', 'Student'), ('teacher', 'Teacher')],
+        required=True,
+        label="Login as")
+    
 
 # Custom User Creation Form to handle user registration with email, username, and role
 class CustomUserCreationForm(UserCreationForm):
