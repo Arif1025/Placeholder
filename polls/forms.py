@@ -8,30 +8,21 @@ from .models import Poll, Question, Choice, CustomUser
 class CustomLoginForm(forms.Form):
     username = forms.CharField(required=True)
     password = forms.CharField(widget=forms.PasswordInput, required=True)
-    role = forms.ChoiceField(
-        choices=[('student', 'Student'), ('teacher', 'Teacher')],
-        required=True,
-        label="Login as")
+    role = forms.ChoiceField(choices=[('student', 'Student'), ('teacher', 'Teacher')], required=True, label="Login as")
     
 
 # Custom User Creation Form to handle user registration with email, username, and role
 class CustomUserCreationForm(UserCreationForm):
-
-    username = forms.CharField(widget=forms.TextInput(attrs={"id": "username"}))
+    email = forms.EmailField(widget=forms.EmailInput(attrs={"id": "email"}))  # Email input field with custom ID
+    username = forms.CharField(widget=forms.TextInput(attrs={"id": "username"}))  # Username input field with custom ID
     role = forms.ChoiceField(
-        choices=[('student', 'Student'), ('teacher', 'Teacher')],
-        widget=forms.Select(attrs={"id": "role"}),
+        choices=[('student', 'Student'), ('teacher', 'Teacher')],  # Role choices for the user
+        widget=forms.Select(attrs={"id": "role"}),  # Custom widget for role field
     )
 
     class Meta:
         model = CustomUser
-        fields = ["username", "email", "role", "password1", "password2"]
-
-    def clean_email(self):
-        email = self.cleaned_data.get('email')
-        if CustomUser.objects.filter(email=email).exists():
-            raise forms.ValidationError("A user with this email already exists.")
-        return email
+        fields = ["username", "email", "role", "password1", "password2"]  # include both password fields
 
     def save(self, commit=True):
         user = super().save(commit=False)

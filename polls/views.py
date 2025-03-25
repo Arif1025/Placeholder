@@ -446,7 +446,7 @@ def view_poll_results(request, poll_id):
                 if result.score > 0:  # Assuming if score is greater than 0, the student answered correctly
                     is_correct = True
             else:
-                # For written answers, you can use the correct_answer set on the question
+ 
                 if result.score > 0:  # Assuming if score is greater than 0, the student answered correctly
                     is_correct = True
 
