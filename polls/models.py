@@ -71,6 +71,9 @@ class CustomUser(AbstractUser):
         ('student', 'Student'),
         ('teacher', 'Teacher'),
     ]
+
+    is_teacher = models.BooleanField(default=False)
+
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='student')  # Role of the user
 
     students = models.ManyToManyField('self', related_name='teachers', through='Teaching', symmetrical=False, blank=True)  # Many-to-many relationship for teacher-student
