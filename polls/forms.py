@@ -16,23 +16,28 @@ class CustomLoginForm(forms.Form):
 
 # Custom User Creation Form to handle user registration with email, username, and role
 class CustomUserCreationForm(UserCreationForm):
-    
+
     username = forms.CharField(widget=forms.TextInput(attrs={"id": "username"}))
-    password = forms.CharField(widget=forms.PasswordInput(attrs={"id": "password"}))
     role = forms.ChoiceField(
-        choices=[('student', 'Student'), ('teacher', 'Teacher')],  # Role choices for the user
-        widget=forms.Select(attrs={"id": "role"}),  # Custom widget for role field
+        choices=[('student', 'Student'), ('teacher', 'Teacher')],
+        widget=forms.Select(attrs={"id": "role"}),
     )
 
     class Meta:
         model = CustomUser
-        fields = ["username", "role", "password"]
+        fields = ["username", "email", "role", "password1", "password2"]
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if CustomUser.objects.filter(email=email).exists():
+            raise forms.ValidationError("A user with this email already exists.")
+        return email
 
     def save(self, commit=True):
-        user = super().save(commit=False)  # Call the parent class's save method
-        user.role = self.cleaned_data["role"]  # Set the user role from form data
+        user = super().save(commit=False)
+        user.role = self.cleaned_data["role"]
         if commit:
-            user.save()  # Save the user instance if commit is True
+            user.save()
         return user
 
 # Poll creation form to define a new poll with a title, description, code, and completion status
