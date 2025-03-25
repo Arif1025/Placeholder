@@ -48,10 +48,11 @@ def student_home_interface(request):
     classes = ClassStudent.objects.filter(student=request.user).select_related('class_instance')
 
     # Collect teachers for each class
-    class_teachers = {}
+    class_teachers = {cls.id: cls.teacher.username for cls in Class.objects.all()}    
+    
     for class_student in classes:
         class_instance = class_student.class_instance
-        class_student.teacher_name = class_teachers.get(class_instance, "Unknown Teacher")
+        class_student.teacher_name = class_teachers.get(class_instance.id, "Unknown Teacher")
 
     return render(request, "student_home_interface.html",  {
         'joined_polls': joined_polls,
