@@ -425,6 +425,8 @@ def view_poll_results(request, poll_id):
             correct_choice_text = correct_choice.text if correct_choice else "No correct answer set"
         elif question.question_type == "written":
             correct_choice_text = question.correct_answer
+        else:
+            correct_choice_text = "Invalid question type"
 
         # Fetch all student responses for the question
         student_responses = StudentResponse.objects.filter(question=question).select_related('student')
