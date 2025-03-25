@@ -212,7 +212,7 @@
                 {% for class_student in classes %}
                     <li>
                         <a href="{% url 'class_view_student' class_student.class_instance.id %}">
-                            {{ class_student.class_instance.name }} - Teacher: {{ class_teachers[class_student.class_instance] }}
+                            {{ class_student.class_instance.name }} - Teacher: {{ class_student.teacher_name }}
                         </a>
                     </li>
                 {% empty %}
