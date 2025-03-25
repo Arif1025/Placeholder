@@ -17,7 +17,7 @@ class CustomUserCreationForm(UserCreationForm):
     password1 = forms.CharField(widget=forms.PasswordInput(attrs={"id": "password"}))  # Password field
     password2 = forms.CharField(widget=forms.PasswordInput(attrs={"id": "password"}))  # Password confirmation field
     role = forms.ChoiceField(
-        choices=[('student', 'Student'), ('professor', 'Teacher')],  # Role choices for the user
+        choices=[('student', 'Student'), ('teacher', 'Teacher')],  # Role choices for the user
         widget=forms.Select(attrs={"id": "role"}),  # Custom widget for role field
     )
 

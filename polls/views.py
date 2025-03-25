@@ -21,14 +21,15 @@ def login_view(request):
 
             user = authenticate(request, username=username, password=password)
 
-            if user is not None and user.role == role:
-                login(request, user)
-                if user.role == 'student':
-                    return redirect('student_home_interface')
-                elif user.role == 'teacher':
-                    return redirect('teacher_home_interface')
-            elif username == username and password == password and user.role != role:
-                form.add_error('role', "Invalid role selected for this user.")
+            if user is not None:
+                if user.role == role:
+                    login(request, user)
+                    if user.role == 'student':
+                        return redirect('student_home_interface')
+                    elif user.role == 'teacher':
+                        return redirect('teacher_home_interface')
+                else:
+                    form.add_error('role', "Invalid role selected for this user.")
             else:
                 form.add_error(None, "Invalid username or password")
 
