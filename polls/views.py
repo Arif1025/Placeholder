@@ -383,12 +383,8 @@ def view_poll_results(request, poll_id):
     questions_data = []
 
     for question in poll.questions.all():
-        # Determine the correct answer based on the question type
-        if question.question_type == "mcq":
-            correct_choice = question.choices.filter(is_correct=True).first()
-            correct_choice_text = correct_choice.choice_text if correct_choice else "No correct answer set"
-        elif question.question_type == "text":
-            correct_choice_text = question.correct_answer
+        # Determine the correct answer
+        correct_choice_text = question.correct_answer
 
         # Fetch all student responses for the question
         student_responses = StudentResponse.objects.filter(question=question).select_related('student')
@@ -398,13 +394,8 @@ def view_poll_results(request, poll_id):
         response_data = []
 
         for response in student_responses:
-            is_correct = False
-
-            # Check correctness based on question type
-            if question.question_type == "mcq" and correct_choice_text:
-                is_correct = response.response.strip().lower() == correct_choice_text.strip().lower()
-            elif question.question_type == "text":
-                is_correct = response.response.strip().lower() == correct_choice_text.strip().lower()
+            is_correct=False
+            is_correct = response.response.strip().lower() == correct_choice_text.strip().lower()
 
             if is_correct:
                 correct_count += 1
@@ -431,6 +422,7 @@ def view_poll_results(request, poll_id):
         'poll': poll,
         'questions_data': questions_data
     })
+
 def register_view(request):
     if request.method == "POST":
         username = request.POST.get("username")
@@ -487,7 +479,6 @@ def export_poll_responses(request, poll_id):
     poll = get_object_or_404(Poll, id=poll_id)
     
     # Get all student responses and results for the poll
-    student_responses = StudentResponse.objects.filter(question__poll=poll)
     student_results = StudentQuizResult.objects.filter(poll=poll)
 
     # Create a response object and set headers for CSV download
@@ -496,30 +487,7 @@ def export_poll_responses(request, poll_id):
 
     # Write to CSV
     writer = csv.writer(response)
-    writer.writerow(['Student', 'Question', 'Answer', 'Correct Answer', 'Is Correct', 'Submitted At'])
 
-    for resp in student_responses:
-        correct_answer = resp.question.correct_answer if resp.question.question_type == "text" else (
-            resp.question.choices.filter(is_correct=True).first().choice_text if resp.question.choices.filter(is_correct=True).exists() else "N/A"
-        )
-
-        is_correct = (
-            resp.response.strip().lower() == correct_answer.strip().lower()
-            if resp.question.question_type == "text" else
-            "N/A"  # No direct check for MCQ without choice tracking
-        )
-
-        writer.writerow([
-            resp.student.username,
-            resp.question.text,
-            resp.response,
-            correct_answer,
-            'Yes' if is_correct else 'No',
-            resp.submitted_at
-        ])
-
-    # Add a separator and summary of student results
-    writer.writerow([])
     writer.writerow(['Student', 'Score', 'Total Questions', 'Score Percentage', 'Submitted At'])
 
     for result in student_results:
