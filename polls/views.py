@@ -27,6 +27,8 @@ def login_view(request):
                     return redirect('student_home_interface')
                 elif user.role == 'teacher':
                     return redirect('teacher_home_interface')
+            elif username == username and password == password and user.role != role:
+                form.add_error('role', "Invalid role selected for this user.")
             else:
                 form.add_error(None, "Invalid username or password")
 
@@ -47,8 +49,8 @@ def student_home_interface(request):
     # Collect teachers for each class
     class_teachers = {}
     for class_student in classes:
-        teacher = class_student.class_instance.teacher
-        class_teachers[class_student.class_instance] = teacher
+        class_instance = class_student.class_instance
+        class_student.teacher_name = class_teachers.get(class_instance, "Unknown Teacher")
 
     return render(request, "student_home_interface.html",  {
         'joined_polls': joined_polls,
