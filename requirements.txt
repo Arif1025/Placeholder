@@ -42,3 +42,4 @@ tzdata==2025.1
 urllib3==2.3.0
 virtualenv==20.26.6
 faker==37.0.2
+coverage==7.7.1

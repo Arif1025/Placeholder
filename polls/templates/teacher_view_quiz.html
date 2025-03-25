@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ poll.title }} - Questions</title>
+    <title>{{ poll.title }} - Questions with Answers</title>
     <style>
         body {
             font-family: 'Poppins', sans-serif;
@@ -32,19 +32,24 @@
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
+        /* Back Button Positioned at Top Left */
         .back-button {
-            display: inline-block;
-            margin-top: 20px;
-            padding: 10px 20px;
-            background: #9b4dca;
+            background-color: #9b4dca;
             color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            transition: background 0.3s ease;
+            font-size: 16px;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s ease;
         }
 
         .back-button:hover {
-            background: #7b1fa2;
+            background-color: #7b1fa2;
         }
 
         /* Logout Button Positioned at Top Right */
@@ -84,21 +89,52 @@
 <body>
     <h1>{{ poll.title }}</h1>
     <ul>
-        {% for question in questions %}
-            <li>{{ question.text }}</li>
+        <!-- Loop through all questions and their choices -->
+        {% for item in questions_with_choices %}
+            <li>
+                <p><strong>Question:</strong> {{ item.question.text }}</p>
+
+                <!-- Display options if it's a multiple-choice question -->
+                {% if item.question.question_type == "mcq" %}
+                    <p><strong>Options:</strong></p>
+                    <ul class="options">   
+                        {% for letter, choice in item.choice_labels %}
+                            <li>{{ letter }}) {{ choice.text }}</li>
+                        {% empty %}
+                            <li><em>No options available.</em></li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+
+                <!-- Display the correct answer for multiple-choice questions -->
+                {% if item.question.question_type == "mcq" %}
+                    <p class="correct-answer"><strong>Correct Answer:</strong> 
+                        {% for choice in item.question.choices.all %}
+                            {% if choice.is_correct %}
+                                {{ choice.text }}
+                            {% endif %}
+                        {% endfor %}
+                    </p>
+                {% else %}
+                    <!-- Display the correct answer for written questions -->
+                    <p class="correct-answer"><strong>Correct Answer:</strong> {{ item.question.correct_answer }}</p>
+                {% endif %}
+            </li>
         {% empty %}
             <li>No questions available.</li>
         {% endfor %}
     </ul>
+
+    <!-- Back Button to return to teacher home -->
     <a href="{% url 'teacher_home_interface' %}" class="back-button">Back to Home</a>
 
-    <!-- Logout Button -->
+    <!-- Logout Form -->
     <form action="{% url 'logout' %}" method="post">
         {% csrf_token %}
         <button type="submit" class="logout-button">Logout</button>
     </form>
 
-    <!-- Footer Section -->
+    <!-- Footer Section with Copyright -->
     <footer>
         <p>&copy; 2025 Polling System</p>
     </footer>

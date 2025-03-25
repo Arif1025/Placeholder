@@ -14,11 +14,13 @@
             color: #4f4f4f;
             padding-top: 20px; 
         }
+        
         main {
             max-width: 1200px;
             margin: 0 auto;
             padding: 23px;
         }
+
         h1 {
             font-size: 90px;
             text-align: center;
@@ -31,6 +33,7 @@
             letter-spacing: 3px;
             margin-bottom: 20px;
         }
+
         h2 {
             font-size: 32px;
             color: #9b4dca;
@@ -38,23 +41,28 @@
             text-transform: uppercase;
             font-weight: 600;
         }
+
         .quiz-container {
             background-color: #ffffff;
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
+
         .quiz-question {
             margin-bottom: 20px;
         }
+
         .quiz-question p {
             font-size: 20px;
             font-weight: 600;
         }
+
         .quiz-options {
             list-style: none;
             padding: 0;
         }
+
         .quiz-options li {
             background-color: #f7f7f7;
             margin-bottom: 10px;
@@ -62,10 +70,12 @@
             border-radius: 8px;
             cursor: pointer;
         }
+
         .quiz-options li:hover {
             background-color: #9b4dca;
             color: white;
         }
+
         .submit-button {
             background-color: #8e24aa;
             color: white;
@@ -78,11 +88,12 @@
             display: block;
             margin: 30px auto;
         }
+
         .submit-button:hover {
             background-color: #9b4dca;
         }
 
-        /* Back Button Styling */
+        /* Back Button Positioned at Top Left */
         .back-button {
             background-color: #9b4dca;
             color: white;
@@ -137,32 +148,38 @@
 <body>
     <main>
         <h2>{{ poll.title }}</h2>
-    <p>{{ poll.description }}</p>
+        <p>{{ poll.description }}</p>
 
-    <!-- Render poll questions -->
-    {% for question in poll.questions.all %}
-    <div class="quiz-container">
-        <h3>{{ question.text }}</h3>
-        
-        {% if question.question_type == 'mcq' %}
-            <ul class="quiz-options">
-                {% for option in question.options_list %}
-                    <li>
-                        <label>
-                            <input type="radio" name="question_{{ question.id }}" value="{{ option }}">
-                            {{ option }}
-                        </label>
-                    </li>
-                {% endfor %}
-            </ul>
-        {% elif question.question_type == 'text' %}
-            <p>Your Answer:</p>
-            <textarea name="question_{{ question.id }}" rows="4" cols="50"></textarea>
-        {% endif %}
-        </div>
-    {% endfor %}    
+        <!-- Form to submit quiz answers -->
+        <form action="{% url 'submit_quiz' poll.code %}" method="post">
+            {% csrf_token %}
+            
+            {% for question in questions %}
+            <div class="quiz-container">
+                <p class="quiz-question">{{ question.text }}</p>
 
-    <button type="submit" class="submit-button">Submit Answers</button>
+                <!-- Handle multiple choice question -->
+                {% if question.question_type == 'mcq' %}
+                    <ul class="quiz-options">
+                        {% for option in question.options_list %}
+                            <li>
+                                <label>
+                                    <input type="radio" name="question_{{ question.id }}" value="{{ option }}">
+                                    {{ option }}
+                                </label>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% elif question.question_type == 'written' %}
+                    <!-- Handle written answer question -->
+                    <p>Your Answer:</p>
+                    <textarea name="question_{{ question.id }}" rows="4" cols="50"></textarea>
+                {% endif %}
+            </div>
+            {% endfor %}
+
+            <button type="submit" class="submit-button">Submit Answers</button>
+        </form>
     </main>
 
     <!-- Logout Button -->
@@ -174,7 +191,7 @@
     <!-- Back Button -->
     <a href="{% url 'student_home_interface' %}" class="back-button">Back</a>
 
-    <!-- Footer Section -->
+    <!-- Footer Section with Copyright -->
     <footer>
         <p>&copy; 2025 Polling System</p>
     </footer>

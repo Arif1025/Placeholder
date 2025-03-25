@@ -1,4 +1,4 @@
-from django.test import TestCase, Client
+from django.test import TestCase
 from django.urls import reverse
 from django.contrib.auth import get_user_model
 
@@ -6,65 +6,78 @@ User = get_user_model()
 
 class LoginViewTest(TestCase):
     def setUp(self):
-        """Create a test user."""
-        self.client = Client()
         self.username = "testuser"
         self.password = "testpassword"
-        self.user = User.objects.create_user(username=self.username, password=self.password)
-        self.login_url = reverse("login")  # Ensure your URL name is correct in urls.py
-        self.forgot_password_url = reverse("forgot-password")  # Ensure your URL name for forgot-password page is correct
-        self.register_url = reverse("register")  # Ensure your URL name for the register page is correct
+        self.login_url = reverse("login_interface")
+        self.logout_url = reverse("logout")
+        self.forgot_password_url = reverse("forgot_password")
+        self.register_url = reverse("register")
+        self.teacher = User.objects.create_user(username="teacher1", password=self.password, role="teacher")
+        self.student = User.objects.create_user(username="student1", password=self.password, role="student")
 
-    def test_login_page_loads(self):
-        """Test if the login page loads successfully."""
+    def test_login_page_loads_successfully(self):
         response = self.client.get(self.login_url)
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Login")  # Check if "Login" text is in the HTML
+        self.assertContains(response, "Login")
+        self.assertTemplateUsed(response, "login_interface.html")
 
-    def test_valid_login(self):
-        """Test login with correct credentials."""
-        response = self.client.post(self.login_url, {"username": self.username, "password": self.password})
-        self.assertEqual(response.status_code, 302)  # Should redirect on successful login
-        self.assertTrue(response.wsgi_request.user.is_authenticated)
+    def test_valid_login_redirects_teacher(self):
+        response = self.client.post(self.login_url, {
+            "username": "teacher1",
+            "password": self.password,
+            "role": "teacher"
+        })
+        self.assertRedirects(response, reverse("teacher_home_interface"))
 
-    def test_invalid_login(self):
-        """Test login with incorrect credentials."""
-        response = self.client.post(self.login_url, {"username": self.username, "password": "wrongpassword"})
-        self.assertEqual(response.status_code, 200)  # Should reload the login page
-        self.assertContains(response, "Invalid username or password")  # Adjust based on your template message
+    def test_valid_login_redirects_student(self):
+        response = self.client.post(self.login_url, {
+            "username": "student1",
+            "password": self.password,
+            "role": "student"
+        })
+        self.assertRedirects(response, reverse("student_home_interface"))
+
+    def test_invalid_login_credentials(self):
+        response = self.client.post(self.login_url, {
+            "username": self.username,
+            "password": "wrongpass",
+            "role": "student"
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Invalid username or password")
         self.assertFalse(response.wsgi_request.user.is_authenticated)
 
-    def test_login_required_redirect(self):
-        """Test if a protected page redirects to login."""
-        protected_url = reverse("teacher_home_interface")  # Change this to any login-required view
+    def test_missing_credentials_shows_error(self):
+        response = self.client.post(self.login_url, {
+            "username": "",
+            "password": "",
+            "role": ""
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "This field is required.")
+
+    def test_login_form_contains_role_field(self):
+        response = self.client.get(self.login_url)
+        self.assertContains(response, "Login as")
+        self.assertContains(response, '<select name="role"')
+
+    def test_protected_teacher_view_requires_login(self):
+        protected_url = reverse("teacher_home_interface")
         response = self.client.get(protected_url)
         self.assertEqual(response.status_code, 302)
-        self.assertTrue(response.url.startswith(self.login_url))  # Ensure redirect to login
+        self.assertIn(self.login_url, response.url)
 
-    def test_logout(self):
-        """Test if a logged-in user can log out successfully."""
-        self.client.login(username=self.username, password=self.password)
-        response = self.client.get(reverse("logout"))  # Ensure your URL name is correct in urls.py
-        self.assertEqual(response.status_code, 302)  # Should redirect on logout
-        response = self.client.get(reverse("teacher_home_interface"))  # Test protected page after logout
-        self.assertEqual(response.status_code, 302)  # Should redirect to login
+    def test_logout_redirects_to_login(self):
+        self.client.login(username="teacher1", password=self.password)
+        response = self.client.get(self.logout_url)
+        self.assertRedirects(response, self.login_url)
 
-    def test_forgot_password_link(self):
-        """Test if the 'Forgot Password?' link exists on the login page and works."""
+    def test_forgot_password_link_visible(self):
         response = self.client.get(self.login_url)
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Forgot Password?')  # Check if "Forgot Password?" link is present in the HTML
-        self.assertContains(response, f'href="{self.forgot_password_url}"')  # Check if the link points to the correct URL
+        self.assertContains(response, "Forgot Password?")
+        self.assertContains(response, f'href="{self.forgot_password_url}"')
 
-    def test_forgot_password_page(self):
-        """Test if the forgot password page loads successfully."""
-        response = self.client.get(self.forgot_password_url)
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Reset Password")
-
-    def test_register_button_on_login_page(self):
-        """Test if the 'Create an Account' button is present and links to the correct register page."""
+    def test_register_link_visible(self):
         response = self.client.get(self.login_url)
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Create an Account')  # Check if "Create an Account" button is present in the HTML
-        self.assertContains(response, f'href="{self.register_url}"')  # Check if the button links to the correct register URL
+        self.assertContains(response, "Create an Account")
+        self.assertContains(response, f'href="{self.register_url}"')

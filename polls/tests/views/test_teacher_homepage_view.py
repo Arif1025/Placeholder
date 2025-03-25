@@ -1,76 +1,80 @@
 from django.test import TestCase
 from django.urls import reverse
 from django.contrib.auth import get_user_model
+from polls.models import Class, Poll
 
 User = get_user_model()
 
+class TeacherHomeViewTests(TestCase):
+    """Comprehensive tests for the teacher dashboard view."""
 
-class TeacherHomeViewTestCase(TestCase):
-    """Tests for the teacher home (dashboard) view with the page content."""
+    @classmethod
+    def setUpTestData(cls):
+        cls.teacher = User.objects.create_user(
+            username='teacher1', password='Password123', role='teacher'
+        )
+        cls.class1 = Class.objects.create(name='Math 101', teacher=cls.teacher)
+        cls.class2 = Class.objects.create(name='History 202', teacher=cls.teacher)
 
-    fixtures = ['tutorials/tests/fixtures/default_user.json']
+        cls.poll1 = Poll.objects.create(title='Poll 1', description='Topic preferences', created_by=cls.teacher)
+        cls.poll2 = Poll.objects.create(title='Poll 2', description='Lesson feedback', created_by=cls.teacher)
 
-    def setUp(self):
-        self.url = reverse('teacher_home_interface') 
-        self.user = User.objects.get(username='@johndoe')
+        cls.url = reverse('teacher_home_interface')
+        cls.login_url = reverse('login_interface')
 
-    def test_teacher_home_url(self):
-        """Test that the URL is correct."""
-        self.assertEqual(self.url, '/') 
+    def login(self):
+        self.client.login(username='teacher1', password='Password123')
 
-    def test_get_teacher_home(self):
-        """Test that the teacher homepage (dashboard) loads properly."""
+    def test_redirects_if_not_logged_in(self):
+        """Ensure unauthenticated users are redirected to login."""
+        response = self.client.get(self.url)
+        self.assertRedirects(response, f"{self.login_url}?next={self.url}")
+
+    def test_page_loads_for_logged_in_teacher(self):
+        self.login()
         response = self.client.get(self.url)
 
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'teacher_home_interface.html') 
+        self.assertTemplateUsed(response, 'teacher_home_interface.html')
+        self.assertContains(response, 'Your Classes')
+        self.assertContains(response, 'Your Polls')
+        self.assertContains(response, 'Math 101')
+        self.assertContains(response, 'History 202')
+        self.assertContains(response, 'Poll 1')
+        self.assertContains(response, 'Poll 2')
 
-        # Check for expected elements in the HTML (e.g., the title, welcome message)
-        self.assertContains(response, '<h1>Home</h1>')
-        self.assertContains(response, 'Welcome, Teacher!')
-
-    def test_get_teacher_home_logged_in(self):
-        """Test that logged-in teachers are not redirected (same page as both homepage and dashboard)."""
-        self.client.login(username=self.user.username, password="Password123")
-
+    def test_make_new_poll_button_present(self):
+        self.login()
         response = self.client.get(self.url)
-
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'teacher_home_interface.html') 
-
-    def test_teacher_home_page_contains_classes_and_polls(self):
-        """Test that the teacher homepage contains the teacher's classes and polls."""
-        response = self.client.get(self.url)
-
-        # Check if the "Your Classes" section is present
-        self.assertContains(response, '<h2>Your Classes</h2>')
-        self.assertContains(response, 'Math 101 - Mr. Smith')
-        self.assertContains(response, 'History 202 - Ms. Johnson')
-
-        # Check if the "Your Polls" section is present
-        self.assertContains(response, '<h2>Your Polls</h2>')
-        self.assertContains(response, 'Poll 1: What\'s your favorite topic?')
-        self.assertContains(response, 'Poll 2: Feedback on last lesson')
-
-    def test_make_new_poll_button(self):
-        """Test that the 'Make New Poll' button is on the teacher homepage."""
-        response = self.client.get(self.url)
-
         self.assertContains(response, '<button class="make-poll-button">Make New Poll</button>')
 
-    def test_logout_button(self):
-        """Test that the 'Logout' button is visible on the teacher homepage."""
+    def test_logout_button_visible(self):
+        self.login()
+        response = self.client.get(self.url)
+        self.assertInHTML(
+            '<button type="submit" class="logout-button">Logout</button>',
+            response.content.decode()
+        )
+
+    def test_view_poll_results_button_links_correctly(self):
+        self.login()
         response = self.client.get(self.url)
 
-        self.assertContains(response, '<button class="logout-button">Logout</button>')
+        for poll in [self.poll1, self.poll2]:
+            poll_results_url = reverse("view_poll_results", args=[poll.id])
+            self.assertContains(response, f'href="{poll_results_url}"')
+            self.assertContains(response, "View Poll Results")
 
-    def test_view_poll_results_button(self):
-        """Test that the 'View Poll Results' button is visible and functional."""
+    def test_page_layout_and_footer(self):
+        self.login()
         response = self.client.get(self.url)
+        self.assertContains(response, "&copy; 2025 Polling System")
+        self.assertContains(response, "@media screen and (max-width: 768px)")
 
-        # Check if the 'View Poll Results' button is present
-        self.assertContains(response, '<button class="btn btn-purple">View Poll Results</button>')
-
-        # Ensure the link for the 'View Poll Results' button works (replace `poll.id` with an actual poll ID)
-        poll_id = 1  # Replace with an actual poll ID you are testing for
-        self.assertContains(response, f'href="/polls/{poll_id}/results/"')  # Update with the correct URL structure
+    def test_template_context_contains_expected_data(self):
+        self.login()
+        response = self.client.get(self.url)
+        self.assertIn("polls", response.context)
+        self.assertIn("classes", response.context)
+        self.assertEqual(set(response.context["polls"]), {self.poll1, self.poll2})
+        self.assertEqual(set(response.context["classes"]), {self.class1, self.class2})

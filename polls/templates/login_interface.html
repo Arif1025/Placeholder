@@ -5,10 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Polling System Login</title>
     <style>
-        /* Import Google Font */
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
 
-        /* Styling for the body */
         body {
             font-family: 'Poppins', sans-serif;
             background-color: #e3f2fd;
@@ -49,13 +47,22 @@
             font-weight: 600;
         }
 
-        input {
+        input, select {
             width: 100%;
             padding: 12px;
-            margin: 8px 0 20px;
+            margin: 8px 0 10px;
             border: 1px solid #ccc;
             border-radius: 8px;
             font-size: 16px;
+        }
+
+        .errorlist {
+            color: red;
+            font-size: 14px;
+            margin-bottom: 10px;
+            text-align: left;
+            list-style: none;
+            padding-left: 0;
         }
 
         button {
@@ -114,12 +121,11 @@
             position: relative; 
         }
 
-        /* Mobile Responsiveness */
         @media screen and (max-width: 768px) {
             h2 {
                 font-size: 28px;
             }
-            input {
+            input, select {
                 padding: 10px;
             }
             button {
@@ -131,7 +137,7 @@
             h2 {
                 font-size: 24px;
             }
-            input {
+            input, select {
                 font-size: 14px;
             }
             button {
@@ -141,41 +147,39 @@
     </style>
 </head>
 <body>
-
-    <!-- Login form container -->
     <div class="login-container">
-        <!-- Title of the form -->
         <h2>Polling System Login</h2>
-        
-        {% if error %}
-            <p style="color: red;">{{ error }}</p>
+
+        {% if form.non_field_errors %}
+        <ul class="errorlist">
+            {% for error in form.non_field_errors %}
+                <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
         {% endif %}
 
-        <!-- Form for username and password input -->
         <form method="post">
-            <!-- CSRF Token for security (used in Django) -->
             {% csrf_token %}
-            
-            <!-- Username input field -->
+
             <label for="username">Username:</label>
-            <input type="text" name="username" required>
-            
-            <!-- Password input field -->
+            {{ form.username.errors }}
+            {{ form.username }}
+
             <label for="password">Password:</label>
-            <input type="password" name="password" required>
-        
-            <!-- Submit button for the form -->
+            {{ form.password.errors }}
+            {{ form.password }}
+
+            <label for="role">Login as:</label>
+            {{ form.role.errors }}
+            {{ form.role }}
+
             <button type="submit">Login</button>
         </form>
 
-        <!-- Forgot password link -->
         <a href="{% url 'forgot_password' %}" class="forgot-password">Forgot Password?</a>
-
-        <!-- Register button -->
         <a href="{% url 'register' %}" class="register-button">Create an Account</a>
     </div>
 
-    <!-- Footer displaying copyright -->
     <div class="footer">
         &copy; 2025 Polling System
     </div>

@@ -198,6 +198,7 @@
                 <h2>Poll: {{ poll.title }}</h2>
                 <p>{{ poll.description }}</p>
                 <p>Code: {{ poll.code }}</p>
+                <input type="hidden" name="poll_id" value="{{ poll.id }}">
         
                 <!-- Question Form (Only visible when a poll exists) -->
                 <h3>Add Questions</h3>
@@ -230,7 +231,7 @@
         <button type="submit" class="logout-button">Logout</button>
     </form>
 
-    <!-- Footer Section -->
+    <!-- Footer Section with Copyright -->
     <footer>
         <p>&copy; 2025 Polling System</p>
     </footer>

@@ -1,78 +1,74 @@
 from django.test import TestCase
 from django.urls import reverse
 from django.contrib.auth import get_user_model
+from polls.models import Poll, Class, ClassStudent
 
 User = get_user_model()
 
-
-class StudentHomeViewTestCase(TestCase):
-    """Tests for the student home (dashboard) view with the page content."""
-
-    fixtures = ['tutorials/tests/fixtures/default_user.json']
+class StudentHomeViewTests(TestCase):
+    """Tests for the student's homepage view."""
 
     def setUp(self):
-        self.url = reverse('student_home_interface')  
-        self.user = User.objects.get(username='@johndoe')
+        self.teacher = User.objects.create_user(username='teacher1', password='password123', role='teacher')
+        self.student = User.objects.create_user(username='johndoe', password='password123', role='student')
 
-    def test_student_home_url(self):
-        """Test that the URL is correct."""
-        self.assertEqual(self.url, '/')  
+        # Create a class and assign it to the student
+        self.class1 = Class.objects.create(name='Math 101', teacher=self.teacher)
+        self.class2 = Class.objects.create(name='History 202', teacher=self.teacher)
+        
+        ClassStudent.objects.create(student=self.student, class_instance=self.class1)
+        ClassStudent.objects.create(student=self.student, class_instance=self.class2)
 
-    def test_get_student_home(self):
-        """Test that the student homepage (dashboard) loads properly."""
+        self.url = reverse('student_home_interface')
+        
+    def login_student(self):
+        self.client.login(username='johndoe', password='password123')
+
+    def test_homepage_loads_for_logged_in_student(self):
+        self.login_student()
         response = self.client.get(self.url)
-
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'student_home_interface.html') 
 
-        # Check for expected elements in the HTML (e.g., the title, welcome message)
-        self.assertContains(response, '<h1>Home</h1>')
-        self.assertContains(response, 'Welcome, John Doe!')
+        # Ensure the classes section is displayed
+        self.assertContains(response, "Your Enrolled Classes")
+        self.assertContains(response, "Math 101")
+        self.assertContains(response, "History 202")
 
-    def test_get_student_home_logged_in(self):
-        """Test that logged-in students see the homepage without redirection."""
-        self.client.login(username=self.user.username, password="Password123")
+        # Ensure the teacher's name is displayed
+        self.assertContains(response, "Teacher: teacher1")
 
+    def test_classes_and_teachers_displayed(self):
+        self.login_student()
         response = self.client.get(self.url)
+        self.assertContains(response, "Math 101")
+        self.assertContains(response, "History 202")
+        self.assertContains(response, self.teacher.username)
 
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'student_home_interface.html') 
-
-    def test_student_home_page_contains_classes_and_polls(self):
-        """Test that the student homepage contains the student's classes and polls."""
+    def test_joined_polls_displayed(self):
+        self.login_student()
         response = self.client.get(self.url)
+        self.assertContains(response, "Poll 1")
+        self.assertContains(response, "Poll 2")
 
-        # Check if the "Your Classes" section is present
-        self.assertContains(response, '<h2>Your Classes</h2>')
-        self.assertContains(response, 'Math 101 - Mr. Smith')
-        self.assertContains(response, 'History 202 - Ms. Johnson')
-
-        # Check if the "Recent Polls" section is present
-        self.assertContains(response, '<h2>Recent Polls</h2>')
-        self.assertContains(response, 'Poll 1: What\'s your favorite subject?')
-        self.assertContains(response, 'Poll 2: How do you rate the current semester?')
-
-    def test_make_new_poll_button(self):
-        """Test that the 'Make New Poll' button is on the homepage."""
+    def test_action_buttons_visible(self):
+        self.login_student()
         response = self.client.get(self.url)
+        self.assertContains(response, "Join Poll")
+        self.assertContains(response, "Logout")
+        self.assertContains(response, "Back")
 
-        self.assertContains(response, '<button class="make-poll-button">Make New Poll</button>')
-
-    def test_join_poll_button(self):
-        """Test that the 'Join Poll' button is on the homepage."""
+    def test_footer_displayed(self):
+        self.login_student()
         response = self.client.get(self.url)
+        self.assertContains(response, "&copy; 2025 Polling System")
 
-        self.assertContains(response, '<button class="join-poll-button" type="submit">Join Poll</button>')
-
-    def test_logout_button(self):
-        """Test that the 'Logout' button is visible on the homepage."""
+    def test_mobile_responsiveness_styles(self):
+        self.login_student()
         response = self.client.get(self.url)
+        self.assertContains(response, "@media screen and (max-width: 768px)")
 
-        self.assertContains(response, '<button type="submit" class="logout-button">Logout</button>')
-
-    def test_footer(self):
-        """Test that the footer is visible on the homepage."""
+    def test_page_does_not_expose_teacher_only_features(self):
+        self.login_student()
         response = self.client.get(self.url)
-
-        self.assertContains(response, '<footer><p>&copy; 2025 Polling System</p></footer>')
-
+        self.assertNotContains(response, "Create Quiz")
+        self.assertNotContains(response, "Manage Classes")

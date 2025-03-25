@@ -1,85 +1,73 @@
 from django.test import TestCase
-from django.urls import reverse
+from django.urls import reverse, resolve
+from django.contrib.auth import get_user_model
 
+User = get_user_model()
 
-class QuestionPageViewTestCase(TestCase):
-    """Tests for the question page view and its elements."""
+class QuestionTemplateViewTests(TestCase):
+    """Tests for the question_template view (quiz display page)."""
 
     def setUp(self):
-        self.url = reverse('question_page')  
+        self.url = reverse("question_template")
 
-    def test_question_page_url(self):
-        """Test that the URL is correct."""
-        self.assertEqual(self.url, '/question_page/') 
+    def test_question_template_url(self):
+        """URL should resolve correctly."""
+        self.assertEqual(resolve(self.url).view_name, "question_template")
 
-    def test_get_question_page(self):
-        """Test that the question page loads properly."""
+    def test_question_template_renders_correctly(self):
+        """Test that the question template loads and uses the right template."""
         response = self.client.get(self.url)
-
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'question_page.html')  
+        self.assertTemplateUsed(response, "question_template.html")
 
-        # Check for expected elements in the HTML (e.g., the question and options)
-        self.assertContains(response, '<h1>Question 1</h1>')
-        self.assertContains(response, 'What is the capital of France?')
-        self.assertContains(response, 'Paris')
-        self.assertContains(response, 'London')
-        self.assertContains(response, 'Berlin')
-        self.assertContains(response, 'Madrid')
-
-    def test_logout_button(self):
-        """Test that the 'Logout' button is visible on the page."""
+    def test_core_content_displayed(self):
+        """Ensure basic expected content exists (question block, options)."""
         response = self.client.get(self.url)
 
+        # Headings and structure
+        self.assertContains(response, 'Question 1')
+        self.assertContains(response, 'What is the capital of France?', status_code=200)
+
+        # Answer options (general content)
+        for option in ['Paris', 'London', 'Berlin', 'Madrid']:
+            self.assertContains(response, option)
+
+        # Radio buttons
+        for value in ['a', 'b', 'c', 'd']:
+            self.assertContains(response, f'<input type="radio" name="answer" value="{value}"', html=False)
+
+    def test_quiz_control_buttons_exist(self):
+        """Ensure all navigation and quiz control buttons are rendered."""
+        response = self.client.get(self.url)
+
+        buttons = [
+            "Lock Answer", "Unlock Answer",
+            "Show Answer", "Hide Answer",
+            "Back", "Next", "Leave Quiz", "Logout"
+        ]
+        for button in buttons:
+            self.assertContains(response, button)
+
+    def test_logout_button_html_structure(self):
+        response = self.client.get(self.url)
         self.assertContains(response, '<button type="submit" class="logout-button">Logout</button>')
 
-    def test_leave_quiz_button(self):
-        """Test that the 'Leave Quiz' button is visible on the page."""
+    def test_leave_quiz_button_has_correct_redirect(self):
+        """Leave quiz button must contain correct link (even if JS-based)."""
         response = self.client.get(self.url)
+        self.assertContains(response, 'action="/polls/leave-quiz/"')
 
-        self.assertContains(response, '<button class="leave-quiz-button" onclick="window.location.href=\'{% url \'leave_quiz\' %}\'">Leave Quiz</button>')
-
-    def test_navigation_buttons(self):
-        """Test that the navigation buttons (Back and Next) are present."""
+    def test_responsive_styles_exist(self):
+        """Checks for responsive styles for mobile screens."""
         response = self.client.get(self.url)
+        self.assertContains(response, "@media screen and (max-width: 768px)")
 
-        self.assertContains(response, '<button class="navigation-button">Back</button>')
-        self.assertContains(response, '<button class="navigation-button">Next</button>')
-
-    def test_control_buttons(self):
-        """Test that the control buttons (Lock Answer and Show Answer) are present."""
+    def test_footer_displayed(self):
+        """Footer text is shown."""
         response = self.client.get(self.url)
+        self.assertContains(response, "&copy; 2025 Polling System")
 
-        self.assertContains(response, '<button class="control-button">Lock Answer</button>')
-        self.assertContains(response, '<button class="control-button">Show Answer</button>')
-
-    def test_answer_toggle_buttons(self):
-        """Test that the Unlock Answer and Hide Answer buttons are present."""
+    def test_answer_toggle_styling(self):
+        """Ensure answer toggle buttons have specific styling (e.g. purple)"""
         response = self.client.get(self.url)
-
-        self.assertContains(response, '<button class="answer-toggle-button">Unlock Answer</button>')
-        self.assertContains(response, '<button class="answer-toggle-button">Hide Answer</button>')
-
-        self.assertContains(response, 'background-color: #8e24aa') 
-
-    def test_mobile_responsiveness(self):
-        """Test if the page is responsive on smaller screens."""
-        response = self.client.get(self.url)
-        
-        self.assertContains(response, '@media screen and (max-width: 768px)')
-
-    def test_footer(self):
-        """Test that the footer is displayed properly with the correct text."""
-        response = self.client.get(self.url)
-
-        self.assertContains(response, '&copy; 2025 Polling System')
-
-    def test_question_options(self):
-        """Test that the question options are present and correctly rendered."""
-        response = self.client.get(self.url)
-
-        # Ensure radio buttons for options are rendered properly
-        self.assertContains(response, '<input type="radio" name="answer" value="a">')
-        self.assertContains(response, '<input type="radio" name="answer" value="b">')
-        self.assertContains(response, '<input type="radio" name="answer" value="c">')
-        self.assertContains(response, '<input type="radio" name="answer" value="d">')
+        self.assertContains(response, 'background-color: #8e24aa')
