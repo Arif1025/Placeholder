@@ -30,16 +30,24 @@ class CustomUserCreationFormTests(TestCase):
         self.assertIn('password2', form.errors)
 
     def test_duplicate_email_fails(self):
-        CustomUser.objects.create_user(username='existing', email='test@example.com', password='pass123', role='student')
+        # Pre-create user
+        CustomUser.objects.create_user(username='existinguser', email='test@example.com', password='pass123', role='student')
+
         form_data = {
             'username': 'newuser',
-            'email': 'test@example.com',
+            'email': 'test@example.com',  # Duplicate email
             'role': 'teacher',
             'password1': 'Testpass123',
             'password2': 'Testpass123'
         }
         form = CustomUserCreationForm(data=form_data)
-        self.assertFalse(form.is_valid())
+
+        form.is_valid()  # This populates form.errors
+
+        # Just print for debugging if needed
+        print("Errors:", form.errors)
+
+        # Only check if you actually validate email uniqueness in your form
         self.assertIn('email', form.errors)
 
 class CustomLoginFormTests(TestCase):

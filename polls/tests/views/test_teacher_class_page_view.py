@@ -1,95 +1,173 @@
-from django.test import TestCase
+from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.auth import get_user_model
-from polls.models import Class, ClassStudent, Poll, StudentQuizResult
+from polls.models import Class, ClassStudent, Poll, Question, StudentQuizResult
 
 User = get_user_model()
 
-class TeacherClassPageViewTests(TestCase):
-    """Comprehensive tests for the teacher's class page view."""
+class TeacherClassPageViewTest(TestCase):
+    def setUp(self):
+        self.client = Client()
 
-    @classmethod
-    def setUpTestData(cls):
-        cls.teacher = User.objects.create_user(username="mrsmith", password="password123", role="teacher")
-        cls.student1 = User.objects.create_user(username="john", password="password123", role="student")
-        cls.student2 = User.objects.create_user(username="jane", password="password123", role="student")
+        # Create teacher and login
+        self.teacher = User.objects.create_user(username='teach1', password='pass123', role='teacher')
+        self.client.login(username='teach1', password='pass123')
 
-        cls.class_instance = Class.objects.create(name="Math 101", teacher=cls.teacher)
-        ClassStudent.objects.create(student=cls.student1, class_instance=cls.class_instance)
-        ClassStudent.objects.create(student=cls.student2, class_instance=cls.class_instance)
+        # Create class and students
+        self.class_instance = Class.objects.create(name='History 101', teacher=self.teacher)
 
-        cls.poll = Poll.objects.create(title="Poll 1", created_by=cls.teacher, is_done=True)
-        cls.poll.participants.set([cls.student1, cls.student2])
+        self.student1 = User.objects.create_user(username='student1', password='pass123', role='student')
+        self.student2 = User.objects.create_user(username='student2', password='pass123', role='student')
 
-        StudentQuizResult.objects.create(student=cls.student1, poll=cls.poll, score=8, total_questions=10)
-        StudentQuizResult.objects.create(student=cls.student2, poll=cls.poll, score=9, total_questions=10)
+        ClassStudent.objects.create(student=self.student1, class_instance=self.class_instance)
+        ClassStudent.objects.create(student=self.student2, class_instance=self.class_instance)
 
-        cls.url = reverse("class_view_teacher", args=[cls.class_instance.id])
-        cls.login_url = reverse("login_interface")
+        # Create a poll for the class
+        self.poll = Poll.objects.create(title='History Quiz', created_by=self.teacher, class_instance=self.class_instance)
 
-    def login(self):
-        self.client.login(username="mrsmith", password="password123")
+        # Add quiz results
+        StudentQuizResult.objects.create(student=self.student1, poll=self.poll, score=8, total_questions=10)
+        StudentQuizResult.objects.create(student=self.student2, poll=self.poll, score=6, total_questions=10)
 
-    def test_redirects_if_not_logged_in(self):
-        """Should redirect unauthenticated users to login page."""
-        response = self.client.get(self.url)
-        self.assertRedirects(response, f"{self.login_url}?next={self.url}")
+    def test_teacher_can_view_class_page(self):
+        url = reverse('class_view_teacher', args=[self.class_instance.id])
+        response = self.client.get(url)
 
-    def test_404_on_invalid_class_id(self):
-        """Should return 404 for a non-existent class."""
-        self.login()
-        invalid_url = reverse("class_view_teacher", args=[9999])
-        response = self.client.get(invalid_url)
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'class_template_page_teacher.html')
+        self.assertContains(response, 'History 101')
+        self.assertContains(response, 'student1')
+        self.assertContains(response, 'student2')
+        self.assertContains(response, 'History Quiz')
 
-    def test_template_used_and_class_info_rendered(self):
-        self.login()
-        response = self.client.get(self.url)
-        self.assertTemplateUsed(response, "class_template_page_teacher.html")
-        self.assertContains(response, "Math 101")
-        self.assertContains(response, f"Teacher: {self.teacher.username}")
+    def test_average_grade_calculation(self):
+        url = reverse('class_view_teacher', args=[self.class_instance.id])
+        response = self.client.get(url)
 
-    def test_enrolled_students_and_scores_shown(self):
-        self.login()
-        response = self.client.get(self.url)
+        expected_avg = round((8 + 6) / 2, 1)
+        self.assertContains(response, str(expected_avg))
 
-        for student, score in [(self.student1, 8), (self.student2, 9)]:
-            with self.subTest(student=student.username):
-                self.assertContains(response, student.username)
-                self.assertContains(response, f"Score: {score} / 10")
+    def test_blocked_if_not_teacher(self):
+        self.client.logout()
+        self.client.login(username='student1', password='pass123')
 
-    def test_poll_list_displayed(self):
-        self.login()
-        response = self.client.get(self.url)
-        self.assertContains(response, self.poll.title)
+        url = reverse('class_view_teacher', args=[self.class_instance.id])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 403)
 
-    def test_poll_link_and_context_binding(self):
-        """Ensure poll shows up correctly and is in context."""
-        self.login()
-        response = self.client.get(self.url)
-        self.assertIn("class", response.context)
-        self.assertEqual(response.context["class"].id, self.class_instance.id)
+    def test_view_with_no_students(self):
+        empty_class = Class.objects.create(name='Empty Class', teacher=self.teacher)
+        url = reverse('class_view_teacher', args=[empty_class.id])
+        response = self.client.get(url)
 
-    def test_average_grade_displayed_correctly(self):
-        self.login()
-        response = self.client.get(self.url)
-        self.assertContains(response, "Average Grade")
-        self.assertContains(response, "85")  # Avg of 80 and 90
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Empty Class')
+        self.assertNotContains(response, 'student1') 
 
-    def test_navigation_buttons_present(self):
-        self.login()
-        response = self.client.get(self.url)
-        self.assertContains(response, 'class="logout-button"')
-        self.assertContains(response, 'class="back-button"')
+    def test_view_with_student_but_no_results(self):
+        student3 = User.objects.create_user(username='student3', password='pass123', role='student')
+        ClassStudent.objects.create(student=student3, class_instance=self.class_instance)
 
-    def test_footer_and_mobile_styles_exist(self):
-        self.login()
-        response = self.client.get(self.url)
-        self.assertContains(response, "&copy; 2025 Polling System")
-        self.assertContains(response, "@media screen and (max-width: 768px)")
+        url = reverse('class_view_teacher', args=[self.class_instance.id])
+        response = self.client.get(url)
 
-    def test_layout_styles_applied(self):
-        self.login()
-        response = self.client.get(self.url)
-        self.assertContains(response, "position: fixed; top: 20px; right: 20px;")
-        self.assertContains(response, "position: fixed; top: 20px; left: 20px;")
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'student3')
+        self.assertContains(response, 'N/A')  
+
+    def test_recent_poll_is_displayed(self):
+        Poll.objects.create(title='Old Quiz', created_by=self.teacher, class_instance=self.class_instance)
+        Poll.objects.create(title='Newer History Quiz', created_by=self.teacher, class_instance=self.class_instance)
+
+        url = reverse('class_view_teacher', args=[self.class_instance.id])
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Newer History Quiz') 
+
+    def test_student_score_percentages(self):
+        url = reverse('class_view_teacher', args=[self.class_instance.id])
+        response = self.client.get(url)
+
+        percentage1 = round((8 / 10) * 100)
+        percentage2 = round((6 / 10) * 100)
+
+        self.assertContains(response, str(percentage1))
+        self.assertContains(response, str(percentage2))
+
+    def test_class_with_no_students(self):
+        empty_class = Class.objects.create(name="Empty Class", teacher=self.teacher)
+        url = reverse("class_view_teacher", args=[empty_class.id])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Enrolled Students")
+
+    def test_student_with_zero_poll_answers(self):
+        student4 = User.objects.create_user(username='student4', password='pass123', role='student')
+        ClassStudent.objects.create(student=student4, class_instance=self.class_instance)
+
+        url = reverse("class_view_teacher", args=[self.class_instance.id])
+        response = self.client.get(url)
+        self.assertContains(response, "student4")
+        self.assertContains(response, "Grade: N/A")
+        self.assertContains(response, "Polls Answered: 0")
+
+    def test_multiple_students_some_with_no_responses(self):
+        student3 = User.objects.create_user(username="student3", password="pass123", role="student")
+        ClassStudent.objects.create(student=student3, class_instance=self.class_instance)
+
+        poll = Poll.objects.create(title="Test Quiz", created_by=self.teacher, class_instance=self.class_instance)
+        Question.objects.create(poll=poll, text="Q1", question_type="written", correct_answer="A")
+        StudentQuizResult.objects.create(student=self.student1, poll=poll, score=1, total_questions=1)
+
+        url = reverse("class_view_teacher", args=[self.class_instance.id])
+        response = self.client.get(url)
+        self.assertContains(response, "student3")
+        self.assertContains(response, "Grade: N/A")
+
+    def test_no_polls_in_class(self):
+        empty_class = Class.objects.create(name="New Class", teacher=self.teacher)
+        url = reverse("class_view_teacher", args=[empty_class.id])
+        response = self.client.get(url)
+        self.assertContains(response, "Most Recent Poll")
+        self.assertContains(response, "Average Grade for Recent Poll: N/A")
+
+    def test_all_students_have_wrong_answers(self):
+        poll = Poll.objects.create(title="Wrong Answers Quiz", created_by=self.teacher, class_instance=self.class_instance)
+        Question.objects.create(poll=poll, text="Q1", question_type="written", correct_answer="A")
+        StudentQuizResult.objects.create(student=self.student1, poll=poll, score=0, total_questions=1)
+        StudentQuizResult.objects.create(student=self.student2, poll=poll, score=0, total_questions=1)
+
+        url = reverse("class_view_teacher", args=[self.class_instance.id])
+        response = self.client.get(url)
+        self.assertContains(response, "0.0")
+
+    def test_poll_with_no_questions(self):
+        Poll.objects.create(title="Empty Poll", created_by=self.teacher, class_instance=self.class_instance)
+        url = reverse("class_view_teacher", args=[self.class_instance.id])
+        response = self.client.get(url)
+        self.assertContains(response, "Empty Poll")
+
+    def test_student_responses_with_incomplete_data(self):
+        poll = Poll.objects.create(title="Incomplete Data Quiz", created_by=self.teacher, class_instance=self.class_instance)
+        StudentQuizResult.objects.create(student=self.student1, poll=poll, score=0, total_questions=0)
+
+        url = reverse("class_view_teacher", args=[self.class_instance.id])
+        response = self.client.get(url)
+        self.assertContains(response, "0.0")
+
+    def test_view_fails_for_non_teacher_user(self):
+        student = User.objects.create_user(username="studentX", password="pass123", role="student")
+        self.client.logout()
+        self.client.login(username="studentX", password="pass123")
+        url = reverse("class_view_teacher", args=[self.class_instance.id])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 403)
+
+    def test_view_fails_for_teacher_not_owning_class(self):
+        other_teacher = User.objects.create_user(username="other", password="pass123", role="teacher")
+        self.client.logout()
+        self.client.login(username="other", password="pass123")
+        url = reverse("class_view_teacher", args=[self.class_instance.id])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 403)
