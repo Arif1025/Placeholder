@@ -12,25 +12,17 @@ class CustomLoginForm(forms.Form):
 
 # Custom User Creation Form to handle user registration with email, username, and role
 class CustomUserCreationForm(UserCreationForm):
-    email = forms.EmailField(widget=forms.EmailInput(attrs={"id": "email"}))  # Email input field with custom ID
-    username = forms.CharField(widget=forms.TextInput(attrs={"id": "username"}))  # Username input field with custom ID
-    password1 = forms.CharField(widget=forms.PasswordInput(attrs={"id": "password"}))  # Password field
-    password2 = forms.CharField(widget=forms.PasswordInput(attrs={"id": "password"}))  # Password confirmation field
+    
+    username = forms.CharField(widget=forms.TextInput(attrs={"id": "username"}))
+    password = forms.CharField(widget=forms.PasswordInput(attrs={"id": "password"}))
     role = forms.ChoiceField(
         choices=[('student', 'Student'), ('teacher', 'Teacher')],  # Role choices for the user
         widget=forms.Select(attrs={"id": "role"}),  # Custom widget for role field
     )
 
     class Meta:
-        model = CustomUser  # Specify the model for user creation
-        fields = ["username", "email", "role", "password1", "password2"]  # Fields for the form
-
-    def clean_email(self):
-        # Custom email validation to check if email is already in use
-        email = self.cleaned_data.get("email")
-        if CustomUser.objects.filter(email=email).exists():
-            raise forms.ValidationError("This email is already in use.")
-        return email
+        model = CustomUser
+        fields = ["username", "role", "password"]
 
     def save(self, commit=True):
         user = super().save(commit=False)  # Call the parent class's save method
