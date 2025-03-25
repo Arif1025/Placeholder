@@ -50,6 +50,9 @@ urlpatterns = [
     # Enter poll code, page for entering a poll code to join
     path('enter-poll-code/', views.enter_poll_code, name='enter_poll_code'),
 
+    # Join poll to join a poll
+    path('join-poll/', views.enter_poll_code, name='join_poll'),
+
     # Teacher's view of a quiz/poll
     path('quiz/<int:poll_id>/', views.teacher_view_quiz, name='teacher_view_quiz'),
 
@@ -84,5 +87,8 @@ urlpatterns = [
     path('export_poll_responses/<int:poll_id>/', views.export_poll_responses, name='export_poll_responses'),
 
     # Submit quiz, allows a student to submit their quiz responses
-    path('submit_qui/<str:poll_code>/submit/', submit_quiz, name='submit_quiz'),
+    path('submit_quiz/<str:poll_code>/submit/', submit_quiz, name='submit_quiz'),
+
+    # Charts url
+    path('polls/charts/', views.PollResultsPageView.as_view(), name='charts'),
 ]

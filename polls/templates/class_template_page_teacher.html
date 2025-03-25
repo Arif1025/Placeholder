@@ -222,29 +222,40 @@
             <p class="welcome-message">Welcome, Teacher!</p>
         </section>
 
-        <!-- Class Details Section -->
-        <section class="class-details">
-            <div class="class-title">{{ class.name }}</div>
+            <!-- Class Details Section -->
+            <section class="class-details">
+                <div class="class-title">{{ class.name }}</div>
 
-            <h2>Enrolled Students</h2>
-            <ul class="student-list">
-                {% for student in students %}
-                    <li>
-                        <span>{{ student.name }}</span><br>
-                        <!-- Grade: {{ student.grade }} <br>
-                        Polls Answered: {{ student.polls_answered }} -->
-                    </li>
-                {% endfor %}
-            </ul>
+                <!-- Teacher Name Displayed -->
+                <p class="teacher-name">Teacher: {{ class.teacher.get_full_name }}</p>
 
-            <h2>Most Recent Poll</h2>
-            <ul class="poll-list">
-                <li>Poll 2: Feedback on last lesson</li>
-            </ul>
+                <h2>Enrolled Students</h2>
+                <ul class="student-list">
+                    {% for student in students %}
+                        <li>
+                            <span>{{ student.name }}</span><br>
+                            Grade: {{ student.grade }}<br>
+                            Polls Answered: {{ student.polls_answered }}
+                        </li>
+                    {% empty %}
+                        <li>No students enrolled.</li>
+                    {% endfor %}
+                </ul>
 
-            <div class="average-grade">Average Grade for Recent Poll: 84.3</div>
-        </section>
-    </main>
+                <h2>Most Recent Poll</h2>
+                <ul class="poll-list">
+                    {% for poll in recent_polls %}
+                        <li>{{ poll.title }}</li>
+                    {% empty %}
+                        <li>No polls yet.</li>
+                    {% endfor %}
+                </ul>
+
+                <!-- Dynamic Average Grade -->
+                <div class="average-grade">
+                    Average Grade for Recent Poll: {{ average_grade }}
+                </div>
+            </section>
     
     <!-- Back Button -->
     <a href="{% url 'teacher_home_interface' %}" class="back-button">Back</a>

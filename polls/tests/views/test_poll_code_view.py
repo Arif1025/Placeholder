@@ -5,98 +5,92 @@ from polls.models import Poll
 
 User = get_user_model()
 
-class EnterPollCodeViewTest(TestCase):
-    """
-    Test cases for the Enter Poll Code page ('enter_poll_code' view).
-    """
 
-    fixtures = ['tutorials/tests/fixtures/default_user.json']
+class EnterPollCodeViewTest(TestCase):
+    """Tests for the enter_poll_code view where students join polls via code."""
 
     def setUp(self):
-        """
-        Set up test data, including URL and a user for testing.
-        """
+        self.student = User.objects.create_user(username='student1', password='Password123', role='student')
+        self.poll = Poll.objects.create(
+            title='Test Poll',
+            description='A sample poll',
+            created_by=self.student,
+            code='JOIN123'
+        )
         self.url = reverse('enter_poll_code')
-        self.user = User.objects.get(username='@johndoe')
 
-    def test_enter_poll_code_url(self):
-        """
-        Test that the URL path for 'enter_poll_code' matches the expected URL.
-        """
-        self.assertEqual(self.url, '/enter_poll_code/')
+    def test_redirects_anonymous_user_to_login(self):
+        """Anonymous users should be redirected to login."""
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 302)
+        self.assertIn(reverse("login_interface"), response.url)
 
-    def test_get_enter_poll_code_anonymous(self):
-        """
-        Test that unauthenticated users can view the poll code entry page.
-        """
+    def test_logged_in_student_can_view_poll_code_page(self):
+        """Student can load the poll code entry page."""
+        self.client.login(username='student1', password='Password123')
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'enter_poll_code.html')
-        self.assertContains(response, '<h1>Poll Code</h1>')
-        self.assertContains(response, "Please enter the code of the poll you'd like to join.")
-        self.assertContains(response, '<input type="text" id="pollCode" name="pollCode" placeholder="Poll Code" required>')
-        self.assertContains(response, '<button type="submit" class="join-button">Join</button>')
-        self.assertContains(response, '<a href="javascript:history.back()" class="back-button">Back</a>')
-        self.assertContains(response, '<button class="logout-button">Logout</button>')
+        self.assertContains(response, "Poll Code")
 
-    def test_get_enter_poll_code_logged_in(self):
-        """
-        Test that a logged-in user can access the poll code entry page and sees the same content.
-        """
-        self.client.login(username=self.user.username, password="Password123")
-        response = self.client.get(self.url)
+    def test_valid_poll_code_adds_student_to_poll(self):
+        """Submitting a valid poll code adds the user as a participant and redirects home."""
+        self.client.login(username='student1', password='Password123')
+        response = self.client.post(self.url, {'poll_code': 'JOIN123'})
+        self.assertRedirects(response, reverse("student_home_interface"))
+        self.poll.refresh_from_db()
+        self.assertIn(self.student, self.poll.participants.all())
+
+    def test_invalid_poll_code_does_not_join(self):
+        """Invalid code should not add the student or redirect."""
+        self.client.login(username='student1', password='Password123')
+        response = self.client.post(self.url, {'poll_code': 'WRONGCODE'})
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'enter_poll_code.html')
-
-    def test_submit_poll_code_form_valid(self):
-        """
-        Test that submitting a valid poll code redirects to the 'question_template' page.
-        """
-        response = self.client.post(self.url, {'pollCode': '12345'})
-        self.assertRedirects(response, '/question_template/')  # or reverse('question_template')
-
-    def test_submit_poll_code_form_empty(self):
-        """
-        Test that submitting an empty poll code shows a validation error and re-renders the form.
-        """
-        response = self.client.post(self.url, {'pollCode': ''})
-        # Check that the form re-renders with a validation error message
         self.assertContains(response, 'Invalid poll code')
+        self.assertNotIn(self.student, self.poll.participants.all())
+
+    def test_empty_poll_code_shows_form_error(self):
+        """Submitting empty poll code shows validation error."""
+        self.client.login(username='student1', password='Password123')
+        response = self.client.post(self.url, {'poll_code': ''})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'This field is required.')
 
 
 class EndPollViewTest(TestCase):
-    """
-    Test cases for the 'end_poll' view, which ends a poll (sets is_done=True, code=None).
-    """
+    """Tests for the end_poll view, which ends an active poll."""
 
     def setUp(self):
-        """
-        Set up users (teacher and student), log in the teacher, and create an active poll for testing.
-        """
-        self.teacher_user = User.objects.create_user(username="teacher", password="password123")
-        self.student_user = User.objects.create_user(username="student", password="password123")
-
-        # Log in the teacher by default
-        self.client.login(username="teacher", password="password123")
-
-        # Create an active poll
+        self.teacher = User.objects.create_user(username="teacher", password="password123", role="teacher")
+        self.student = User.objects.create_user(username="student", password="password123", role="student")
         self.poll = Poll.objects.create(
-            title="Active Poll",
-            description="Not done yet",
-            created_by=self.teacher_user,
-            code="TEST123",
+            title="Poll to End",
+            created_by=self.teacher,
+            code="END123",
             is_done=False
         )
-        self.end_poll_url = reverse('end_poll', args=[self.poll.id])
+        self.url = reverse('end_poll', args=[self.poll.id])
 
-    def test_end_poll_success(self):
-        """
-        Test that a teacher (poll creator) can successfully end a poll, which sets is_done=True 
-        and clears the poll's code, then redirects to the teacher's home interface.
-        """
-        response = self.client.post(self.end_poll_url)
-        self.assertRedirects(response, "/teacher_home_interface/")
-
+    def test_teacher_can_end_poll_successfully(self):
+        """Teacher should be able to end poll (set is_done=True, code=None)."""
+        self.client.login(username="teacher", password="password123")
+        response = self.client.post(self.url)
+        self.assertRedirects(response, reverse("teacher_home_interface"))
         self.poll.refresh_from_db()
-        self.assertTrue(self.poll.is_done, "Poll should be ended.")
-        self.assertIsNone(self.poll.code, "Poll code should be cleared.")
+        self.assertTrue(self.poll.is_done)
+        self.assertIsNone(self.poll.code)
+
+    def test_student_cannot_end_poll(self):
+        """Students should not be able to end a poll."""
+        self.client.login(username="student", password="password123")
+        response = self.client.post(self.url)
+        self.assertEqual(response.status_code, 404)
+
+    def test_get_request_does_not_end_poll(self):
+        """GET request should not change poll status."""
+        self.client.login(username="teacher", password="password123")
+        response = self.client.get(self.url)
+        self.assertRedirects(response, reverse("teacher_home_interface"))
+        self.poll.refresh_from_db()
+        self.assertFalse(self.poll.is_done)
+        self.assertIsNotNone(self.poll.code)

@@ -2,6 +2,7 @@ import uuid
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.conf import settings
+import re
 
 # Poll model to store poll details
 class Poll(models.Model):
@@ -13,17 +14,19 @@ class Poll(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)  # Timestamp of creation
 
-    code = models.CharField(max_length=20, unique=True, blank=True, null=True)  # Unique poll code (auto-generated if blank)
+    code = models.CharField(max_length=100, blank=True, null=True)  
     is_done = models.BooleanField(default=False)  # Whether the poll is completed
 
     participants = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='joined_polls')  # Users who joined the poll
+
+    class_instance = models.ForeignKey('Class', on_delete=models.CASCADE, related_name='polls', null=True, blank=True)
 
     def __str__(self):
         return self.title  # String representation of the poll (just the title)
 
     def save(self, *args, **kwargs):
-        if not self.code:
-            self.code = str(uuid.uuid4())[:8].upper()  # Generate unique code if not set
+        if not self.pk and not self.code:  # only generate code on creation
+            self.code = str(uuid.uuid4())[:8].upper()
         super().save(*args, **kwargs)
 
 
@@ -57,7 +60,8 @@ class Choice(models.Model):
         return self.text.strip().replace('\r\n', ' ').replace('\n', ' ')  # Return choice text cleaned of newlines
 
     def save(self, *args, **kwargs):
-        self.text = self.text.strip().replace('\r\n', ' ').replace('\n', ' ')  # Clean up choice text
+        cleaned_text = self.text.strip().replace('\r\n', ' ').replace('\n', ' ')
+        self.text = re.sub(r'\s+', ' ', cleaned_text)  # Collapse multiple spaces
         super().save(*args, **kwargs)
 
 

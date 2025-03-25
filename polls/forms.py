@@ -5,12 +5,10 @@ from .models import Question
 from .models import Poll, Question, Choice, CustomUser
 
 # Custom Login Form for authentication with role selection (Student or Teacher)
-class CustomLoginForm(AuthenticationForm):
-    role = forms.ChoiceField(
-        choices=[('student', 'Student'), ('teacher', 'Teacher')],  # Choices for login role
-        required=True,
-        label="Login as"  # Label for role field
-    )
+class CustomLoginForm(forms.Form):
+    username = forms.CharField(required=True)
+    password = forms.CharField(widget=forms.PasswordInput, required=True)
+    role = forms.ChoiceField(choices=[('student', 'Student'), ('teacher', 'Teacher')], required=True)
 
 # Custom User Creation Form to handle user registration with email, username, and role
 class CustomUserCreationForm(UserCreationForm):
@@ -85,12 +83,18 @@ class JoinPollForm(forms.Form):
 
 # Form to create or edit a Question for a poll
 class QuestionForm(forms.ModelForm):
+    options = forms.CharField(
+        widget=forms.Textarea,
+        required=False,
+        help_text="Enter one option per line."
+    )
+
     class Meta:
-        model = Question  # The model associated with the form
-        fields = ['text', 'question_type', 'options', 'correct_answer']  # Fields for the form
+        model = Question
+        fields = ['text', 'question_type', 'correct_answer']
 
     text = forms.CharField(label="Question Text", widget=forms.Textarea)  # Text field for question
-    question_type = forms.ChoiceField(choices=[('text', 'Written Answer'), ('mcq', 'Multiple Choice')])  # Question type field
+    question_type = forms.ChoiceField(choices=[('written', 'Written Answer'), ('mcq', 'Multiple Choice')])  # Question type field
     options = forms.CharField(widget=forms.Textarea, required=False, help_text="Enter one option per line.")  # Options for MCQ
 
 # Form for creating or editing a Choice for a question
@@ -111,7 +115,7 @@ class AnswerForm(forms.Form):
 
         # Conditional rendering based on question type (MCQ or written answer)
         if question.question_type == 'mcq':
-            choices = [(choice.id, choice.choice_text) for choice in question.choices.all()]  # MCQ choices
+            choices = [(choice.id, choice.text) for choice in question.choices.all()]  # MCQ choices
             self.fields['answer'] = forms.ChoiceField(
                 choices=choices,
                 widget=forms.RadioSelect,  # Radio button for MCQs
@@ -123,3 +127,4 @@ class AnswerForm(forms.Form):
                 label=question.text,  # Label with the question text
                 required=True  # Make this field required
             )
+            

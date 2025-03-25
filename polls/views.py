@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.contrib import messages
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseForbidden
 from django.contrib.auth.decorators import login_required
 from .forms import CustomLoginForm, QuestionForm, PollForm, JoinPollForm, CustomUserCreationForm
 from django.forms import modelformset_factory
@@ -10,26 +10,27 @@ from .models import Poll, Question, Choice, CustomUser, ClassStudent, Class, Stu
 from django.contrib.auth.hashers import make_password
 import re
 
-
 def login_view(request):
+    form = CustomLoginForm(request.POST or None)
+    
     if request.method == 'POST':
-        username = request.POST['username']
-        password = request.POST['password']
-        
-        # Authenticate the user
-        user = authenticate(request, username=username, password=password)
-        
-        if user is not None:
-            login(request, user)
-            # Redirect based on user role
-            if user.role == 'student':
-                return redirect('student_home_interface')
-            elif user.role == 'teacher':
-                return redirect('teacher_home_interface')
-        else:
-            # Handle invalid login
-            return render(request, 'login_interface.html', {'error': 'Invalid username or password'})
-    return render(request, 'login_interface.html')  # Render login page if GET request
+        if form.is_valid():
+            username = form.cleaned_data['username']
+            password = form.cleaned_data['password']
+            role = form.cleaned_data['role']
+
+            user = authenticate(request, username=username, password=password)
+
+            if user is not None and user.role == role:
+                login(request, user)
+                if user.role == 'student':
+                    return redirect('student_home_interface')
+                elif user.role == 'teacher':
+                    return redirect('teacher_home_interface')
+            else:
+                form.add_error(None, "Invalid username or password")
+
+    return render(request, 'login_interface.html', {'form': form})
 
 @login_required
 def student_home_interface(request):
@@ -107,6 +108,7 @@ def logout_view(request):
     logout(request)  # Log out the user
     return redirect('login_interface')  # Redirect to the login page
 
+@login_required
 def final_score_page(request, poll_code):
     quiz_results = request.session.get('quiz_results', None)
     poll = get_object_or_404(Poll, code=poll_code)
@@ -225,41 +227,122 @@ def delete_quiz(request, poll_id):
     
     return redirect("teacher_home_interface")  # Redirect after deletion
 
+@login_required
+def class_view_student(request, class_id):
+    class_instance = get_object_or_404(Class, id=class_id)
+    students = class_instance.participants.filter(id=request.user.id)
+
+    # Ensure the logged-in student is enrolled in the class
+    if not ClassStudent.objects.filter(class_instance=class_instance, student=request.user).exists():
+        return HttpResponseForbidden("You are not enrolled in this class.")
+
+    # Get all polls for the class
+    polls_in_class = Poll.objects.filter(class_instance=class_instance).order_by('-created_at')
+
+    # Get quiz results by the current student for this class
+    responses = StudentQuizResult.objects.filter(student=request.user, poll__in=polls_in_class)
+
+    # Calculate average grade for the student in this class
+    if responses.exists():
+        avg_grade = round(sum(resp.score for resp in responses) / responses.count(), 1)
+        num_answered = responses.count()
+    else:
+        avg_grade = "N/A"
+        num_answered = 0
+
+    student_info = {
+        'name': request.user.get_full_name() or request.user.username,
+        'grade': avg_grade,
+        'polls_answered': num_answered,
+    }
+
+    # Get most recent poll if exists
+    recent_poll = polls_in_class.first()
+    recent_poll_title = recent_poll.title if recent_poll else "No polls yet"
+
+    # Calculate average for most recent poll
+    if recent_poll:
+        recent_poll_responses = StudentQuizResult.objects.filter(poll=recent_poll)
+        if recent_poll_responses.exists():
+            average_grade = round(sum(resp.score for resp in recent_poll_responses) / recent_poll_responses.count(), 1)
+        else:
+            average_grade = "N/A"
+    else:
+        average_grade = "N/A"
+
+    context = {
+        'class': class_instance,
+        'student': student_info,
+        'recent_poll_title': recent_poll_title,
+        'average_grade': average_grade,
+    }
+
+    return render(request, 'class_template_page_student.html', context)
+
+@login_required
 def class_view_teacher(request, class_id):
     class_instance = get_object_or_404(Class, id=class_id)
-    students = CustomUser.objects.filter(classstudent__class_instance=class_instance, role="student")
+
+    # Ensure only the teacher who owns this class can access it
+    if class_instance.teacher != request.user:
+        return HttpResponseForbidden("You do not have permission to view this class.")
+
+    # Get enrolled students
+    student_links = ClassStudent.objects.filter(class_instance=class_instance).select_related('student')
+    students = []
+    for link in student_links:
+        student = link.student
+        polls_in_class = Poll.objects.filter(class_instance=class_instance)
+        responses = StudentQuizResult.objects.filter(student=student, poll__in=polls_in_class)
+
+        if responses.exists():
+            avg_grade = round(sum(resp.score for resp in responses) / responses.count(), 1)
+            num_answered = responses.count()
+        else:
+            avg_grade = "N/A"
+            num_answered = 0
+
+        students.append({
+            'name': student.get_full_name() or student.username,
+            'grade': avg_grade,
+            'polls_answered': num_answered,
+        })
+
+    # Get the most recent poll (if any)
+    recent_poll = Poll.objects.filter(class_instance=class_instance).order_by('-created_at').first()
+    if recent_poll:
+        responses = StudentQuizResult.objects.filter(poll=recent_poll)
+        if responses.exists():
+            average_grade = round(sum(resp.score for resp in responses) / responses.count(), 1)
+        else:
+            average_grade = "N/A"
+    else:
+        average_grade = "N/A"
+
     context = {
         'class': class_instance,
         'students': students,
+        'recent_polls': [recent_poll] if recent_poll else [],
+        'average_grade': average_grade,
     }
+
     return render(request, 'class_template_page_teacher.html', context)
-
-def class_view_student(request, class_id):
-    class_instance = get_object_or_404(Class, id=class_id)
-
-    students = CustomUser.objects.filter(classstudent__class_instance=class_instance)
-
-    return render(request, 'class_template_page_student.html', {
-        'class_name': class_instance.name,
-        'teacher': class_instance.teacher,  # Assuming there's a teacher field
-        'students': students,
-    })
 
 @login_required
 def enter_poll_code(request):
     if request.method == 'POST':
         form = JoinPollForm(request.POST)
         if form.is_valid():
-            poll_code = form.cleaned_data['poll_code']
             try:
+                poll_code = form.cleaned_data['poll_code'] 
                 poll = Poll.objects.get(code=poll_code)
                 poll.participants.add(request.user)
                 return redirect('student_home_interface')
             except Poll.DoesNotExist:
                 form.add_error('poll_code', 'Invalid poll code. Please try again.')
+                return render(request, 'enter_poll_code.html', {'form': form})
     else:
         form = JoinPollForm()
-
     return render(request, 'enter_poll_code.html', {'form': form})
 
 @login_required
@@ -317,6 +400,7 @@ def end_poll(request, poll_id):
         return redirect("teacher_home_interface")  # Redirect to teacher's home interface
     return redirect("teacher_home_interface")  # Redirect if not POST request
 
+@login_required
 # View for the student confirmation page
 def student_confirmation_page(request, poll_code):
     poll = get_object_or_404(Poll, code=poll_code)  # Ensure poll exists
@@ -391,20 +475,26 @@ def register_view(request):
 
         print(f"Received data - Username: {username}, Role: {role}")  # Debug log
 
-        # Check if passwords match
         if password != confirm_password:
             messages.error(request, "Passwords do not match!")
-            return redirect("register")
+            return render(request, "register.html")
+        
+        if not username or not password or not confirm_password or not role:
+            messages.error(request, "All fields are required.")
+            return render(request, "register.html")
 
-        # Check if username already exists
         if CustomUser.objects.filter(username=username).exists():
             messages.error(request, "Username already taken!")
-            return redirect("register")
+            return render(request, "register.html")
+
+        if len(password) < 8:
+            messages.error(request, "Password must be at least 8 characters long.")
+            return render(request, "register.html")
+
+        if not re.search(r"\d", password):
+            messages.error(request, "Password must contain at least one number.")
+            return render(request, "register.html")
         
-        # Check password length and number requirement
-        if len(password) < 8 or not re.search(r"\d", password):
-            messages.error(request, "Password must be at least 8 characters long and contain at least 1 number.")
-            return redirect("register")
 
         # Create the user
         user = CustomUser.objects.create_user(username=username, password=password)
@@ -497,7 +587,7 @@ def forgot_password(request):
             return redirect('reset_password')  # Redirect to reset password page
         except CustomUser.DoesNotExist:
             messages.error(request, "No account found with this username.")
-            return redirect('forgot_password')
+            return render(request, 'forgot_password.html', {'form_error': True})
 
     return render(request, 'forgot_password.html')  # Render the forgot password page
 
@@ -519,16 +609,16 @@ def reset_password(request):
         # Validate password length and numeric character requirement
         if len(password1) < 8:
             messages.error(request, "Password must be at least 8 characters long.")
-            return redirect('reset_password')
+            return render(request, 'reset_password.html')
 
-        if not re.search(r'\d', password1):  # Checks if the password has at least one number
+        if not re.search(r'\d', password1):
             messages.error(request, "Password must contain at least one number.")
-            return redirect('reset_password')
+            return render(request, 'reset_password.html')
 
 
         if password1 != password2:
             messages.error(request, "Passwords do not match.")
-            return redirect('reset_password')
+            return render(request, 'reset_password.html')
         try:
             user = CustomUser.objects.get(username=username)
             user.password = make_password(password1)

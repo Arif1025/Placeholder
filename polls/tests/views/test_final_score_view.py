@@ -1,59 +1,110 @@
 from django.test import TestCase
 from django.urls import reverse
 from django.contrib.auth import get_user_model
+from polls.models import Poll, StudentQuizResult
+from django.utils import timezone
 
 User = get_user_model()
 
 class FinalScoreViewTestCase(TestCase):
-    """
-    Tests for the final score view.
-    """
-
     def setUp(self):
-        """Set up test user and URL."""
-        self.user = get_user_model().objects.create_user(username="testuser", password="Password123")
-        self.url = reverse("final_score")  # Final score page URL
+        self.student = User.objects.create_user(username="testuser", password="Password123", role='student')
+        self.poll = Poll.objects.create(title="Geography Quiz", description="Test quiz", created_by=self.student, code="TEST123")
+        self.result = StudentQuizResult.objects.create(
+            student=self.student,
+            poll=self.poll,
+            score=3,
+            total_questions=5,
+            submitted_at=timezone.now()
+        )
+        self.url = reverse("final_score_page", kwargs={"poll_code": self.poll.code})
 
     def test_redirects_if_not_logged_in(self):
-        """Test redirect to login if not logged in."""
         response = self.client.get(self.url)
-        self.assertNotEqual(response.status_code, 200)  # Should not return 200
-        self.assertRedirects(response, f"/accounts/login/?next={self.url}")  # Redirect to login
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(response.url.startswith("/polls/login_interface"))
 
-    def test_view_renders_for_logged_in_user(self):
-        """Test page renders correctly for logged-in users."""
+    def test_redirects_if_session_missing(self):
         self.client.login(username="testuser", password="Password123")
         response = self.client.get(self.url)
-        self.assertEqual(response.status_code, 200)  # Page loads with status 200
-        self.assertTemplateUsed(response, "final_score_page.html")  # Correct template used
-        self.assertContains(response, "Final Score")  # Page title exists
-        self.assertContains(response, "Your Score")  # Score section exists
+        # Should redirect to home because session['quiz_results'] is missing
+        self.assertRedirects(response, reverse("student_home_interface"))
 
-    def test_html_contains_questions_and_answers(self):
-        """Test that question and answers are displayed correctly."""
+    def test_view_renders_with_quiz_results(self):
         self.client.login(username="testuser", password="Password123")
+        session = self.client.session
+        session["quiz_results"] = {
+            "poll_code": self.poll.code,
+            "score_percentage": 60,
+            "correct_count": 3,
+            "total_questions": 5,
+            "student_answers": [
+                {
+                    "question": "What is the capital of France?",
+                    "user_answer": "Paris",
+                    "correct_answer": "Paris",
+                    "is_correct": True
+                },
+                {
+                    "question": "Biggest planet?",
+                    "user_answer": "Earth",
+                    "correct_answer": "Jupiter",
+                    "is_correct": False
+                }
+            ]
+        }
+        session.save()
+
         response = self.client.get(self.url)
-        self.assertContains(response, "What is the capital of France?")  # Question shown
-        self.assertContains(response, "Correct: Paris")  # Correct answer shown
-        self.assertContains(response, "Wrong: Earth (Correct Answer: Jupiter)")  # Incorrect answer shown
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "final_score_page.html")
+        self.assertContains(response, "What is the capital of France?")
+        self.assertContains(response, "Paris")
+        self.assertContains(response, "Earth")
+        self.assertContains(response, "Jupiter")
+        self.assertContains(response, "Score: 60%")
 
     def test_logout_button_exists(self):
-        """Test that the logout button is present."""
         self.client.login(username="testuser", password="Password123")
+        session = self.client.session
+        session["quiz_results"] = {
+            "poll_code": self.poll.code,
+            "score_percentage": 60,
+            "correct_count": 3,
+            "total_questions": 5,
+            "student_answers": []
+        }
+        session.save()
+
         response = self.client.get(self.url)
-        self.assertContains(response, '<button type="submit" class="logout-button">Logout</button>')  # Logout button exists
+        self.assertContains(response, "Logout")
 
     def test_navigation_buttons_exist(self):
-        """Test that navigation buttons are present."""
         self.client.login(username="testuser", password="Password123")
+        session = self.client.session
+        session["quiz_results"] = {
+            "poll_code": self.poll.code,
+            "score_percentage": 60,
+            "correct_count": 3,
+            "total_questions": 5,
+            "student_answers": []
+        }
+        session.save()
+
         response = self.client.get(self.url)
-        self.assertContains(response, "Back to Home")  # 'Back to Home' button exists
-        self.assertContains(response, "Try Again")  # 'Try Again' button exists
+        self.assertContains(response, "Back")
 
     def test_back_button_exists(self):
-        """Test that the back button exists on the page."""
         self.client.login(username="testuser", password="Password123")
-        response = self.client.get(self.url)
-        # Check if the back button is present in the HTML
-        self.assertContains(response, '<a href="javascript:history.back()" class="back-button">Back</a>')
+        session = self.client.session
+        session["quiz_results"] = {
+            "poll_code": self.poll.code,
+            "score_percentage": 60,
+            "correct_count": 3,
+            "total_questions": 5,
+            "student_answers": []
+        }
+        session.save()
 
+        response = self.client.get(self.url)
+        self.assertContains(response, "class=\"back-button\"")

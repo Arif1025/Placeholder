@@ -1,111 +1,95 @@
 from django.test import TestCase
 from django.urls import reverse
+from django.contrib.auth import get_user_model
+from polls.models import Class, ClassStudent, Poll, StudentQuizResult
 
-class TeacherPageViewTestCase(TestCase):
-    """Tests for the teacher class page view and its elements."""
+User = get_user_model()
 
-    def setUp(self):
-        """Setup the test by defining the URL for the teacher's class page."""
-        self.url = reverse('class_view_teacher')  # URL for the teacher's class page
+class TeacherClassPageViewTests(TestCase):
+    """Comprehensive tests for the teacher's class page view."""
 
-    def test_teacher_page_url(self):
-        """Test that the URL is correctly resolved."""
-        self.assertEqual(self.url, '/class_view_teacher/')  # Ensure the URL is correct
+    @classmethod
+    def setUpTestData(cls):
+        cls.teacher = User.objects.create_user(username="mrsmith", password="password123", role="teacher")
+        cls.student1 = User.objects.create_user(username="john", password="password123", role="student")
+        cls.student2 = User.objects.create_user(username="jane", password="password123", role="student")
 
-    def test_get_teacher_page(self):
-        """Test that the teacher page loads properly."""
+        cls.class_instance = Class.objects.create(name="Math 101", teacher=cls.teacher)
+        ClassStudent.objects.create(student=cls.student1, class_instance=cls.class_instance)
+        ClassStudent.objects.create(student=cls.student2, class_instance=cls.class_instance)
+
+        cls.poll = Poll.objects.create(title="Poll 1", created_by=cls.teacher, is_done=True)
+        cls.poll.participants.set([cls.student1, cls.student2])
+
+        StudentQuizResult.objects.create(student=cls.student1, poll=cls.poll, score=8, total_questions=10)
+        StudentQuizResult.objects.create(student=cls.student2, poll=cls.poll, score=9, total_questions=10)
+
+        cls.url = reverse("class_view_teacher", args=[cls.class_instance.id])
+        cls.login_url = reverse("login_interface")
+
+    def login(self):
+        self.client.login(username="mrsmith", password="password123")
+
+    def test_redirects_if_not_logged_in(self):
+        """Should redirect unauthenticated users to login page."""
+        response = self.client.get(self.url)
+        self.assertRedirects(response, f"{self.login_url}?next={self.url}")
+
+    def test_404_on_invalid_class_id(self):
+        """Should return 404 for a non-existent class."""
+        self.login()
+        invalid_url = reverse("class_view_teacher", args=[9999])
+        response = self.client.get(invalid_url)
+        self.assertEqual(response.status_code, 404)
+
+    def test_template_used_and_class_info_rendered(self):
+        self.login()
+        response = self.client.get(self.url)
+        self.assertTemplateUsed(response, "class_template_page_teacher.html")
+        self.assertContains(response, "Math 101")
+        self.assertContains(response, f"Teacher: {self.teacher.username}")
+
+    def test_enrolled_students_and_scores_shown(self):
+        self.login()
         response = self.client.get(self.url)
 
-        self.assertEqual(response.status_code, 200)  # Ensure the page loads with status code 200 (OK)
-        self.assertTemplateUsed(response, 'class_template_page_teacher.html')  # Ensure the correct template is used
+        for student, score in [(self.student1, 8), (self.student2, 9)]:
+            with self.subTest(student=student.username):
+                self.assertContains(response, student.username)
+                self.assertContains(response, f"Score: {score} / 10")
 
-        # Check for key content that should be displayed (e.g., class title, teacher's name)
-        self.assertContains(response, '<h1>Class View</h1>')
-        self.assertContains(response, 'Welcome, Teacher!')
-        self.assertContains(response, 'Math 101')
-        self.assertContains(response, 'Teacher: Mr. Smith')
-
-    def test_enrolled_students_section(self):
-        """Test that the list of enrolled students and their grades are displayed correctly."""
+    def test_poll_list_displayed(self):
+        self.login()
         response = self.client.get(self.url)
+        self.assertContains(response, self.poll.title)
 
-        # Ensure the "Enrolled Students" section contains expected students and their details
-        self.assertContains(response, 'Enrolled Students')
-        self.assertContains(response, 'John Doe')
-        self.assertContains(response, 'Grade: 85')
-        self.assertContains(response, 'Polls Answered: Poll 1, Poll 2')
-        self.assertContains(response, 'Jane Smith')
-        self.assertContains(response, 'Grade: 90')
-        self.assertContains(response, 'Polls Answered: Poll 1')
-        self.assertContains(response, 'Samuel Adams')
-        self.assertContains(response, 'Grade: 78')
-        self.assertContains(response, 'Polls Answered: Poll 1, Poll 2')
-
-    def test_most_recent_poll_section(self):
-        """Test that the most recent poll is displayed correctly."""
+    def test_poll_link_and_context_binding(self):
+        """Ensure poll shows up correctly and is in context."""
+        self.login()
         response = self.client.get(self.url)
+        self.assertIn("class", response.context)
+        self.assertEqual(response.context["class"].id, self.class_instance.id)
 
-        # Check for the "Most Recent Poll" section and its content
-        self.assertContains(response, 'Most Recent Poll')
-        self.assertContains(response, 'Poll 2: Feedback on last lesson')
-
-    def test_average_grade_section(self):
-        """Test that the average grade for the most recent poll is displayed correctly."""
+    def test_average_grade_displayed_correctly(self):
+        self.login()
         response = self.client.get(self.url)
+        self.assertContains(response, "Average Grade")
+        self.assertContains(response, "85")  # Avg of 80 and 90
 
-        # Check that the average grade for the recent poll is displayed
-        self.assertContains(response, 'Average Grade for Recent Poll: 84.3')
-
-    def test_logout_button(self):
-        """Test that the 'Logout' button is visible on the page."""
+    def test_navigation_buttons_present(self):
+        self.login()
         response = self.client.get(self.url)
+        self.assertContains(response, 'class="logout-button"')
+        self.assertContains(response, 'class="back-button"')
 
-        # Ensure the 'Logout' button is present on the page
-        self.assertContains(response, '<button type="submit" class="logout-button">Logout</button>')
-
-    def test_footer(self):
-        """Test that the footer is displayed properly with the correct text."""
+    def test_footer_and_mobile_styles_exist(self):
+        self.login()
         response = self.client.get(self.url)
+        self.assertContains(response, "&copy; 2025 Polling System")
+        self.assertContains(response, "@media screen and (max-width: 768px)")
 
-        # Check for the footer and ensure it contains the copyright text
-        self.assertContains(response, '&copy; 2025 Polling System')
-
-    def test_mobile_responsiveness(self):
-        """Test if the page is responsive on smaller screens."""
+    def test_layout_styles_applied(self):
+        self.login()
         response = self.client.get(self.url)
-        
-        # Ensure media query for responsiveness is included in the page's content
-        self.assertContains(response, '@media screen and (max-width: 768px)')
-
-    def test_student_elements_visibility(self):
-        """Test that the teacher-specific elements (grades, polls answered) are visible and rendered correctly."""
-        response = self.client.get(self.url)
-
-        # Ensure that grades and poll answers are visible to the teacher
-        self.assertContains(response, 'Grade: 85')
-        self.assertContains(response, 'Polls Answered: Poll 1, Poll 2')
-        self.assertContains(response, 'Grade: 90')
-        self.assertContains(response, 'Polls Answered: Poll 1')
-        self.assertContains(response, 'Grade: 78')
-        self.assertContains(response, 'Polls Answered: Poll 1, Poll 2')
-
-    def test_poll_list_items(self):
-        """Test that the poll list items are displayed correctly for the teacher."""
-        response = self.client.get(self.url)
-        
-        # Ensure that poll list items are shown correctly for the teacher
-        self.assertContains(response, '<li>Poll 2: Feedback on last lesson</li>')
-
-    def test_logout_button_position(self):
-        """Test that the logout button is correctly positioned at the top-right corner."""
-        response = self.client.get(self.url)
-
-        # Check that the logout button is correctly styled and positioned
-        self.assertContains(response, 'position: fixed; top: 20px; right: 20px;')
-
-    def test_back_button_position(self):
-        """Test that the back button is correctly positioned at the top-left corner."""
-        response = self.client.get(self.url)
-
-        # Check that the back button is correctly styled and positioned
-        self.assertContains(response, 'position: fixed; top: 20px; left: 20px;')
+        self.assertContains(response, "position: fixed; top: 20px; right: 20px;")
+        self.assertContains(response, "position: fixed; top: 20px; left: 20px;")

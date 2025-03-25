@@ -1,146 +1,101 @@
-import uuid
 from django.test import TestCase
-from django.contrib.auth import get_user_model
-from polls.models import Poll, Question, Choice, Response
+from polls.models import (
+    Poll, Question, Choice, CustomUser,
+    Teaching, Class, ClassStudent,
+    StudentResponse, StudentQuizResult
+)
 
-User = get_user_model()
-
-class PollModelTest(TestCase):
-    """
-    Test cases for the Poll model, including code generation, default values, and string representation.
-    """
-
+class ModelTests(TestCase):
     def setUp(self):
-        """
-        Set up a test user for the poll model tests.
-        """
-        self.user = User.objects.create_user(username="teacher", password="password123")
+        self.teacher = CustomUser.objects.create_user(username='teacher', password='pass1234', role='teacher')
+        self.student = CustomUser.objects.create_user(username='student', password='pass1234', role='student')
 
-    def test_auto_code_generation(self):
-        """
-        Test that the poll's code is auto-generated when not explicitly provided.
-        """
-        poll = Poll.objects.create(
-            title="Poll with auto code",
-            description="No code provided initially",
-            created_by=self.user
-        )
-        self.assertIsNotNone(poll.code, "Poll code should be auto-generated.")
-        self.assertTrue(len(poll.code) > 0, "Generated code should be non-empty.")
+    def test_poll_code_auto_generated(self):
+        poll = Poll.objects.create(title='Auto Code Test', created_by=self.teacher)
+        self.assertIsNotNone(poll.code)
+        self.assertEqual(len(poll.code), 8)
 
-    def test_explicit_code(self):
-        """
-        Test that a manually assigned poll code is retained.
-        """
-        poll = Poll.objects.create(
-            title="Poll with explicit code",
-            description="We assign the code manually",
-            created_by=self.user,
-            code="CUSTOM123"
-        )
-        self.assertEqual(poll.code, "CUSTOM123", "Poll should keep our manually assigned code.")
+    def test_poll_code_not_overwritten(self):
+        poll = Poll.objects.create(title='Static Code', created_by=self.teacher, code='STATIC01')
+        poll.save()
+        self.assertEqual(poll.code, 'STATIC01')
 
-    def test_is_done_default_false(self):
-        """
-        Test that the default value of is_done is False when a new poll is created.
-        """
-        poll = Poll.objects.create(
-            title="New Poll",
-            description="Testing is_done default",
-            created_by=self.user
-        )
-        self.assertFalse(poll.is_done, "New poll should be active (is_done=False) by default.")
+    def test_poll_participant_addition(self):
+        poll = Poll.objects.create(title='Poll X', created_by=self.teacher)
+        poll.participants.add(self.student)
+        self.assertIn(self.student, poll.participants.all())
 
-    def test_poll_str(self):
-        """
-        Test the string representation of the Poll model.
-        """
-        poll = Poll.objects.create(
-            title="Str check Poll",
-            description="Check __str__ method",
-            created_by=self.user
-        )
-        self.assertEqual(str(poll), "Str check Poll")
+    def test_question_string_representation(self):
+        poll = Poll.objects.create(title='Quiz', created_by=self.teacher)
+        question = Question.objects.create(poll=poll, text='What is Python?', question_type='written')
+        self.assertEqual(str(question), 'What is Python?')
 
-class QuestionModelTest(TestCase):
-    """
-    Test cases for the Question model, including creation and string representation.
-    """
-    
-    def setUp(self):
-        """
-        Set up a test user, poll, and question for the question model tests.
-        """
-        self.user = User.objects.create_user(username="testuser", password="testpassword")
-        self.poll = Poll.objects.create(title="Test Poll", description="Test Description", created_by=self.user)
-        self.question = Question.objects.create(poll=self.poll, question_text="What is your favorite color?")
+    def test_question_get_options(self):
+        poll = Poll.objects.create(title='Quiz', created_by=self.teacher)
+        q = Question.objects.create(poll=poll, text='Select one', question_type='mcq')
+        q.options = "A,B,C"
+        self.assertEqual(q.get_options(), ['A', 'B', 'C'])
 
-    def test_question_creation(self):
-        """
-        Test that a question is correctly created and associated with a poll.
-        """
-        self.assertEqual(self.question.poll, self.poll)
-        self.assertEqual(self.question.question_text, "What is your favorite color?")
+    def test_choice_string_representation_and_cleaning(self):
+        poll = Poll.objects.create(title='Quiz', created_by=self.teacher)
+        question = Question.objects.create(poll=poll, text='Color?', question_type='mcq')
+        choice = Choice.objects.create(question=question, text=' Blue \n ', is_correct=True)
+        self.assertEqual(str(choice), 'Blue')
 
-    def test_question_str(self):
-        """
-        Test the string representation of the Question model.
-        """
-        self.assertEqual(str(self.question), "What is your favorite color?")
+    def test_choice_text_cleaned_on_save(self):
+        poll = Poll.objects.create(title='Clean Test', created_by=self.teacher)
+        q = Question.objects.create(poll=poll, text='MCQ?', question_type='mcq')
+        choice = Choice.objects.create(question=q, text='  Messy \n Text ')
+        self.assertEqual(choice.text, 'Messy Text')
 
-class ChoiceModelTest(TestCase):
-    """
-    Test cases for the Choice model, including creation and string representation.
-    """
-    
-    def setUp(self):
-        """
-        Set up a test user, poll, question, and choice for the choice model tests.
-        """
-        self.user = User.objects.create_user(username="testuser", password="testpassword")
-        self.poll = Poll.objects.create(title="Test Poll", description="Test Description", created_by=self.user)
-        self.question = Question.objects.create(poll=self.poll, question_text="What is your favorite color?")
-        self.choice = Choice.objects.create(question=self.question, choice_text="Blue")
+    def test_custom_user_role_assignment(self):
+        self.assertEqual(self.teacher.role, 'teacher')
+        self.assertEqual(self.student.role, 'student')
 
-    def test_choice_creation(self):
-        """
-        Test that a choice is correctly created and associated with a question.
-        """
-        self.assertEqual(self.choice.question, self.question)
-        self.assertEqual(self.choice.choice_text, "Blue")
+    def test_teacher_teaches_multiple_students(self):
+        s2 = CustomUser.objects.create_user(username='student2', password='pass', role='student')
+        Teaching.objects.create(teacher=self.teacher, student=self.student)
+        Teaching.objects.create(teacher=self.teacher, student=s2)
+        self.assertEqual(self.teacher.students.count(), 2)
 
-    def test_choice_str(self):
-        """
-        Test the string representation of the Choice model.
-        """
-        self.assertEqual(str(self.choice), "Blue")
+    def test_teaching_relationship(self):
+        Teaching.objects.create(teacher=self.teacher, student=self.student)
+        self.assertIn(self.student, self.teacher.students.all())
 
-class ResponseModelTest(TestCase):
-    """
-    Test cases for the Response model, including creation, relationships, and string representation.
-    """
-    
-    def setUp(self):
-        """
-        Set up a test user, poll, question, choice, and response for the response model tests.
-        """
-        self.user = User.objects.create_user(username="testuser", password="testpassword")
-        self.poll = Poll.objects.create(title="Test Poll", description="Test Description", created_by=self.user)
-        self.question = Question.objects.create(poll=self.poll, question_text="What is your favorite color?")
-        self.choice = Choice.objects.create(question=self.question, choice_text="Blue")
-        self.response = Response.objects.create(user=self.user, question=self.question, choice=self.choice)
+    def test_class_and_student_assignment(self):
+        class_instance = Class.objects.create(name='Math 101', teacher=self.teacher)
+        ClassStudent.objects.create(student=self.student, class_instance=class_instance)
+        self.assertEqual(str(class_instance), 'Math 101')
+        self.assertEqual(str(ClassStudent.objects.first()), 'student in Math 101')
 
-    def test_response_creation(self):
-        """
-        Test that a response is correctly created and associated with a user, question, and choice.
-        """
-        self.assertEqual(self.response.user, self.user)
-        self.assertEqual(self.response.question, self.question)
-        self.assertEqual(self.response.choice, self.choice)
-        self.assertIsNotNone(self.response.submitted_at)
+    def test_student_response_model(self):
+        poll = Poll.objects.create(title='Poll', created_by=self.teacher)
+        question = Question.objects.create(poll=poll, text='Capital of France?', question_type='written')
+        response = StudentResponse.objects.create(student=self.student, question=question, response='Paris')
+        self.assertEqual(response.response, 'Paris')
 
-    def test_response_str(self):
-        """
-        Test the string representation of the Response model.
-        """
-        self.assertEqual(str(self.response), f"{self.user} - {self.question} - {self.choice}")
+    def test_student_multiple_responses_possible(self):
+        poll = Poll.objects.create(title='Poll', created_by=self.teacher)
+        question = Question.objects.create(poll=poll, text='Type something', question_type='written')
+        StudentResponse.objects.create(student=self.student, question=question, response='A')
+        StudentResponse.objects.create(student=self.student, question=question, response='B')
+        self.assertEqual(StudentResponse.objects.filter(student=self.student, question=question).count(), 2)
+
+    def test_quiz_result_model(self):
+        poll = Poll.objects.create(title='Poll', created_by=self.teacher)
+        result = StudentQuizResult.objects.create(student=self.student, poll=poll, score=4, total_questions=5)
+        self.assertEqual(result.score, 4)
+        self.assertEqual(result.total_questions, 5)
+
+    def test_quiz_result_percentage(self):
+        poll = Poll.objects.create(title='Poll', created_by=self.teacher)
+        result = StudentQuizResult.objects.create(student=self.student, poll=poll, score=3, total_questions=5)
+        percentage = (result.score / result.total_questions) * 100
+        self.assertEqual(percentage, 60.0)
+
+    def test_poll_deletes_related_questions(self):
+        poll = Poll.objects.create(title='Cascade Poll', created_by=self.teacher)
+        Question.objects.create(poll=poll, text='Q1', question_type='written')
+        self.assertEqual(poll.questions.count(), 1)
+        poll.delete()
+        self.assertEqual(Question.objects.count(), 0)
