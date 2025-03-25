@@ -417,14 +417,9 @@ def view_poll_results(request, poll_id):
     questions_data = []
 
     for question in poll.questions.all():
-        # Determine the correct answer based on the question type
-        if question.question_type == "mcq":
-            correct_choice = question.choices.filter(is_correct=True).first()
-            correct_choice_text = correct_choice.text if correct_choice else "No correct answer set"
-        elif question.question_type == "written":
-            correct_choice_text = question.correct_answer
-        else:
-            correct_choice_text = "Invalid question type"
+        # Determine the correct answer
+        correct_choice = question.choices.filter(is_correct=True).first()
+        correct_choice_text = correct_choice.text if correct_choice else question.correct_answer
 
         # Fetch all student responses for the question
         student_responses = StudentResponse.objects.filter(question=question).select_related('student')
@@ -434,13 +429,12 @@ def view_poll_results(request, poll_id):
         response_data = []
 
         for response in student_responses:
-            is_correct = False
+            # Normalize both the response and the correct answer for comparison
+            student_response = response.response.strip().lower()
+            correct_answer_normalized = correct_choice_text.strip().lower()
 
-            # Check correctness based on question type
-            if question.question_type == "mcq" and correct_choice_text:
-                is_correct = response.response.strip().lower() == correct_choice_text.strip().lower()
-            elif question.question_type == "written":
-                is_correct = response.response.strip().lower() == correct_choice_text.strip().lower()
+            # Compare responses
+            is_correct = student_response == correct_answer_normalized
 
             if is_correct:
                 correct_count += 1
@@ -466,7 +460,7 @@ def view_poll_results(request, poll_id):
     return render(request, 'charts.html', {
         'poll': poll,
         'questions_data': questions_data
-    })  # Render poll results with student responses and correctness
+    })
 
 def register_view(request):
     if request.method == "POST":
