@@ -79,3 +79,52 @@ class StudentHomePageViewTest(TestCase):
         response = self.client.post(reverse('enter_poll_code'), {'poll_code': 'INVALIDCODE'})
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Invalid poll code.')
+
+class StudentJoinClassTest(TestCase):
+    def setUp(self):
+        self.client = Client()
+
+        # Create a teacher and some classes
+        self.teacher = User.objects.create_user(username='teacher1', password='testpass', role='teacher')
+        self.class1 = Class.objects.create(name='Economics 285', teacher=self.teacher)
+        self.class2 = Class.objects.create(name='History 101', teacher=self.teacher)
+
+        # Create student and log in
+        self.student = User.objects.create_user(username='student1', password='pass123', role='student')
+        self.client.login(username='student1', password='pass123')
+
+    def test_join_class_form_renders(self):
+        response = self.client.get(reverse('student_home_interface'))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Join a Class:')
+        self.assertContains(response, 'Economics 285')
+        self.assertContains(response, 'History 101')
+
+    def test_student_can_join_class(self):
+        response = self.client.post(reverse('student_home_interface'), {
+            'class_choice': self.class1.id
+        }, follow=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Economics 285')
+        self.assertTrue(ClassStudent.objects.filter(student=self.student, class_instance=self.class1).exists())
+
+    def test_joined_classes_disappear_from_dropdown(self):
+        ClassStudent.objects.create(student=self.student, class_instance=self.class1)
+
+        response = self.client.get(reverse('student_home_interface'))
+
+        dropdown_html = response.content.decode().split('Join a Class:')[1]
+        self.assertNotIn('Economics 285', dropdown_html)
+        self.assertIn('History 101', dropdown_html)
+
+    def test_student_added_to_poll_participants_on_join(self):
+        poll = Poll.objects.create(title='Econ Quiz', class_instance=self.class1, created_by=self.teacher, is_done=False)
+
+        self.client.post(reverse('student_home_interface'), {
+            'class_choice': self.class1.id
+        }, follow=True)
+
+        poll.refresh_from_db()
+        self.assertIn(self.student, poll.participants.all())
+
