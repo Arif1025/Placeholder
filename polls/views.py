@@ -240,7 +240,7 @@ def class_view_student(request, class_id):
     if not ClassStudent.objects.filter(class_instance=class_instance, student=request.user).exists():
         return HttpResponseForbidden("You are not enrolled in this class.")
     
-    teacher = class_instance.teacher  # Fetch the teacher directly from the Class model
+    teacher = class_instance.teacher
 
     # Get all polls for the class
     polls_in_class = Poll.objects.filter(class_instance=class_instance).order_by('-created_at')
@@ -289,6 +289,7 @@ def class_view_student(request, class_id):
 @login_required
 def class_view_teacher(request, class_id):
     class_instance = get_object_or_404(Class, id=class_id)
+    teacher = class_instance.teacher
 
     # Ensure only the teacher who owns this class can access it
     if class_instance.teacher != request.user:
@@ -328,6 +329,7 @@ def class_view_teacher(request, class_id):
 
     context = {
         'class': class_instance,
+        'teacher': teacher,
         'students': students,
         'recent_polls': [recent_poll] if recent_poll else [],
         'average_grade': average_grade,
