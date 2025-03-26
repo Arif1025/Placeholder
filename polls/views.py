@@ -63,7 +63,7 @@ def student_home_interface(request):
 @login_required
 def teacher_home_interface(request):
     # Get all polls created by the teacher
-    quizzes = Poll.objects.all()
+    quizzes = Poll.objects.filter(created_by=request.user).order_by('-created_at')
 
     # Get the classes the teacher is teaching
     classes = Class.objects.filter(teacher=request.user)
@@ -234,11 +234,13 @@ def delete_quiz(request, poll_id):
 @login_required
 def class_view_student(request, class_id):
     class_instance = get_object_or_404(Class, id=class_id)
-    students = class_instance.participants.filter(id=request.user.id)
+    students = ClassStudent.objects.filter(class_instance=class_instance, student=request.user)    
 
     # Ensure the logged-in student is enrolled in the class
     if not ClassStudent.objects.filter(class_instance=class_instance, student=request.user).exists():
         return HttpResponseForbidden("You are not enrolled in this class.")
+    
+    teacher = class_instance.teacher
 
     # Get all polls for the class
     polls_in_class = Poll.objects.filter(class_instance=class_instance).order_by('-created_at')
@@ -276,6 +278,7 @@ def class_view_student(request, class_id):
 
     context = {
         'class': class_instance,
+        'teacher': teacher,
         'student': student_info,
         'recent_poll_title': recent_poll_title,
         'average_grade': average_grade,
@@ -286,6 +289,7 @@ def class_view_student(request, class_id):
 @login_required
 def class_view_teacher(request, class_id):
     class_instance = get_object_or_404(Class, id=class_id)
+    teacher = class_instance.teacher
 
     # Ensure only the teacher who owns this class can access it
     if class_instance.teacher != request.user:
@@ -325,6 +329,7 @@ def class_view_teacher(request, class_id):
 
     context = {
         'class': class_instance,
+        'teacher': teacher,
         'students': students,
         'recent_polls': [recent_poll] if recent_poll else [],
         'average_grade': average_grade,
@@ -478,6 +483,8 @@ def view_poll_results(request, poll_id):
 
 def register_view(request):
     if request.method == "POST":
+        storage = messages.get_messages(request)
+        storage.used = True
         username = request.POST.get("username")
         password = request.POST.get("password")
         confirm_password = request.POST.get("confirm_password")

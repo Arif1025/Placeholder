@@ -1,8 +1,5 @@
 from django.core.management.base import BaseCommand
-from polls.models import (
-    CustomUser, Class, ClassStudent, Teaching,
-    Poll, Question, Choice
-)
+from polls.models import CustomUser, Class, ClassStudent, Teaching, Poll, Question, Choice
 from django.contrib.auth import get_user_model
 from faker import Faker
 import random
@@ -19,7 +16,7 @@ class Command(BaseCommand):
         num_classes = 20
         max_students_per_class = 10
 
-        self.stdout.write(f"Seeding {num_users} users, {num_classes} classes")
+        self.stdout.write(f"Seeding {num_users} users")
 
         User = get_user_model()
 
@@ -113,7 +110,8 @@ class Command(BaseCommand):
                 title=f"{class_instance.name} - {fake.word().capitalize()} Quiz",
                 description=fake.sentence(),
                 created_by=teacher,
-                class_instance=class_instance
+                class_instance=class_instance,
+                is_done=False
             )
 
             # Set participants to enrolled students
@@ -143,5 +141,5 @@ class Command(BaseCommand):
 
 
         self.stdout.write(self.style.SUCCESS(
-            f"✅ Seeded {len(teachers)} teachers, {len(students)} students, {len(classes)} classes, and 1 poll per class with questions."
+            f"Seeded {len(teachers)} teachers, {len(students)} students, {len(classes)} classes, and 1 poll per class with questions."
         ))
