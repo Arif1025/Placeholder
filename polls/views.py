@@ -234,11 +234,13 @@ def delete_quiz(request, poll_id):
 @login_required
 def class_view_student(request, class_id):
     class_instance = get_object_or_404(Class, id=class_id)
-    students = class_instance.participants.filter(id=request.user.id)
+    students = ClassStudent.objects.filter(class_instance=class_instance, student=request.user)    
 
     # Ensure the logged-in student is enrolled in the class
     if not ClassStudent.objects.filter(class_instance=class_instance, student=request.user).exists():
         return HttpResponseForbidden("You are not enrolled in this class.")
+    
+    teacher = class_instance.teacher  # Fetch the teacher directly from the Class model
 
     # Get all polls for the class
     polls_in_class = Poll.objects.filter(class_instance=class_instance).order_by('-created_at')
@@ -276,6 +278,7 @@ def class_view_student(request, class_id):
 
     context = {
         'class': class_instance,
+        'teacher': teacher,
         'student': student_info,
         'recent_poll_title': recent_poll_title,
         'average_grade': average_grade,
