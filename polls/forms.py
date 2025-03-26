@@ -1,15 +1,20 @@
 from django import forms
 from django.forms import inlineformset_factory
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
-from .models import Question
-from .models import Poll, Question, Choice, CustomUser
+from .models import Poll, Question, Choice, CustomUser, Class
 
 # Custom Login Form for authentication with role selection (Student or Teacher)
 class CustomLoginForm(forms.Form):
     username = forms.CharField(required=True)
     password = forms.CharField(widget=forms.PasswordInput, required=True)
     role = forms.ChoiceField(choices=[('student', 'Student'), ('teacher', 'Teacher')], required=True, label="Login as")
-    
+
+class JoinClassForm(forms.Form):
+    class_choice = forms.ModelChoiceField(
+        queryset=Class.objects.all(),
+        label="Choose a class to join",
+        widget=forms.Select(attrs={"class": "form-control"})
+    )
 
 # Custom User Creation Form to handle user registration with email, username, and role
 class CustomUserCreationForm(UserCreationForm):

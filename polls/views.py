@@ -3,7 +3,7 @@ from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.contrib import messages
 from django.http import HttpResponse, HttpResponseForbidden
 from django.contrib.auth.decorators import login_required
-from .forms import CustomLoginForm, QuestionForm, PollForm, JoinPollForm, CustomUserCreationForm
+from .forms import CustomLoginForm, JoinClassForm, QuestionForm, PollForm, JoinPollForm, CustomUserCreationForm
 from django.forms import modelformset_factory
 import csv
 from .models import Poll, Question, Choice, CustomUser, ClassStudent, Class, StudentResponse, StudentQuizResult
@@ -36,29 +36,70 @@ def login_view(request):
     return render(request, 'login_interface.html', {'form': form})
 
 @login_required
+def join_class_view(request):
+    if request.user.role != 'student':
+        return HttpResponseForbidden("Only students can join classes.")
+
+    if request.method == 'POST':
+        form = JoinClassForm(request.POST)
+        if form.is_valid():
+            class_to_join = form.cleaned_data['class_choice']
+            
+            ClassStudent.objects.get_or_create(
+                student=request.user,
+                class_instance=class_to_join
+            )
+            messages.success(request, f"You have successfully joined {class_to_join.name}!")
+            return redirect('student_home_interface')
+    else:
+        form = JoinClassForm()
+
+    return render(request, 'join_class.html', {'form': form})
+
+@login_required
 def student_home_interface(request):
     # Ensure the user is a student
     if not request.user.is_authenticated or request.user.role != 'student':
         return redirect('login_interface')
-    
-    # Get the polls the student has joined
-    joined_polls = request.user.joined_polls.all()
 
-    # Get the classes the student is in
+    # Handle class join submission
+    if request.method == 'POST' and 'class_choice' in request.POST:
+        class_id = request.POST.get('class_choice')
+        selected_class = get_object_or_404(Class, id=class_id)
+
+        # Create the ClassStudent relationship
+        ClassStudent.objects.get_or_create(student=request.user, class_instance=selected_class)
+
+        # Add student to all active polls in the class
+        active_polls = selected_class.polls.filter(is_done=False)
+        for poll in active_polls:
+            poll.participants.add(request.user)
+
+        return redirect('student_home_interface')  # Refresh page after joining
+
+    # Get the polls the student has joined
+    joined_polls = request.user.joined_polls.filter(is_done=False)
+
+    # Get the classes the student is already in
     classes = ClassStudent.objects.filter(student=request.user).select_related('class_instance')
 
-    # Collect teachers for each class
-    class_teachers = {cls.id: cls.teacher.username for cls in Class.objects.all()}    
-    
+    # Collect teacher names for classes
+    class_teachers = {cls.id: cls.teacher.username for cls in Class.objects.all()}
     for class_student in classes:
         class_instance = class_student.class_instance
         class_student.teacher_name = class_teachers.get(class_instance.id, "Unknown Teacher")
 
-    return render(request, "student_home_interface.html",  {
+    # Get list of available classes the student is NOT in
+    already_joined_ids = [c.class_instance.id for c in classes]
+    all_classes = Class.objects.exclude(id__in=already_joined_ids)
+
+    return render(request, "student_home_interface.html", {
         'joined_polls': joined_polls,
         'classes': classes,
-        'class_teachers': class_teachers
+        'class_teachers': class_teachers,
+        'all_classes': all_classes  # For dropdown in template
     })
+
 
 @login_required
 def teacher_home_interface(request):

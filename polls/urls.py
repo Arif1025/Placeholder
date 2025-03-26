@@ -14,6 +14,9 @@ urlpatterns = [
     # Login view, allows users to log in
     path("login_interface/", login_view, name="login_interface"),
 
+    # For joining a class
+    path('join-class/', views.join_class_view, name='join_class'),
+
     # Student's home interface, view for students after login
     path("student_home_interface/", views.student_home_interface, name="student_home_interface"),
 
