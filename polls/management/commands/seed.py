@@ -110,7 +110,8 @@ class Command(BaseCommand):
                 title=f"{class_instance.name} - {fake.word().capitalize()} Quiz",
                 description=fake.sentence(),
                 created_by=teacher,
-                class_instance=class_instance
+                class_instance=class_instance,
+                is_done=False
             )
 
             # Set participants to enrolled students
