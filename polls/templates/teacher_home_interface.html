@@ -221,7 +221,7 @@
         <!-- Welcome Section -->
         <section class="welcome-section">
             <h1>Home</h1>
-            <p class="welcome-message">Welcome, Teacher!</p>
+            <p class="welcome-message">Welcome, {{ request.user.get_full_name|default:request.user.username }}!</p>
         </section>
     
         <!-- Teacher's Classes Section -->

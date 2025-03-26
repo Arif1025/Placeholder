@@ -223,7 +223,6 @@
         <!-- Welcome Section -->
         <section class="welcome-section">
             <h1>Class View</h1>
-            <p class="welcome-message">Welcome, Teacher!</p>
         </section>
 
         <!-- Class Details Section -->
@@ -231,7 +230,7 @@
             <div class="class-title">{{ class.name }}</div>
 
             <!-- Teacher Name Displayed -->
-            <p class="teacher-name">Teacher: {{ class.teacher.get_full_name }}</p>
+            <p class="teacher-name">Teacher: {{ class.teacher.get_full_name|default:class.teacher.username}}</p>
 
             <h2>Enrolled Students</h2>
             <ul class="student-list">
