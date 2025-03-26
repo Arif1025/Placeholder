@@ -525,6 +525,7 @@ def view_poll_results(request, poll_id):
 def register_view(request):
     if request.method == "POST":
         storage = messages.get_messages(request)
+        list(storage)       
         storage.used = True
         username = request.POST.get("username")
         password = request.POST.get("password")
