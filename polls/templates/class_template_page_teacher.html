@@ -22,10 +22,11 @@
         }
 
         main {
-            max-width: 1600px; 
+            width: 100%; 
+            max-width: 100%; 
             margin: 0 auto;
             padding: 10px 15px;
-            flex-grow: 1; 
+            flex-grow: 1;
         }
 
         /* Main Title Styling */
@@ -66,7 +67,8 @@
             padding: 15px;
             border-radius: 8px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            margin-bottom: 30px;
+            margin: 0; 
+            width: 100%; 
         }
 
         .class-title {
@@ -152,8 +154,10 @@
             background-color: #9b4dca;
             color: white;
             text-align: center;
-            padding: px;
+            padding: 3px;
+            width: 100%;
             margin-top: auto;
+            position: relative;
         }
 
         /* Mobile Responsiveness */
@@ -222,40 +226,40 @@
             <p class="welcome-message">Welcome, Teacher!</p>
         </section>
 
-            <!-- Class Details Section -->
-            <section class="class-details">
-                <div class="class-title">{{ class.name }}</div>
+        <!-- Class Details Section -->
+        <section class="class-details">
+            <div class="class-title">{{ class.name }}</div>
 
-                <!-- Teacher Name Displayed -->
-                <p class="teacher-name">Teacher: {{ class.teacher.get_full_name }}</p>
+            <!-- Teacher Name Displayed -->
+            <p class="teacher-name">Teacher: {{ class.teacher.get_full_name }}</p>
 
-                <h2>Enrolled Students</h2>
-                <ul class="student-list">
-                    {% for student in students %}
-                        <li>
-                            <span>{{ student.name }}</span><br>
-                            Grade: {{ student.grade }}<br>
-                            Polls Answered: {{ student.polls_answered }}
-                        </li>
-                    {% empty %}
-                        <li>No students enrolled.</li>
-                    {% endfor %}
-                </ul>
+            <h2>Enrolled Students</h2>
+            <ul class="student-list">
+                {% for student in students %}
+                    <li>
+                        <span>{{ student.name }}</span><br>
+                        Grade: {{ student.grade }}<br>
+                        Polls Answered: {{ student.polls_answered }}
+                    </li>
+                {% empty %}
+                    <li>No students enrolled.</li>
+                {% endfor %}
+            </ul>
 
-                <h2>Most Recent Poll</h2>
-                <ul class="poll-list">
-                    {% for poll in recent_polls %}
-                        <li>{{ poll.title }}</li>
-                    {% empty %}
-                        <li>No polls yet.</li>
-                    {% endfor %}
-                </ul>
+            <h2>Most Recent Poll</h2>
+            <ul class="poll-list">
+                {% for poll in recent_polls %}
+                    <li>{{ poll.title }}</li>
+                {% empty %}
+                    <li>No polls yet.</li>
+                {% endfor %}
+            </ul>
 
-                <!-- Dynamic Average Grade -->
-                <div class="average-grade">
-                    Average Grade for Recent Poll: {{ average_grade }}
-                </div>
-            </section>
+            <!-- Dynamic Average Grade -->
+            <div class="average-grade">
+                Average Grade for Recent Poll: {{ average_grade }}
+            </div>
+        </section>
     
     <!-- Back Button -->
     <a href="{% url 'teacher_home_interface' %}" class="back-button">Back</a>
