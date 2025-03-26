@@ -63,7 +63,7 @@ def student_home_interface(request):
 @login_required
 def teacher_home_interface(request):
     # Get all polls created by the teacher
-    quizzes = Poll.objects.all()
+    quizzes = Poll.objects.filter(created_by=request.user).order_by('-created_at')
 
     # Get the classes the teacher is teaching
     classes = Class.objects.filter(teacher=request.user)
