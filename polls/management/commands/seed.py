@@ -16,7 +16,7 @@ class Command(BaseCommand):
         num_classes = 20
         max_students_per_class = 10
 
-        self.stdout.write(f"Seeding {num_users} users, {num_classes} classes")
+        self.stdout.write(f"Seeding {num_users} users")
 
         User = get_user_model()
 
@@ -140,5 +140,5 @@ class Command(BaseCommand):
 
 
         self.stdout.write(self.style.SUCCESS(
-            f"✅ Seeded {len(teachers)} teachers, {len(students)} students, {len(classes)} classes, and 1 poll per class with questions."
+            f"Seeded {len(teachers)} teachers, {len(students)} students, {len(classes)} classes, and 1 poll per class with questions."
         ))
