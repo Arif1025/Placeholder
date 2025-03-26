@@ -271,7 +271,13 @@
             <h2>Recent Polls</h2>
             <ul class="polls-list">
                 {% for poll in joined_polls %}
-                    <li><a href="#" class="poll-link" data-poll-id="{{ poll.id }}">{{ poll.title }}</a></li>
+                    <li>
+                        {% if poll.is_done or not poll.code %}
+                            <a href="#" class="poll-link closed" data-poll-id="{{ poll.id }}">{{ poll.title }}</a>
+                        {% else %}
+                            <a href="{% url 'student_view_quiz' poll.code %}" class="poll-link open">{{ poll.title }}</a>
+                        {% endif %}
+                    </li>
                 {% empty %}
                     <li>No polls joined yet.</li>
                 {% endfor %}
@@ -305,11 +311,11 @@
     
     <script>
         // Show modal when poll link is clicked
-        document.querySelectorAll('.poll-link').forEach(function(link) {
+        document.querySelectorAll('.poll-link.closed').forEach(function(link) {
             link.addEventListener('click', function(event) {
                 event.preventDefault();
                 document.getElementById('errorModal').style.display = 'block';
-            });
+                });
         });
 
         // Close the error modal
