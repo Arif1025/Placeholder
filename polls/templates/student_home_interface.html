@@ -244,25 +244,26 @@
                             {{ class_student.class_instance.name }} - Teacher: {{ class_student.teacher_name }}
                         </a>
                     </li>
-                    {% empty %}
+                {% empty %}
                     <li>You are not enrolled in any classes.</li>
-                    {% endfor %}
-                </ul>
-                
-                <!-- Join Class Form  -->
-                <form method="post" action="{% url 'student_home_interface' %}" style="margin-top: 20px;">
-                    {% csrf_token %}
-                    <label for="class_choice"><strong>Join a Class:</strong></label><br><br>
-                    <select name="class_choice" required style="padding: 10px; font-size: 16px;">
-                        {% for class in all_classes %}
-                            <option value="{{ class.id }}">{{ class.name }} ({{ class.teacher.username }})</option>
-                        {% empty %}
-                            <option disabled>No available classes</option>
-                        {% endfor %}
-                    </select>
-                    <br><br>
-                    <button type="submit" class="join-poll-button">Join Class</button>
-                </form>
+                {% endfor %}
+        
+                <!-- Join Class Form -->
+                <li>
+                    <form method="post" action="{% url 'student_home_interface' %}">
+                        {% csrf_token %}
+                        <label for="class_choice"><strong>Join a Class:</strong></label><br><br>
+                        <select name="class_choice" required style="padding: 10px; font-size: 16px; width: 100%;">
+                            {% for class in all_classes %}
+                                <option value="{{ class.id }}">{{ class.name }} ({{ class.teacher.username }})</option>
+                            {% empty %}
+                                <option disabled>No available classes</option>
+                            {% endfor %}
+                        </select>
+                        <br><br>
+                        <button type="submit" class="join-poll-button">Join Class</button>
+                    </form>
+                </li>
             </ul>
         </section>
         
@@ -271,7 +272,13 @@
             <h2>Recent Polls</h2>
             <ul class="polls-list">
                 {% for poll in joined_polls %}
-                    <li><a href="#" class="poll-link" data-poll-id="{{ poll.id }}">{{ poll.title }}</a></li>
+                    <li>
+                        {% if poll.is_done or not poll.code %}
+                            <a href="#" class="poll-link closed" data-poll-id="{{ poll.id }}">{{ poll.title }}</a>
+                        {% else %}
+                            <a href="{% url 'student_view_quiz' poll.code %}" class="poll-link open">{{ poll.title }}</a>
+                        {% endif %}
+                    </li>
                 {% empty %}
                     <li>No polls joined yet.</li>
                 {% endfor %}
@@ -305,11 +312,11 @@
     
     <script>
         // Show modal when poll link is clicked
-        document.querySelectorAll('.poll-link').forEach(function(link) {
+        document.querySelectorAll('.poll-link.closed').forEach(function(link) {
             link.addEventListener('click', function(event) {
                 event.preventDefault();
                 document.getElementById('errorModal').style.display = 'block';
-            });
+                });
         });
 
         // Close the error modal

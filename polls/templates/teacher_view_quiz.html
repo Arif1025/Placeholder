@@ -17,6 +17,7 @@
         h1 {
             color: #9b4dca;
             text-align: center;
+            margin-top: 1000px; 
         }
 
         ul {
@@ -99,7 +100,7 @@
                     <p><strong>Options:</strong></p>
                     <ul class="options">   
                         {% for letter, choice in item.choice_labels %}
-                            <li>{{ letter }}) {{ choice.text }}</li>
+                            <li>{{ letter }} {{ choice.text }}</li>
                         {% empty %}
                             <li><em>No options available.</em></li>
                         {% endfor %}

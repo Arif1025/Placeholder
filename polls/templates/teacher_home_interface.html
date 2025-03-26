@@ -221,14 +221,14 @@
         <!-- Welcome Section -->
         <section class="welcome-section">
             <h1>Home</h1>
-            <p class="welcome-message">Welcome, Teacher!</p>
+            <p class="welcome-message">Welcome, {{ request.user.get_full_name|default:request.user.username }}!</p>
         </section>
     
         <!-- Teacher's Classes Section -->
         <section class="classes-section">
             <h2>Your Classes</h2>
             {% if classes %}
-                <ul>
+                <ul class="classes-list">
                     {% for class_instance in classes %}
                         <li>
                             <a href="{% url 'class_view_teacher' class_instance.id %}">{{ class_instance.name }}</a>
@@ -236,10 +236,12 @@
                     {% endfor %}
                 </ul>
             {% else %}
-                <p>You have no classes assigned yet.</p>
+                <ul class="classes-list">
+                    <li>You have no classes assigned yet.</li>
+                </ul>
             {% endif %}
         </section>
-    
+        
         <!-- Teacher's Polls Section -->
         <section class="polls-section">
             <h2>Your Polls</h2>
