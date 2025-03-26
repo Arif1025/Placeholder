@@ -273,9 +273,9 @@
                         {% endif %}
 
                         <!-- View Poll Results Button -->
-                        <a href="{% url 'view_poll_results' poll.id %}" style="margin-left: 10px;">
+                        <a href="{% url 'view_poll_results' poll.id %}" style="text-decoration: none;">
                             <button class="btn btn-purple">View Poll Results</button>
-                        </a>
+                        </a>                        
 
                          <!-- Delete button -->
                          <form action="{% url 'delete_quiz' poll.id %}" method="POST" style="display:inline;">
