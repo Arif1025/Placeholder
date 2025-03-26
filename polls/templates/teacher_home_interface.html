@@ -228,7 +228,7 @@
         <section class="classes-section">
             <h2>Your Classes</h2>
             {% if classes %}
-                <ul>
+                <ul class="classes-list">
                     {% for class_instance in classes %}
                         <li>
                             <a href="{% url 'class_view_teacher' class_instance.id %}">{{ class_instance.name }}</a>
@@ -236,10 +236,12 @@
                     {% endfor %}
                 </ul>
             {% else %}
-                <p>You have no classes assigned yet.</p>
+                <ul class="classes-list">
+                    <li>You have no classes assigned yet.</li>
+                </ul>
             {% endif %}
         </section>
-    
+        
         <!-- Teacher's Polls Section -->
         <section class="polls-section">
             <h2>Your Polls</h2>
