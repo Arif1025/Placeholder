@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        Poll System
+    </title>
+    <script src="http://code.jquery.com/query-3.6.0.min.js">
+    </script>
+    <script src="http://cdn.jsdelivr.net/npm/chart.js">
+    </script>
+</head>
+<body>
+    <h1>
+        Poll Result
+    </h1>
+    <div id="poll-container">
+        <h2 id="poll-question">
+            loading...
+        </h2>
+        <canvas id="pollChart">
+        </canvas>
+        <ul id="poll-options">
+        </ul>
+    </div>
+    <script>
+        function getCSFToken(){
+            return document.cookie.split(';').find(row=>row.startWith('csrftoken='))
+            ?.split('=')[1];
+        }
+        function loadPoll(){
+            $.ajax({
+                url:'polls/get_poll/',
+                type:'GET',
+                success:function(response){
+                    $("#poll-question").text(response.question);
+                    let labels=[];
+                    let data=[];
+                    $("#poll-options").empty();
+                    response.options.forEach(option=>{
+                        labels.push(option.text);
+                        data.push(option.votes);
+                        $("#poll-options").append('<li>$option-text)-$(option.votes) vote</li>');
+                    });
+                updateChart(labels,data);
+                }
+            });
+        }
+        function updateChart(labels, data){
+            let ctx=document.getElementById('pollChart').getContext('2d');
+            if(window.pollChart){
+                window.pollChart.destroy();
+            }
+            window.pollChart=new Chart(ctx, {
+                type:'bar',
+                data:{
+                    labels:labels,
+                    datasets:[{
+                        label:'Votes',
+                        data:data,
+                        backgroundColor:'rgba(54, 1662, 235, 0.5)',
+                        borderColor:'rgba(54, 162, 235, 1)',
+                        borderWidth:1
+                    }]
+                },
+                options:{
+                    responsive:true,
+                    scales:{
+                        y:{beginAtZero:true}
+                    }
+                }
+            });
+        }
+
+        $(document).ready(function(){
+            loadPoll();
+            setInterval(loadPoll, 5000);
+        });
+    </script>
+</body>
+</html>

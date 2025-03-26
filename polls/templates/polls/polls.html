@@ -3,27 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-device,initial-scale=1.0">
-    <title>Polling system</title>
-    <script src="https:/code.jquery.com/jqury-3.6.0.min.js"></script>
+    <title>
+        Polling system
+    </title>
+    <script src="https:/code.jquery.com/jqury-3.6.0.min.js">
+    </script>
 </head>
 <body>
-    <h1>Polling System</h1>
+    <h1>
+        Polling System
+    </h1>
     <div id="teacher-section">
-        <h2>Create a Poll</h2>
+        <h2>
+            Create a Poll
+        </h2>
         <input type="text" id="question" placeholder="Enter poll question"><br>
         <div id="options>">
             <input type="text" class="option" placeholder="=option1"><br>
             <input type="text" class="option" placeholder="=option2"><br>
         </div>
-        <button onclick="addOption()">Add Option</button>
-        <button onclick="createPoll()">Create Poll</button>
+        <button onclick="addOption()">
+            Add Option
+        </button>
+        <button onclick="createPoll()">
+            Create Poll
+        </button>
     </div>
 
     <div id="poll-section">
-        <h2>Vote on a Poll</h2>
-        <div id="poll-question"></div>
-        <div id="poll-option"></div>
-        <button onclick="submitVote()">Submit Vote</button>
+        <h2>
+            Vote on a Poll
+        </h2>
+        <div id="poll-question">
+        </div>
+        <div id="poll-option">
+        </div>
+        <button onclick="submitVote()">
+            Submit Vote
+        </button>
     </div>
     <script>
         function addOption(){
