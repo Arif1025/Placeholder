@@ -1,8 +1,5 @@
 from django.core.management.base import BaseCommand
-from polls.models import (
-    CustomUser, Class, ClassStudent, Teaching,
-    Poll, Question, Choice
-)
+from polls.models import CustomUser, Class, ClassStudent, Teaching, Poll, Question, Choice
 from django.contrib.auth import get_user_model
 from faker import Faker
 import random
