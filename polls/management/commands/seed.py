@@ -1,11 +1,14 @@
 from django.core.management.base import BaseCommand
-from polls.models import CustomUser, Class, ClassStudent, Teaching
+from polls.models import (
+    CustomUser, Class, ClassStudent, Teaching,
+    Poll, Question, Choice
+)
 from django.contrib.auth import get_user_model
 from faker import Faker
 import random
 
 class Command(BaseCommand):
-    help = "Seed the database with 200 users: 5 teachers, 190 students, and 20 classes."
+    help = "Seed the database with 200 users, 20 classes, and one quiz per class with questions and choices."
 
     def handle(self, *args, **options):
         fake = Faker()
@@ -16,7 +19,7 @@ class Command(BaseCommand):
         num_classes = 20
         max_students_per_class = 10
 
-        self.stdout.write(f"Seeding {num_users} users, {num_classes} classes, {num_teachers} teachers...")
+        self.stdout.write(f"Seeding {num_users} users, {num_classes} classes")
 
         User = get_user_model()
 
@@ -92,6 +95,53 @@ class Command(BaseCommand):
             teacher = random.choice(teachers)
             Teaching.objects.get_or_create(teacher=teacher, student=student)
 
+        # Generate 1 poll only for classes where students are enrolled
+        question_types = ['written', 'mcq']
+
+        for class_instance in classes:
+            enrolled_students = CustomUser.objects.filter(
+                id__in=ClassStudent.objects.filter(class_instance=class_instance).values_list('student_id', flat=True)
+            )
+
+            if not enrolled_students.exists():
+                continue  # Skip classes with no students
+
+            teacher = class_instance.teacher
+
+            # Create the poll for this class
+            poll = Poll.objects.create(
+                title=f"{class_instance.name} - {fake.word().capitalize()} Quiz",
+                description=fake.sentence(),
+                created_by=teacher,
+                class_instance=class_instance
+            )
+
+            # Set participants to enrolled students
+            poll.participants.set(enrolled_students)
+
+            # Add questions to the poll
+            num_questions = random.randint(3, 6)
+            for _ in range(num_questions):
+                question_type = random.choice(question_types)
+                question_text = fake.sentence(nb_words=10)
+
+                question = Question.objects.create(
+                    poll=poll,
+                    text=question_text,
+                    question_type=question_type,
+                    correct_answer=fake.word() if question_type == 'written' else ''
+                )
+
+                if question_type == 'mcq':
+                    correct_index = random.randint(0, 3)
+                    for i in range(4):
+                        Choice.objects.create(
+                            question=question,
+                            text=fake.word().capitalize(),
+                            is_correct=(i == correct_index)
+                        )
+
+
         self.stdout.write(self.style.SUCCESS(
-            f"Successfully seeded {len(teachers)} teachers, {len(students)} students, {len(classes)} classes."
+            f"✅ Seeded {len(teachers)} teachers, {len(students)} students, {len(classes)} classes, and 1 poll per class with questions."
         ))

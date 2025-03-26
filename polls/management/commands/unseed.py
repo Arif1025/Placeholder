@@ -1,26 +1,40 @@
 from django.core.management.base import BaseCommand
-from polls.models import CustomUser, Class, ClassStudent, Teaching
+from polls.models import (
+    CustomUser, Class, ClassStudent, Teaching,
+    Poll, Question, Choice
+)
 
 class Command(BaseCommand):
-    help = "Unseed the database by removing all seeded students, teachers, classes, and related records."
+    help = "Unseed the database by deleting all seeded polls, questions, choices, classes, and users (excluding superusers)."
 
     def handle(self, *args, **options):
-        self.stdout.write("Starting unseeding process...")
+        self.stdout.write("🧹 Starting unseeding process...")
 
-        # Delete ClassStudent relationships
-        ClassStudent.objects.all().delete()
-        self.stdout.write("Deleted all ClassStudent relationships.")
+        # Delete poll-related data
+        Choice.objects.all().delete()
+        self.stdout.write("✅ Deleted all Choices.")
 
-        # Delete Teaching relationships
+        Question.objects.all().delete()
+        self.stdout.write("✅ Deleted all Questions.")
+
+        Poll.objects.all().delete()
+        self.stdout.write("✅ Deleted all Polls.")
+
+        # Delete class/student/teaching structure
         Teaching.objects.all().delete()
-        self.stdout.write("Deleted all Teaching relationships.")
+        self.stdout.write("✅ Deleted all Teaching relationships.")
 
-        # Delete Classes
+        ClassStudent.objects.all().delete()
+        self.stdout.write("✅ Deleted all ClassStudent relationships.")
+
         Class.objects.all().delete()
-        self.stdout.write("Deleted all Classes.")
+        self.stdout.write("✅ Deleted all Classes.")
 
-        # Delete students and teachers
-        deleted_users = CustomUser.objects.filter(is_superuser=False, role__in=["student", "teacher"]).delete()
-        self.stdout.write(f"Deleted {deleted_users[0]} seeded users (students & teachers).")
+        # Delete seeded users (students & teachers, excluding superusers)
+        deleted_user_count, _ = CustomUser.objects.filter(
+            is_superuser=False,
+            role__in=["student", "teacher"]
+        ).delete()
+        self.stdout.write(f"✅ Deleted {deleted_user_count} seeded users.")
 
-        self.stdout.write(self.style.SUCCESS("Unseeding complete."))
+        self.stdout.write(self.style.SUCCESS("🎉 Unseeding complete!"))
