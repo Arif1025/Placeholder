@@ -35,7 +35,7 @@ class CustomUserCreationForm(UserCreationForm):
 class PollForm(forms.ModelForm):
     class Meta:
         model = Poll  # The model associated with the form
-        fields = ['title', 'description', 'code', 'is_done']  # Fields for the form
+        fields = ['title', 'description', 'code']  # Fields for the form
 
     def clean_title(self):
         # Title field validation: it should not be empty
