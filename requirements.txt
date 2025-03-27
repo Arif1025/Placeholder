@@ -1,8 +1,10 @@
-Django==5.1.5
 asgiref==3.8.1
-sqlparse==0.5.3
-gunicorn==23.0.0
-python-dotenv==1.0.1
-Faker==37.1.0
-coverage==7.6.4 
 channels==4.2.0
+coverage==7.6.4
+Django==5.1.5
+Faker==37.1.0
+gunicorn==23.0.0
+packaging==24.2
+python-dotenv==1.0.1
+sqlparse==0.5.3
+tzdata==2025.2
