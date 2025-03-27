@@ -146,7 +146,7 @@
         {% if messages %}
             <div class="messages">
                 {% for message in messages %}
-                    {% if 'password' in message|lower %}
+                    {% if message.tags == 'error' %}
                         <p style="color: red;">{{ message }}</p>
                     {% endif %}
                 {% endfor %}
