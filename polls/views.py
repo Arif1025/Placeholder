@@ -486,6 +486,7 @@ def view_poll_results(request, poll_id):
 
             # If question is MCQ, check if the student's answer matches the correct choice
             if question.question_type == "mcq":
+                
                 correct_choice = question.choices.filter(is_correct=True).first()  # Get the correct choice
                 # In this scenario, let's assume we can derive correctness from the score
                 # (e.g., the score could be determined based on how many questions were answered correctly)
@@ -498,6 +499,7 @@ def view_poll_results(request, poll_id):
 
             if is_correct:
                 correct_count += 1
+                
             else:
                 wrong_count += 1
 
